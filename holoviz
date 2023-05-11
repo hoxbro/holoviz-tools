@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-TOOLS=$HOME/bin/holoviz-tools
+TOOLS=$(realpath "$(dirname "${BASH_SOURCE[0]}")")/tools
 
 # For activating conda environment
 CONDA_PATH=$(conda info | grep -i 'base environment' | awk '{print $4}')
@@ -34,4 +34,8 @@ elif [[ $1 == "sync" ]]; then
 elif [[ $1 == "clean" ]]; then
     ccd
     python $TOOLS/cleanup.py
+elif [[ $1 == "action-status" ]]; then
+    conda run -n holoviz --live-stream python $TOOLS/action_status.py
+elif [[ $1 == "version-finder" ]]; then
+    conda run -n holoviz --live-stream python $TOOLS/version_finder.py
 fi
