@@ -24,7 +24,8 @@ ALL_PACKAGES=(
     nbsmoke nbval
 
     # Geo
-    geopandas rioxarray rasterio spatialpandas cartopy pyogrio iris esmpy xesmf
+    geopandas rioxarray rasterio spatialpandas
+    cartopy pyogrio iris esmpy xesmf geodatasets
 
     # Dev Tools
     nodejs
@@ -100,7 +101,9 @@ create_environments() {
     fi
 
     if [ "$1" == "CLEAN" ] || [ "$1" == "UPDATE" ]; then
-        echo "No custom install"
+        # echo "No custom install"
+        conda uninstall numpy --force --offline -y
+        mamba install numpy numba=0.57.0 -c numba -y
     fi
     # Environment variables
     if [ "$1" == "CLEAN" ]; then
