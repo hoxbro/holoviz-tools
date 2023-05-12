@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-TOOLS=$HOLOVIZ_DEV/tools/tools
+TOOLS=$HOLOVIZ_DEV/tools
 
 # For activating conda environment
 CONDA_PATH=$(conda info | grep -i 'base environment' | awk '{print $4}')
