@@ -113,7 +113,9 @@ def get_packages_from_pypi(main_package):
     return packages, python_requires
 
 
-def main(main_package, python_requires=None):
+def query(main_package, python_requires=None):
+    console = Console()
+
     try:
         packages, lowest_supported_python = get_packages_from_file(main_package)
     except Exception:
@@ -121,7 +123,8 @@ def main(main_package, python_requires=None):
 
     python_requires = python_requires or lowest_supported_python
 
-    info = [pypi_info(p, python_requires) for p in sorted(packages)]
+    with console.status(f"Getting dependencies info for {main_package}"):
+        info = [pypi_info(p, python_requires) for p in sorted(packages)]
 
     table = Table(
         title=f"Package information for {main_package.capitalize()} and Python {python_requires}"
@@ -134,20 +137,23 @@ def main(main_package, python_requires=None):
     for i in info:
         table.add_row(*i)
 
-    console = Console()
     console.print(table)
 
 
-if __name__ == "__main__":
+def main():
     main_package = input("Package: ").strip()
     python_requires = input("Python version: ").strip()
     while True:
         if not main_package:
             break
 
-        main(main_package, python_requires)
+        query(main_package, python_requires)
 
         print("\nTry again?")
         main_package = input("Package: ").strip()
         python_requires = input("Python version: ").strip()
         print("\n")
+
+
+if __name__ == "__main__":
+    main()

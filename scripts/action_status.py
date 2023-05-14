@@ -48,8 +48,10 @@ def get_info(repo) -> pd.DataFrame | None:
 
 
 def main() -> None:
-    with ThreadPoolExecutor() as ex:
-        futures = ex.map(get_info, REPOS)
+    console = Console()
+    with console.status("Getting status of Github Actions"):
+        with ThreadPoolExecutor() as ex:
+            futures = ex.map(get_info, REPOS)
 
     try:
         df = pd.concat(futures)
@@ -62,11 +64,10 @@ def main() -> None:
         .dt.total_seconds()
         .apply(lambda x: f"{x / 60:0.0f} min")
     )
-    print_table(df)
+    print_table(df, console)
 
 
-def print_table(df) -> None:
-    console = Console()
+def print_table(df, console) -> None:
     table = Table(title=f"Running Github Actions")
     for c in df.columns:
         table.add_column(c)
