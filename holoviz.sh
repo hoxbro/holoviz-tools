@@ -2,12 +2,12 @@
 
 TOOLS=~/Repos/holoviz-tools/scripts
 
-# For activating conda environment
-CONDA_PATH=$(conda info | grep -i 'base environment' | awk '{print $4}')
-source $CONDA_PATH/etc/profile.d/conda.sh
-
 ccd() {
     cd $HOLOVIZ_DEV
+
+    # For activating conda environment
+    CONDA_PATH=$(conda info | grep -i 'base environment' | awk '{print $4}')
+    source $CONDA_PATH/etc/profile.d/conda.sh
     conda activate holoviz
 }
 
@@ -35,9 +35,9 @@ elif [[ $1 == "clean" ]]; then
     ccd
     python $TOOLS/cleanup.py
 elif [[ $1 == "action-status" ]]; then
-    conda run -n holoviz --live-stream python $TOOLS/action_status.py
+    python $TOOLS/action_status.py
 elif [[ $1 == "version-finder" ]]; then
-    conda run -n holoviz --live-stream python $TOOLS/version_finder.py
+    python $TOOLS/version_finder.py
 elif [[ $1 == "autocomplete" ]]; then
     sudo cp $TOOLS/../completion/holoviz-completion.bash /etc/bash_completion.d/holoviz-completion.bash
     sudo cp $TOOLS/../completion/holoviz-completion.zsh /usr/share/zsh/functions/Completion/Base/_holoviz
