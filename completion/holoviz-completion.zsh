@@ -1,5 +1,5 @@
 #compdef holoviz
-local -a subcmds
+local -a subcmds state
 subcmds=(
   'setup:Setup a Holoviz environment'
   'sync:Sync Git repo in Holoviz environment'
@@ -11,4 +11,11 @@ subcmds=(
   'action-status:Check status of Holoviz Github Actions'
   'fetch:Fetch latest versions of Git repos'
 )
-_describe 'command' subcmds
+
+_arguments '1: :->subcmds' && return
+
+case "$state" in
+  subcmds)
+    _describe 'command' subcmds
+    ;;
+esac
