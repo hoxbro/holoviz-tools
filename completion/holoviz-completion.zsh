@@ -10,6 +10,7 @@ subcmds=(
   'version-finder:Find versions of packages'
   'action-status:Check status of Holoviz Github Actions'
   'fetch:Fetch latest versions of Git repos'
+  'changelog:Generate changelog for Holoviz repos'
 )
 
 _arguments '1: :->subcmds' && return
