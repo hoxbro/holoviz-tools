@@ -68,7 +68,7 @@ def main() -> None:
 
 
 def print_table(df, console) -> None:
-    table = Table(title=f"Running Github Actions")
+    table = Table(title="Running Github Actions")
     for c in df.columns:
         table.add_column(c)
 

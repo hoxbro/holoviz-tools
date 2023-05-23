@@ -1,3 +1,4 @@
+import os
 import re
 from datetime import datetime
 from functools import cache
@@ -87,7 +88,10 @@ def pypi_info(package, python_version="3.7"):
 
 
 def get_packages_from_file(main_package):
-    output = run_path(f"/home/shh/Development/holoviz/repos/{main_package}/setup.py")
+    output = run_path(
+        f"{os.environ['HOLOVIZ_REP']}/{main_package}/setup.py",
+        run_name="not__main__",
+    )
     setup = output["setup_args"]
 
     python_requires = setup["python_requires"].replace(">=", "")
