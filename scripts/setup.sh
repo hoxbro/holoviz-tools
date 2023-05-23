@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 CONDA_ENV="holoviz"
-PYTHON="python=3.10"
+PYTHON="python=3.11"
 PACKAGES=(panel holoviews hvplot param datashader geoviews lumen colorcet)
 ALL_PACKAGES=(
     # Visualization
@@ -17,7 +17,7 @@ ALL_PACKAGES=(
     ibis-sqlite "sqlalchemy<2"
 
     # Notebook
-    "jupyterlab>3" ipywidgets jupyterlab_code_formatter jupyter_bokeh
+    "jupyterlab<4" ipywidgets jupyterlab_code_formatter "jupyter_bokeh>=3.0.7"
 
     # Testing
     pytest pytest-xdist flaky pytest-benchmark parameterized
@@ -101,9 +101,7 @@ create_environments() {
     fi
 
     if [ "$1" == "CLEAN" ] || [ "$1" == "UPDATE" ]; then
-        # echo "No custom install"
-        conda uninstall numpy --force --offline -y
-        mamba install numpy numba=0.57.0 -c numba -y
+        echo "No custom install"
     fi
     # Environment variables
     if [ "$1" == "CLEAN" ]; then
@@ -163,6 +161,8 @@ install_package() {
     python -m pip install --no-deps -e .
     if [["$p" == "panel"]]; then
         panel bundle --all &>/dev/null &
+    elif [[ "$p" == "holoviews" ]]; then
+        rm $(which holoviews) || echo "already uninstalled"
     fi
     rm -rf build/
     cd ..
