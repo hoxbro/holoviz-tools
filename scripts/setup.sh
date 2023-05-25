@@ -30,7 +30,7 @@ ALL_PACKAGES=(
     # Dev Tools
     nodejs
     pre-commit black ruff isort
-    pyinstrument snakeviz memray psutil py-spy
+    pyinstrument snakeviz memray psutil py-spy tuna
 
     # Misc
     diskcache dash streamz aiohttp
