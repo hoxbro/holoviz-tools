@@ -98,6 +98,8 @@ def create_notebook(codeblocks, url):
         "execution_count": None,
     }
     for code in codeblocks:
+        if ignore_code(code.text):
+            continue
         cell = empty_code_cell.copy()
         cell["id"] = get_id()
         cell["source"] = [c + "\n" for c in code.text.split("\n")]
@@ -112,9 +114,19 @@ def create_python(codeblocks, url):
     python_file = [info]
 
     for i, code in enumerate(codeblocks):
+        if ignore_code(code.text):
+            continue
         python_file.extend([f"# %% Codeblock {i+1}\n", code.text, "\n\n"])
 
     return python_file
+
+
+def ignore_code(code) -> bool:
+    bad_code = ["Traceback (most recent call last)", "Coverage Diff"]
+    for bad in bad_code:
+        if bad in code:
+            return True
+    return False
 
 
 def link(uri, label=None, parameters=None):
