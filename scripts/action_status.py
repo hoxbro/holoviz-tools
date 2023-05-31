@@ -59,6 +59,7 @@ def main() -> None:
         print("No running Github Actions")
         return
 
+    df = df.sort_values("Duration", ascending=False)
     df["Duration"] = (
         (pd.Timestamp.now(tz="UTC") - pd.to_datetime(df["Duration"]))
         .dt.total_seconds()
