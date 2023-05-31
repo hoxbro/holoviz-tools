@@ -17,7 +17,8 @@ ALL_PACKAGES=(
     ibis-sqlite "sqlalchemy<2"
 
     # Notebook
-    "jupyterlab<4" ipywidgets jupyterlab_code_formatter "jupyter_bokeh>=3.0.7"
+    "jupyterlab<4" ipywidgets jupyterlab_code_formatter
+    "jupyter_bokeh>=3.0.7" "jupyter_client<8"
 
     # Testing
     pytest pytest-xdist flaky pytest-benchmark parameterized
