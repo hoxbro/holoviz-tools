@@ -5,3 +5,5 @@ Tools I use for the development of the different Holoviz repos. They are made av
 `$HOLOVIZ_DEV` is the path to the directory where you have development files. Could be a synchronized folder like Dropbox or Google Drive.
 
 `$HOLOVIZ_REP` is the path to the directory where you have cloned the different repos.
+
+I use the following alias in my `.zshrc` file: `alias holoviz='source $HOME/Repos/holoviz-tools/holoviz.sh'`
