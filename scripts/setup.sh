@@ -21,7 +21,7 @@ ALL_PACKAGES=(
     "jupyter_bokeh>=3.0.7" "jupyter_client<8"
 
     # Testing
-    pytest pytest-xdist flaky pytest-benchmark parameterized
+    pytest pytest-xdist flaky pytest-benchmark parameterized pytest-asyncio
     nbsmoke nbval
 
     # Geo
