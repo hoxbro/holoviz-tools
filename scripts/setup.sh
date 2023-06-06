@@ -18,7 +18,7 @@ ALL_PACKAGES=(
 
     # Notebook
     "jupyterlab<4" ipywidgets jupyterlab_code_formatter
-    "jupyter_bokeh>=3.0.7" "jupyter_client<8"
+    "jupyter_bokeh>=3.0.7" "jupyter_client<8" bokeh::ipywidgets_bokeh
 
     # Testing
     pytest pytest-xdist flaky pytest-benchmark parameterized pytest-asyncio
@@ -32,16 +32,12 @@ ALL_PACKAGES=(
     nodejs
     pre-commit black ruff isort
     pyinstrument snakeviz memray psutil py-spy tuna
+    pyviz::nbsite
 
     # Misc
     diskcache dash streamz aiohttp
     datashape pyviz_comms tqdm pyct
     markdown markdown-it-py mdit-py-plugins linkify-it-py
-)
-DOCS_PACKAGES=(
-    python=3.8 'pydata-sphinx-theme=0.9.0' 'nbsite >=0.8.0rc7'
-    sphinx myst-parser sphinx-design
-    sphinx-copybutton -c pyviz/label/dev --no-channel-priority
 )
 GPU_PACKAGES=(
     python=3.9 cupy cudf dask-cudf -c rapidsai --no-channel-priority
@@ -70,7 +66,6 @@ create_environments() {
         # Creating environment (can't clone because they are linked)
         mamba create -n $CONDA_ENV $PYTHON ${ALL_PACKAGES[@]} -y
         mamba create -n $CONDA_ENV"_clean" $PYTHON ${PACKAGES[@]} ${ALL_PACKAGES[@]} -y
-        mamba create -n $CONDA_ENV"_docs" ${DOCS_PACKAGES[@]} -y
 
         if [[ $OS == "linux" ]] && $NVIDIA; then
             # cudf / dask_cudf pins hard
@@ -80,7 +75,6 @@ create_environments() {
     elif [ "$1" == "UPDATE" ]; then
         mamba update --all -n $CONDA_ENV -y
         mamba update --all -n $CONDA_ENV"_clean" -y
-        mamba update --all -n $CONDA_ENV"_docs" -y
         if [[ $OS == "linux" ]] && $NVIDIA; then
             mamba update --all -n $CONDA_ENV"_gpu" -y
         fi
