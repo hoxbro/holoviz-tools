@@ -153,6 +153,9 @@ install_package() {
     # .vscode settings
     sync_vscode_settings
 
+    # pre-commit initialize
+    pre-commit
+
     # Install the package
     conda uninstall --force --offline --yes $p || echo "already uninstalled"
     conda develop .
@@ -160,6 +163,7 @@ install_package() {
     if [["$p" == "panel"]]; then
         panel bundle --all &>/dev/null &
     elif [[ "$p" == "holoviews" ]]; then
+        # Don't want the holoviews command
         rm $(which holoviews) || echo "already uninstalled"
     fi
     rm -rf build/
