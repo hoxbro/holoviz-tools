@@ -13,7 +13,7 @@ ALL_PACKAGES=(
 
     # Data loading
     lxml openpyxl fastparquet pooch pyarrow
-    intake intake-sql intake-parquet s3fs h5netcdf
+    intake intake-sql intake-parquet s3fs h5netcdf zarr
     ibis-sqlite "sqlalchemy<2"
 
     # Notebook
