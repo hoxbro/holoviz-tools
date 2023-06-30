@@ -18,6 +18,13 @@ PATH = Path(os.environ["HOLOVIZ_DEV"]).resolve() / "development"
 
 
 def remove_temp() -> None:
+    files = PATH.parent.glob("*.ipynb")
+    for file in files:
+        try:
+            move(file, PATH)
+        except Exception:
+            pass
+
     tmps = [
         ".ipynb_checkpoints",
         "Untitled*.ipynb",
