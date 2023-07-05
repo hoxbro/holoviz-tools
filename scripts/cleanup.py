@@ -29,7 +29,7 @@ def remove_temp() -> None:
         ".ipynb_checkpoints",
         "Untitled*.ipynb",
         "tmp*.py",
-        "temp.py",
+        "temp*.py",
         "untitled*.txt",
         ".benchmarks",
         ".hypothesis",
