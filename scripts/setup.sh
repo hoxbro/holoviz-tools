@@ -31,7 +31,7 @@ ALL_PACKAGES=(
 
     # Dev Tools
     nodejs
-    pre-commit black ruff isort
+    black ruff isort
     pyinstrument snakeviz memray psutil py-spy tuna
     pyviz::nbsite
 
@@ -159,7 +159,7 @@ install_package() {
 
     # Install the package
     conda uninstall --force --offline --yes $p || echo "already uninstalled"
-    conda develop .
+    # conda develop .
     python -m pip install --no-deps -e .
     if [["$p" == "panel"]]; then
         panel bundle --all &>/dev/null &
