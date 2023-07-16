@@ -159,7 +159,7 @@ install_package() {
 
     # Install the package
     conda uninstall --force --offline --yes $p || echo "already uninstalled"
-    # conda develop .
+    conda develop .  # adding to environments .pth file
     python -m pip install --no-deps -e .
     if [["$p" == "panel"]]; then
         panel bundle --all &>/dev/null &
