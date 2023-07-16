@@ -62,7 +62,7 @@ sync_vscode_settings() {
 create_environments() {
     if [ "$1" == "CLEAN" ]; then
         # Clean up old environment
-        mamba env list | grep $CONDA_ENV | awk '{print $1}' | xargs -L1 mamba env remove -n
+        mamba env list | grep $CONDA_ENV | awk '{print $1}' | xargs -r -L1 mamba env remove -n
 
         # Creating environment (can't clone because they are linked)
         mamba create -n $CONDA_ENV $PYTHON ${ALL_PACKAGES[@]} -y
