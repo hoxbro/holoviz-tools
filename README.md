@@ -6,4 +6,4 @@ Tools I use for the development of the different Holoviz repos. They are made av
 
 `$HOLOVIZ_REP` is the path to the directory where you have cloned the different repos.
 
-I use the following alias in my `.zshrc` file: `alias holoviz='source $HOME/Repos/holoviz-tools/holoviz.sh'`
+I use the following function in my `.zshrc` file: `holoviz() {source "$HOME/Repos/holoviz-tools/holoviz.sh"}`
