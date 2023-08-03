@@ -6,11 +6,12 @@ subcmds=(
   'update:Update environment and sync repos'
   'code:Open VSCode with Holoviz workspace'
   'lab:Open JupyterLab with Holoviz environment'
-  'autocomplete:Install autocomplete for holoviz command'
+  'autocomplete:Install autocomplete for Holoviz command'
   'version-finder:Find versions of packages'
   'action-status:Check status of Holoviz Github Actions'
   'fetch:Fetch latest versions of Git repos'
   'changelog:Generate changelog for Holoviz repos'
+  'clean:Clean up Holoviz dev files'
 )
 
 _arguments '1: :->subcmds' && return
