@@ -32,7 +32,7 @@ ALL_PACKAGES=(
     # Dev Tools
     nodejs
     black ruff isort pre-commit
-    pyinstrument snakeviz memray psutil py-spy tuna
+    pyinstrument snakeviz memray psutil py-spy tuna asv
     pyviz::nbsite
 
     # Misc
