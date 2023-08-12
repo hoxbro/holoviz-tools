@@ -23,7 +23,7 @@ ALL_PACKAGES=(
 
     # Testing
     pytest pytest-xdist flaky pytest-benchmark parameterized pytest-asyncio
-    nbsmoke nbval
+    nbsmoke nbval microsoft::pytest-playwright
 
     # Geo
     geopandas rioxarray rasterio spatialpandas
@@ -62,7 +62,7 @@ sync_vscode_settings() {
 create_environments() {
     if [ "$1" == "CLEAN" ]; then
         # Clean up old environment
-        mamba env list | grep $CONDA_ENV | awk '{print $1}' | xargs -r -L1 mamba env remove -n
+        conda env list | grep $CONDA_ENV | awk '{print $1}' | xargs -r -L1 conda env remove -n
 
         # Creating environment (can't clone because they are linked)
         mamba create -n $CONDA_ENV $PYTHON ${ALL_PACKAGES[@]} -y
@@ -90,11 +90,6 @@ create_environments() {
     wait
 
     conda activate $CONDA_ENV
-
-    # Playwright
-    if [ "$1" == "CLEAN" ]; then
-        pip install playwright pytest-playwright
-    fi
 
     if [ "$1" == "CLEAN" ] || [ "$1" == "UPDATE" ]; then
         echo "No custom install"
