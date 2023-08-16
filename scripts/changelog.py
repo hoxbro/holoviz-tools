@@ -25,6 +25,7 @@ def main() -> None:
     New users: {", ".join(sorted(new_users, key=lambda x: x.lower()))}
     Returning users: {", ".join(sorted(users, key=lambda x: x.lower()))}
 
+    New features:
     Enhancements:
     Bug fixes:
     Compatibility:
