@@ -37,7 +37,7 @@ ALL_PACKAGES=(
 
     # Misc
     diskcache dash streamz aiohttp
-    datashape pyviz_comms tqdm pyct
+    datashape "pyviz_comms<3" tqdm pyct
     markdown markdown-it-py mdit-py-plugins linkify-it-py
 )
 GPU_PACKAGES=(
