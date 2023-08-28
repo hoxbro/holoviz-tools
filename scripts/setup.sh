@@ -41,7 +41,7 @@ ALL_PACKAGES=(
     markdown markdown-it-py mdit-py-plugins linkify-it-py
 )
 GPU_PACKAGES=(
-    python=3.9 cupy cudf dask-cudf -c rapidsai --no-channel-priority
+    python=3.10 cupy cudf dask-cudf -c rapidsai --no-channel-priority
 )
 
 sync_vscode_settings() {
