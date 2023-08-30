@@ -14,7 +14,7 @@ ALL_PACKAGES=(
     # Data loading
     lxml openpyxl fastparquet pooch pyarrow
     intake intake-sql intake-parquet intake-xarray
-    s3fs h5netcdf zarr
+    s3fs h5netcdf zarr "hdf5!=1.14.1"
     ibis-sqlite "sqlalchemy<2" duckdb
 
     # Notebook
@@ -27,7 +27,7 @@ ALL_PACKAGES=(
 
     # Geo
     geopandas rioxarray rasterio spatialpandas
-    cartopy pyogrio iris esmpy xesmf geodatasets
+    cartopy pyogrio iris esmpy xesmf geodatasets metpy
 
     # Dev Tools
     nodejs
