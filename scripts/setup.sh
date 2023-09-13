@@ -36,7 +36,7 @@ ALL_PACKAGES=(
     pyviz::nbsite
 
     # Misc
-    diskcache dash streamz aiohttp
+    diskcache streamz aiohttp
     datashape "pyviz_comms<3" tqdm pyct
     markdown markdown-it-py mdit-py-plugins linkify-it-py
 )
@@ -219,8 +219,8 @@ fi
 
 
 # Download data
-playwright install &>/dev/null &
-bokeh sampledata &>/dev/null &
+python -m playwright install &>/dev/null &
+python -m bokeh sampledata &>/dev/null &
 
 wait
 
