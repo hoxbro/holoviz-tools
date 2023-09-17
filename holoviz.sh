@@ -3,7 +3,9 @@
 TOOLS=~/Repos/holoviz-tools/scripts
 
 ccd() {
-    cd $HOLOVIZ_DEV
+    if [[ $PWD != $HOLOVIZ_DEV* && $PWD != $HOLOVIZ_REP* ]]; then
+        cd $HOLOVIZ_DEV
+    fi
 
     # For activating conda environment
     CONDA_PATH=$(conda info | grep -i 'base environment' | awk '{print $4}')
