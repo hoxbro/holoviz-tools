@@ -8,7 +8,7 @@ fetch_main() {
     fi
 }
 
-for PACKAGE in $(ls -d $HOLOVIZ_REP/*); do
+for PACKAGE in $(ls -d $HOLOVIZ_REP/*/); do
     fetch_main &
 done
 
