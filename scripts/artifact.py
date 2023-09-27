@@ -55,9 +55,7 @@ def download_artifact(repo, pr, url) -> None:
         zip_ref.extractall(PATH / f"{repo}_{pr}")
 
 
-def get_files(
-    repo, good_pr, bad_pr, test, os, python_version, workflow
-) -> tuple[Path, Path]:
+def get_files(repo, good_pr, bad_pr, test, os, python, workflow) -> tuple[Path, Path]:
     good_path = PATH / f"{repo}_{good_pr}"
     bad_path = PATH / f"{repo}_{bad_pr}"
 
@@ -74,7 +72,7 @@ def get_files(
 
     for file in good_path.iterdir():
         name = file.name.lower()
-        if os in name and python_version in name and test in name:
+        if os in name and python in name and test in name:
             break
 
     good_file = good_path / file.name
@@ -89,7 +87,7 @@ def get_files(
 @click.option(
     "--repo",
     default="holoviews",
-    type=click.Choice(["holoviews", "panel", "hvplot", "datashader"]),
+    type=click.Choice(["holoviews", "panel", "hvplot", "datashader", "geoviews"]),
     help="Repository (default: holoviews)",
 )
 @click.option(
@@ -105,7 +103,7 @@ def get_files(
     help="Operating system (default: linux)",
 )
 @click.option(
-    "--python-version",
+    "--python",
     default="3.10",
     type=click.Choice(["3.8", "3.9", "3.10", "3.11"]),
     help="Python version (default: 3.10)",
@@ -116,11 +114,11 @@ def get_files(
     type=str,
     help="Workflow filename (default: test.yaml)",
 )
-def cli(good_pr, bad_pr, repo, test, os, python_version, workflow) -> None:
+def cli(good_pr, bad_pr, repo, test, os, python, workflow) -> None:
     console = Console()
     with console.status("Downloading artifacts..."):
         good_file, bad_file = get_files(
-            repo, good_pr, bad_pr, test, os, python_version, workflow
+            repo, good_pr, bad_pr, test, os, python, workflow
         )
 
     if not good_file.exists():
