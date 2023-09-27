@@ -16,6 +16,13 @@ from rich.progress import track
 console = Console()
 PATH = Path(os.environ["HOLOVIZ_DEV"]).resolve() / "development"
 
+# Not needed but makes it faster
+HEADERS = {
+    "Accept": "application/vnd.github+json",
+    "Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
+    "X-GitHub-Api-Version": "2022-11-28",
+}
+
 
 def remove_temp() -> None:
     files = PATH.parent.glob("*.ipynb")
@@ -58,7 +65,7 @@ def remove_temp() -> None:
 def check_pr_closed(repo, no) -> bool:
     # Use API
     url = f"https://api.github.com/repos/holoviz/{repo}/issues/{no}"
-    resp = requests.get(url)
+    resp = requests.get(url, headers=HEADERS)
     if resp.ok:
         tag = resp.json()["state"]
         return tag in ["closed", "merged"]
