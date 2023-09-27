@@ -82,7 +82,8 @@ def get_files(
     return good_file, bad_file
 
 
-@click.command()
+# Context setting working with: https://github.com/ewels/rich-click/pull/115
+@click.command(context_settings={"show_default": True})
 @click.argument("good_pr", type=int)
 @click.argument("bad_pr", type=int)
 @click.option(

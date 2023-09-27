@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
@@ -32,10 +33,16 @@ REPOS = [
     # "spatialpandas",
 ]
 
+HEADERS = {
+    "Accept": "application/vnd.github+json",
+    "Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
+    "X-GitHub-Api-Version": "2022-11-28",
+}
+
 
 def get_info(repo) -> pd.DataFrame | None:
     url = f"https://api.github.com/repos/holoviz/{repo}/actions/runs"
-    resp = requests.get(url, params={"per_page": 30})
+    resp = requests.get(url, params={"per_page": 30}, headers=HEADERS)
     assert resp.ok, "API timeout"
     df = pd.json_normalize(resp.json(), "workflow_runs")
     df = df[df["status"] != "completed"]
