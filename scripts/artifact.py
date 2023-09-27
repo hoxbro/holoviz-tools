@@ -10,6 +10,8 @@ import requests
 import rich_click as click
 from rich.console import Console
 
+# Needs diff-so-fancy in path
+
 PATH = Path("~/.cache/holoviz-ci").expanduser().resolve()
 PATH.mkdir(parents=True, exist_ok=True)
 
@@ -39,7 +41,11 @@ def get_runs(repo, workflow, prs) -> dict | None:
 def download_artifact(repo, pr, url) -> None:
     resp = requests.get(url, headers=HEADERS)
     assert resp.ok
-    download_url = resp.json()["artifacts"][0]["archive_download_url"]
+    artifact = resp.json()["artifacts"]
+    if not artifact:
+        (PATH / f"{repo}_{pr}").mkdir(exist_ok=True)
+        return
+    download_url = artifact[0]["archive_download_url"]
     zipfile = requests.get(download_url, headers=HEADERS)
     assert resp.ok
 
@@ -115,6 +121,19 @@ def cli(good_pr, bad_pr, repo, test, os, python_version, workflow) -> None:
         good_file, bad_file = get_files(
             repo, good_pr, bad_pr, test, os, python_version, workflow
         )
+
+    if not good_file.exists():
+        console.print(
+            "Good artifact does not exists. Please check the parameters.",
+            style="bright_red",
+        )
+        return
+    if not bad_file.exists():
+        console.print(
+            "Bad artifact does not exists. Please check the parameters.",
+            style="bright_red",
+        )
+        return
 
     cmd = f"git diff {bad_file} {good_file} | diff-so-fancy"
     diff = check_output(cmd, shell=True).decode()
