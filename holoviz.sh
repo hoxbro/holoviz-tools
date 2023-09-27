@@ -40,6 +40,9 @@ elif [[ $1 == "action-status" ]]; then
     python $TOOLS/action_status.py
 elif [[ $1 == "version-finder" ]]; then
     python $TOOLS/version_finder.py
+elif [[ $1 == "artifact" ]]; then
+    shift
+    python $TOOLS/artifact.py $@
 elif [[ $1 == "autocomplete" ]]; then
     sudo cp $TOOLS/../completion/holoviz-completion.bash /etc/bash_completion.d/holoviz-completion.bash
     sudo cp $TOOLS/../completion/holoviz-completion.zsh /usr/share/zsh/functions/Completion/Base/_holoviz

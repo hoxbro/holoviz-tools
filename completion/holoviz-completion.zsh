@@ -12,6 +12,7 @@ subcmds=(
   'fetch:Fetch latest versions of Git repos'
   'changelog:Generate changelog for Holoviz repos'
   'clean:Clean up Holoviz dev files'
+  'artifact:Compare artifact for Holoviz repos'
 )
 
 _arguments '1: :->subcmds' && return
