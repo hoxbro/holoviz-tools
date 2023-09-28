@@ -12,7 +12,7 @@ from rich.console import Console
 
 # Needs diff-so-fancy in path
 
-PATH = Path("~/.cache/holoviz-ci").expanduser().resolve()
+PATH = Path("~/.cache/holoviz-cli/artifact").expanduser().resolve()
 PATH.mkdir(parents=True, exist_ok=True)
 
 HEADERS = {
@@ -55,15 +55,15 @@ def download_artifact(repo, pr, url) -> None:
         zip_ref.extractall(PATH / f"{repo}_{pr}")
 
 
-def get_files(repo, good_pr, bad_pr, test, os, python, workflow) -> tuple[Path, Path]:
-    good_path = PATH / f"{repo}_{good_pr}"
-    bad_path = PATH / f"{repo}_{bad_pr}"
+def get_files(repo, good_run, bad_run, test, os, python, workflow) -> tuple[Path, Path]:
+    good_path = PATH / f"{repo}_{good_run}"
+    bad_path = PATH / f"{repo}_{bad_run}"
 
     prs = []
     if not good_path.exists():
-        prs.append(good_pr)
+        prs.append(good_run)
     if not bad_path.exists():
-        prs.append(bad_pr)
+        prs.append(bad_run)
 
     if prs:
         runs = get_runs(repo, workflow, prs)
@@ -82,8 +82,8 @@ def get_files(repo, good_pr, bad_pr, test, os, python, workflow) -> tuple[Path, 
 
 # Context setting working with: https://github.com/ewels/rich-click/pull/115
 @click.command(context_settings={"show_default": True})
-@click.argument("good_pr", type=int)
-@click.argument("bad_pr", type=int)
+@click.argument("good_run", type=int)
+@click.argument("bad_run", type=int)
 @click.option(
     "--repo",
     default="holoviews",
@@ -114,11 +114,11 @@ def get_files(repo, good_pr, bad_pr, test, os, python, workflow) -> tuple[Path, 
     type=str,
     help="Workflow filename (default: test.yaml)",
 )
-def cli(good_pr, bad_pr, repo, test, os, python, workflow) -> None:
+def cli(good_run, bad_run, repo, test, os, python, workflow) -> None:
     console = Console()
     with console.status("Downloading artifacts..."):
         good_file, bad_file = get_files(
-            repo, good_pr, bad_pr, test, os, python, workflow
+            repo, good_run, bad_run, test, os, python, workflow
         )
 
     if not good_file.exists():
