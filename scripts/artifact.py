@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from io import BytesIO
 from pathlib import Path
+from shutil import rmtree
 from subprocess import check_output
 from zipfile import ZipFile
 
@@ -55,9 +56,15 @@ def download_artifact(repo, pr, url) -> None:
         zip_ref.extractall(PATH / f"{repo}_{pr}")
 
 
-def get_files(repo, good_run, bad_run, test, os, python, workflow) -> tuple[Path, Path]:
+def get_files(
+    repo, good_run, bad_run, test, os, python, workflow, force
+) -> tuple[Path, Path]:
     good_path = PATH / f"{repo}_{good_run}"
     bad_path = PATH / f"{repo}_{bad_run}"
+
+    if force:
+        rmtree(good_path, ignore_errors=True)
+        rmtree(bad_path, ignore_errors=True)
 
     prs = []
     if not good_path.exists():
@@ -114,11 +121,16 @@ def get_files(repo, good_run, bad_run, test, os, python, workflow) -> tuple[Path
     type=str,
     help="Workflow filename (default: test.yaml)",
 )
-def cli(good_run, bad_run, repo, test, os, python, workflow) -> None:
+@click.option(
+    "--force/--no-force",
+    default=False,
+    help="Force download artifacts (default: False)",
+)
+def cli(good_run, bad_run, repo, test, os, python, workflow, force) -> None:
     console = Console()
     with console.status("Downloading artifacts..."):
         good_file, bad_file = get_files(
-            repo, good_run, bad_run, test, os, python, workflow
+            repo, good_run, bad_run, test, os, python, workflow, force
         )
 
     if not good_file.exists():
