@@ -36,7 +36,7 @@ ALL_PACKAGES=(
     pyviz::nbsite
 
     # Misc
-    diskcache streamz aiohttp rich-click
+    diskcache streamz aiohttp rich-click setuptools_scm
     datashape "pyviz_comms<3" tqdm pyct
     markdown markdown-it-py mdit-py-plugins linkify-it-py
 )
