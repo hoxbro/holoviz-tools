@@ -151,6 +151,7 @@ install_package() {
 
     # pre-commit initialize
     pre-commit
+    cp -a ~/Repos/holoviz-tools/scripts/pre-push .git/hooks/pre-push
 
     # Install the package
     conda uninstall --force --offline --yes $p || echo "already uninstalled"
