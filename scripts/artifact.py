@@ -79,7 +79,7 @@ def get_files(
 
     for file in good_path.iterdir():
         name = file.name.lower()
-        if os in name and python in name and test in name:
+        if os in name and python in name and f"_{test}" in name:
             break
 
     good_file = good_path / file.name

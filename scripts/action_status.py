@@ -18,19 +18,19 @@ COLUMNS = {
 }
 
 REPOS = [
-    # "colorcet",
+    "colorcet",
     "datashader",
     "geoviews",
-    # "holonote",
+    "holonote",
     "holoviews",
-    # "holoviz",
+    "holoviz",
     "hvplot",
-    # "jupyter-panel-proxy",
+    "jupyter-panel-proxy",
     "lumen",
     "panel",
     "param",
-    # "pyviz_comms",
-    # "spatialpandas",
+    "pyviz_comms",
+    "spatialpandas",
 ]
 
 HEADERS = {
