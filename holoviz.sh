@@ -6,11 +6,12 @@ ccd() {
     if [[ $PWD != $HOLOVIZ_DEV* && $PWD != $HOLOVIZ_REP* ]]; then
         cd $HOLOVIZ_DEV
     fi
-
-    # For activating conda environment
-    CONDA_PATH=$(conda info | grep -i 'base environment' | awk '{print $4}')
-    source $CONDA_PATH/etc/profile.d/conda.sh
-    conda activate holoviz
+    if [[ $CONDA_DEFAULT_ENV != "holoviz" ]]; then
+        # For activating conda environment
+        CONDA_PATH=$(conda info | grep -i 'base environment' | awk '{print $4}')
+        source $CONDA_PATH/etc/profile.d/conda.sh
+        conda activate holoviz
+    fi
 }
 
 if [[ (-z $1 && -z $(pgrep code -a | grep holoviz)) || ($1 == "code") ]]; then
