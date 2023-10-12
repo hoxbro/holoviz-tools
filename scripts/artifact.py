@@ -149,9 +149,9 @@ def cli(good_run, bad_run, repo, test, os, python, workflow, force) -> None:
     diff = check_output(cmd, shell=True).decode()
 
     if diff:
-        print(diff)
+        click.echo(diff)
     else:
-        console.print("No differences found for the given parameters.")
+        click.echo("No differences found for the given parameters.")
 
 
 if __name__ == "__main__":
