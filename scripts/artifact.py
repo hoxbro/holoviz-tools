@@ -87,7 +87,6 @@ def get_files(
     return good_file, bad_file
 
 
-# Context setting working with: https://github.com/ewels/rich-click/pull/115
 @click.command(context_settings={"show_default": True})
 @click.argument("good_run", type=int)
 @click.argument("bad_run", type=int)
@@ -95,31 +94,31 @@ def get_files(
     "--repo",
     default="holoviews",
     type=click.Choice(["holoviews", "panel", "hvplot", "datashader", "geoviews"]),
-    help="Repository (default: holoviews)",
+    help="Repository",
 )
 @click.option(
     "--test",
     default="unit",
     type=click.Choice(["unit", "ui", "core"]),
-    help="Test type (default: unit)",
+    help="Test type",
 )
 @click.option(
     "--os",
     default="linux",
     type=click.Choice(["linux", "mac", "windows"]),
-    help="Operating system (default: linux)",
+    help="Operating system",
 )
 @click.option(
     "--python",
     default="3.10",
     type=click.Choice(["3.8", "3.9", "3.10", "3.11"]),
-    help="Python version (default: 3.10)",
+    help="Python version",
 )
 @click.option(
     "--workflow",
     default="test.yaml",
     type=str,
-    help="Workflow filename (default: test.yaml)",
+    help="Workflow filename",
 )
 @click.option(
     "--force/--no-force",
