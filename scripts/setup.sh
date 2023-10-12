@@ -220,6 +220,7 @@ fi
 
 
 # Download data
+conda activate $CONDA_ENV
 python -m playwright install &>/dev/null &
 python -m bokeh sampledata &>/dev/null &
 
