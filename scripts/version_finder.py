@@ -18,8 +18,11 @@ py_releases = {
     "3.11": datetime(2022, 10, 24),
     "3.12": datetime(2023, 10, 2),
 }
-
 headers = {"Accept": "application/vnd.pypi.simple.v1+json"}
+
+# Spec0: https://scientific-python.org/specs/spec-0000/
+# Support minor release for 2 years
+drop_date = datetime.now() - timedelta(days=int(365 * 2))
 
 
 @cache
@@ -65,7 +68,11 @@ def pypi_info(package, python_version="3.9"):
     min_version = str(min(results)) if results else "-"
     max_version = str(max(results)) if results else "-"
     cur_version = str(max(releases)) if releases else "-"
-    return package, min_version, max_version, cur_version
+
+    spec0 = [r for r, d in releases.items() if r.micro == 0 and drop_date <= d]
+    spec0_version = str(min(spec0)) if spec0 else "-"
+
+    return package, min_version, max_version, cur_version, spec0_version
 
 
 def get_packages_from_file(main_package):
@@ -118,6 +125,7 @@ def query(main_package, python_requires=None):
     table.add_column("Minimum", justify="right")
     table.add_column("Maximum", justify="right")
     table.add_column("Current", justify="right")
+    table.add_column("Spec 0", justify="right")
 
     for i in info:
         table.add_row(*i)
