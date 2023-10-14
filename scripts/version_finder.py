@@ -1,5 +1,6 @@
 import collections
 import os
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from functools import cache
 from runpy import run_path
@@ -9,6 +10,7 @@ from packaging.requirements import Requirement
 from packaging.specifiers import SpecifierSet
 from packaging.version import InvalidVersion, Version
 from rich.console import Console
+from rich.progress import track
 from rich.table import Table
 
 py_releases = {
@@ -120,8 +122,15 @@ def query(main_package, python_requires=None):
 
     python_requires = python_requires or lowest_supported_python
 
-    with console.status(f"Getting dependencies info for {main_package}"):
-        info = [pypi_info(p, python_requires) for p in sorted(packages)]
+    with ThreadPoolExecutor() as executor:
+        func = lambda p: pypi_info(p, python_requires)
+        info = list(
+            track(
+                executor.map(func, sorted(packages)),
+                description=f"Getting dependencies info for {main_package}",
+                total=len(packages),
+            )
+        )
 
     table = Table(
         title=f"Package information for {main_package.capitalize()} and Python {python_requires}"
