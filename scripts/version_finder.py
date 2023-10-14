@@ -1,89 +1,70 @@
+import collections
 import os
-import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import cache
 from runpy import run_path
 
-import pandas as pd
 import requests
-from bs4 import BeautifulSoup
 from packaging.requirements import Requirement
 from packaging.specifiers import SpecifierSet
 from packaging.version import InvalidVersion, Version
 from rich.console import Console
 from rich.table import Table
 
+py_releases = {
+    "3.8": datetime(2019, 10, 14),
+    "3.9": datetime(2020, 10, 5),
+    "3.10": datetime(2021, 10, 4),
+    "3.11": datetime(2022, 10, 24),
+    "3.12": datetime(2023, 10, 2),
+}
 
-def get_python_releases():
-    url = "https://www.python.org/doc/versions/"
-    resp = requests.get(url)
-    soup = BeautifulSoup(resp.text, features="html.parser")
-    table = soup.find(id="python-documentation-by-version").find_all("li")
-
-    release_dates = {}
-    regex = re.compile(r"(\d+\.\d+[\.\d+]*).+?(\d+ \w+ \d+)")
-
-    for row in table:
-        raw_version, raw_date = re.findall(regex, row.text)[0]
-        if raw_version == "2.7":
-            break
-
-        version = Version(raw_version)
-        date = pd.to_datetime(raw_date).to_pydatetime()
-
-        if not version.micro:
-            continue
-
-        release_dates[f"{version.major}.{version.minor}"] = date
-
-    return release_dates
-
-
-release_dates = get_python_releases()
+headers = {"Accept": "application/vnd.pypi.simple.v1+json"}
 
 
 @cache
-def get_resp(url):
-    return requests.get(url).json()
+def get_resp(url, with_headers=True):
+    if with_headers:
+        return requests.get(url, headers=headers).json()
+    else:
+        return requests.get(url, headers=None).json()
 
 
 @cache
-def pypi_info(package, python_version="3.7"):
-    url = f"https://pypi.org/pypi/{package}/json"
-    resp = get_resp(url)
+def pypi_info(package, python_version="3.9"):
+    url = f"https://pypi.org/simple/{package}"
+    resp = get_resp(url, with_headers=True)
 
-    results = []
-    versions = []
-    if "releases" not in resp:
-        resp["releases"] = {}
-
-    for version, infos in resp["releases"].items():
+    releases = collections.defaultdict(list)
+    results = collections.defaultdict(list)
+    for f in resp["files"]:
+        ver = f["filename"].split("-")[1]
         try:
-            package_version = Version(version)
+            version = Version(ver)
         except InvalidVersion:
             continue
-        if package_version.is_prerelease:
-            continue
-        versions.append(package_version)
 
-        for info in infos:
-            if (
-                datetime.fromisoformat(info["upload_time"])
-                < release_dates[python_version]
-            ):
-                continue
-            if info["requires_python"] is None:
-                results.append(package_version)
-                # continue
-            elif SpecifierSet(info["requires_python"].replace(".*", "")).contains(
+        if version.is_prerelease:
+            continue
+
+        release_date = datetime.fromisoformat(f["upload-time"]).replace(tzinfo=None)
+        releases[version].append(release_date)
+
+        python_check1 = f["requires-python"] is None or (
+            SpecifierSet(f["requires-python"].replace(".*", "")).contains(
                 python_version
-            ):
-                results.append(package_version)
+            )
+        )
+        python_check2 = release_date >= py_releases[python_version]
+        if python_check1 and python_check2:
+            results[version].append(release_date)
+
+    results = {v: min(results[v]) for v in results}
+    releases = {v: min(releases[v]) for v in releases}
 
     min_version = str(min(results)) if results else "-"
     max_version = str(max(results)) if results else "-"
-    cur_version = str(max(versions)) if versions else "-"
-
+    cur_version = str(max(releases)) if releases else "-"
     return package, min_version, max_version, cur_version
 
 
