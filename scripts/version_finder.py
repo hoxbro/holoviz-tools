@@ -18,7 +18,7 @@ py_releases = {
     "3.11": datetime(2022, 10, 24),
     "3.12": datetime(2023, 10, 2),
 }
-headers = {"Accept": "application/vnd.pypi.simple.v1+json"}
+HEADERS = {"Accept": "application/vnd.pypi.simple.v1+json"}
 
 # Spec0: https://scientific-python.org/specs/spec-0000/
 # Support minor release for 2 years
@@ -27,16 +27,21 @@ drop_date = datetime.now() - timedelta(days=int(365 * 2))
 
 @cache
 def get_resp(url, with_headers=True):
-    if with_headers:
-        return requests.get(url, headers=headers).json()
+    headers = HEADERS if with_headers else {}
+    resp = requests.get(url, headers=headers)
+    if resp.ok:
+        return resp.json()
     else:
-        return requests.get(url, headers=None).json()
+        return None
 
 
 @cache
 def pypi_info(package, python_version="3.9"):
     url = f"https://pypi.org/simple/{package}"
     resp = get_resp(url, with_headers=True)
+
+    if not resp:
+        return package, "-", "-", "-", "-"
 
     releases = collections.defaultdict(list)
     results = collections.defaultdict(list)
