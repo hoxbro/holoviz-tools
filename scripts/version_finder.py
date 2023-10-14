@@ -1,3 +1,20 @@
+"""Get dependencies info for a package
+
+Minimum:
+- The first version released after a new Python feature release is released.
+- The requires python specifier allow the Python version.
+
+Maximum:
+- The requires python specifier allow the Python version.
+
+Current:
+- The latest version released.
+
+Spec 0:
+- Follows the standard: https://scientific-python.org/specs/spec-0000/
+- Support for two year after a feature release of the package.
+"""
+
 import collections
 import os
 from concurrent.futures import ThreadPoolExecutor
@@ -20,11 +37,8 @@ py_releases = {
     "3.11": datetime(2022, 10, 24),
     "3.12": datetime(2023, 10, 2),
 }
+spec_drop_date = datetime.now() - timedelta(days=int(365 * 2))
 HEADERS = {"Accept": "application/vnd.pypi.simple.v1+json"}
-
-# Spec0: https://scientific-python.org/specs/spec-0000/
-# Support minor release for 2 years
-drop_date = datetime.now() - timedelta(days=int(365 * 2))
 
 
 @cache
@@ -76,7 +90,7 @@ def pypi_info(package, python_version="3.9"):
     max_version = str(max(results)) if results else "-"
     cur_version = str(max(releases)) if releases else "-"
 
-    spec0 = [r for r, d in releases.items() if r.micro == 0 and drop_date <= d]
+    spec0 = [r for r, d in releases.items() if r.micro == 0 and spec_drop_date <= d]
     spec0_version = str(min(spec0)) if spec0 else "-"
 
     return package, min_version, max_version, cur_version, spec0_version
