@@ -15,12 +15,15 @@ Spec 0:
 - Support for two year after a feature release of the package.
 """
 
+from __future__ import annotations
+
 import collections
 import os
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from functools import cache
 from runpy import run_path
+from typing import Any
 
 import requests
 from packaging.requirements import Requirement
@@ -42,7 +45,7 @@ HEADERS = {"Accept": "application/vnd.pypi.simple.v1+json"}
 
 
 @cache
-def get_resp(url, with_headers=True):
+def get_resp(url, with_headers=True) -> dict[str, Any] | None:
     headers = HEADERS if with_headers else {}
     resp = requests.get(url, headers=headers)
     if resp.ok:
@@ -52,7 +55,9 @@ def get_resp(url, with_headers=True):
 
 
 @cache
-def pypi_info(package, python_version="3.9"):
+def pypi_info(
+    package: str, python_version: str = "3.9"
+) -> tuple[str, str, str, str, str]:
     url = f"https://pypi.org/simple/{package}"
     resp = get_resp(url, with_headers=True)
 
@@ -96,7 +101,7 @@ def pypi_info(package, python_version="3.9"):
     return package, min_version, max_version, cur_version, spec0_version
 
 
-def get_packages_from_file(main_package):
+def get_packages_from_file(main_package: str) -> tuple[set[str], str]:
     output = run_path(
         f"{os.environ['HOLOVIZ_REP']}/{main_package}/setup.py",
         run_name="not__main__",
@@ -115,7 +120,7 @@ def get_packages_from_file(main_package):
     return packages, python_requires
 
 
-def get_packages_from_pypi(main_package):
+def get_packages_from_pypi(main_package) -> tuple[set[str], str]:
     url = f"https://pypi.org/pypi/{main_package}/json"
     resp = get_resp(url)
 
@@ -126,7 +131,7 @@ def get_packages_from_pypi(main_package):
     return packages, python_requires
 
 
-def query(main_package, python_requires=None):
+def query(main_package, python_requires=None) -> None:
     console = Console()
 
     try:
@@ -161,7 +166,7 @@ def query(main_package, python_requires=None):
     console.print(table)
 
 
-def main():
+def main() -> None:
     main_package = input("Package: ").strip()
     python_requires = input("Python version: ").strip()
     while True:
