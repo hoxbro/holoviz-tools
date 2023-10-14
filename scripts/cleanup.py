@@ -109,8 +109,14 @@ def archive() -> None:
 
     with ThreadPoolExecutor() as executor:
         func = lambda x: check_pr_closed(*x)
-        exm = executor.map(func, checks)
-        futures = list(track(exm, description="Checking files", total=len(checks)))
+        futures = list(
+            track(
+                executor.map(func, checks),
+                description="Checking files",
+                total=len(checks),
+                transient=True,
+            ),
+        )
 
     for closed, (repo, no), src, dst in zip(futures, checks, srcs, dsts, strict=True):
         if closed:

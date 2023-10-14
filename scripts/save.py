@@ -14,7 +14,7 @@ PATH = Path(os.environ["HOLOVIZ_DEV"]).resolve() / "development"
 
 
 def get_id():
-    return uuid.uuid4().hex
+    return str(uuid.uuid4())
 
 
 def main(url):

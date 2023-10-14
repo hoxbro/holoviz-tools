@@ -5,7 +5,7 @@ Minimum:
 - The requires python specifier allow the Python version.
 
 Maximum:
-- The requires python specifier allow the Python version.
+- The last version which requires python specifier allows.
 
 Current:
 - The latest version released.
@@ -31,6 +31,7 @@ from packaging.specifiers import SpecifierSet
 from packaging.version import InvalidVersion, Version
 from rich.console import Console
 from rich.progress import track
+from rich.prompt import Prompt
 from rich.table import Table
 
 py_releases = {
@@ -42,6 +43,7 @@ py_releases = {
 }
 spec_drop_date = datetime.now() - timedelta(days=int(365 * 2))
 HEADERS = {"Accept": "application/vnd.pypi.simple.v1+json"}
+console = Console()
 
 
 @cache
@@ -55,9 +57,7 @@ def get_resp(url, with_headers=True) -> dict[str, Any] | None:
 
 
 @cache
-def pypi_info(
-    package: str, python_version: str = "3.9"
-) -> tuple[str, str, str, str, str]:
+def pypi_info(package: str, python_version: str = "3.9") -> tuple[str, ...]:
     url = f"https://pypi.org/simple/{package}"
     resp = get_resp(url, with_headers=True)
 
@@ -132,8 +132,6 @@ def get_packages_from_pypi(main_package) -> tuple[set[str], str]:
 
 
 def query(main_package, python_requires=None) -> None:
-    console = Console()
-
     try:
         packages, lowest_supported_python = get_packages_from_file(main_package)
     except Exception:
@@ -148,6 +146,8 @@ def query(main_package, python_requires=None) -> None:
                 executor.map(func, sorted(packages)),
                 description=f"Getting dependencies info for {main_package}",
                 total=len(packages),
+                transient=True,
+                console=console,
             )
         )
 
@@ -155,10 +155,10 @@ def query(main_package, python_requires=None) -> None:
         title=f"Package information for {main_package.capitalize()} and Python {python_requires}"
     )
     table.add_column("Package")
-    table.add_column("Minimum", justify="right")
-    table.add_column("Maximum", justify="right")
-    table.add_column("Current", justify="right")
-    table.add_column("Spec 0", justify="right")
+    table.add_column("Minimum", justify="right", min_width=10)
+    table.add_column("Maximum", justify="right", min_width=10)
+    table.add_column("Current", justify="right", min_width=10)
+    table.add_column("Spec 0", justify="right", min_width=10)
 
     for i in info:
         table.add_row(*i)
@@ -167,18 +167,13 @@ def query(main_package, python_requires=None) -> None:
 
 
 def main() -> None:
-    main_package = input("Package: ").strip()
-    python_requires = input("Python version: ").strip()
     while True:
+        main_package = Prompt.ask("Package", console=console)
         if not main_package:
             break
 
+        python_requires = Prompt.ask("Python version", console=console)
         query(main_package, python_requires)
-
-        print("\nTry again?")
-        main_package = input("Package: ").strip()
-        python_requires = input("Python version: ").strip()
-        print("\n")
 
 
 if __name__ == "__main__":
