@@ -172,7 +172,9 @@ def main() -> None:
         if not main_package:
             break
 
-        python_requires = Prompt.ask("Python version", console=console)
+        python_requires = Prompt.ask(
+            "Python version", console=console, choices=py_releases, default="3.9"
+        )
         query(main_package, python_requires)
 
 
