@@ -46,6 +46,19 @@ HEADERS = {"Accept": "application/vnd.pypi.simple.v1+json"}
 console = Console()
 
 
+def trackpool(func, iterable, description) -> list:
+    with ThreadPoolExecutor() as executor:
+        futures = list(
+            track(
+                executor.map(func, iterable),
+                description=description,
+                total=len(iterable),
+                transient=True,
+            )
+        )
+    return futures
+
+
 @cache
 def get_resp(url, with_headers=True) -> dict[str, Any] | None:
     headers = HEADERS if with_headers else {}
@@ -139,18 +152,11 @@ def query(main_package, python_requires=None) -> None:
 
     python_requires = python_requires or lowest_supported_python
 
-    with ThreadPoolExecutor() as executor:
-        func = lambda p: pypi_info(p, python_requires)
-        info = list(
-            track(
-                executor.map(func, sorted(packages)),
-                description=f"Getting dependencies info for {main_package}",
-                total=len(packages),
-                transient=True,
-                console=console,
-            )
-        )
-
+    info = trackpool(
+        lambda p: pypi_info(p, python_requires),
+        sorted(packages),
+        f"Getting dependencies info for {main_package}",
+    )
     table = Table(
         title=f"Package information for {main_package.capitalize()} and Python {python_requires}"
     )

@@ -6,7 +6,22 @@ from concurrent.futures import ThreadPoolExecutor
 import pandas as pd
 import requests
 from rich.console import Console
+from rich.progress import track
 from rich.table import Table
+
+
+def trackpool(func, iterable, description) -> list:
+    with ThreadPoolExecutor() as executor:
+        futures = list(
+            track(
+                executor.map(func, iterable),
+                description=description,
+                total=len(iterable),
+                transient=True,
+            )
+        )
+    return futures
+
 
 COLUMNS = {
     "name": "Workflow",
@@ -56,9 +71,7 @@ def get_info(repo) -> pd.DataFrame | None:
 
 def main() -> None:
     console = Console()
-    with console.status("Getting status of Github Actions"):
-        with ThreadPoolExecutor() as ex:
-            futures = ex.map(get_info, REPOS)
+    futures = trackpool(get_info, REPOS, "Getting status of Github Actions")
 
     try:
         df = pd.concat(futures)

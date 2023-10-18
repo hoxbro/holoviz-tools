@@ -24,6 +24,19 @@ HEADERS = {
 }
 
 
+def trackpool(func, iterable, description) -> list:
+    with ThreadPoolExecutor() as executor:
+        futures = list(
+            track(
+                executor.map(func, iterable),
+                description=description,
+                total=len(iterable),
+                transient=True,
+            )
+        )
+    return futures
+
+
 def remove_temp() -> None:
     files = PATH.parent.glob("*.ipynb")
     for file in files:
@@ -107,16 +120,7 @@ def archive() -> None:
             srcs.append(path)
             dsts.append(repo_path / "archive" / path.relative_to(repo_path))
 
-    with ThreadPoolExecutor() as executor:
-        func = lambda x: check_pr_closed(*x)
-        futures = list(
-            track(
-                executor.map(func, checks),
-                description="Checking files",
-                total=len(checks),
-                transient=True,
-            ),
-        )
+    futures = trackpool(lambda x: check_pr_closed(*x), checks, "Checking files")
 
     for closed, (repo, no), src, dst in zip(futures, checks, srcs, dsts, strict=True):
         if closed:
