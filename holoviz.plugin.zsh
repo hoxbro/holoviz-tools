@@ -1,1 +1,1 @@
-holoviz() {source $ZSH_CUSTOM/plugins/holoviz/holoviz.sh}
+holoviz() {source ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/holoviz/holoviz.sh}
