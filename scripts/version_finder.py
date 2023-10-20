@@ -174,7 +174,7 @@ def query(main_package, python_requires=None) -> None:
 
 def main() -> None:
     while True:
-        main_package = Prompt.ask("Package", console=console)
+        main_package = Prompt.ask("Package (no input to quit)", console=console)
         if not main_package:
             break
 
