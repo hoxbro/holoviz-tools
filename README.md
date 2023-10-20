@@ -27,6 +27,22 @@ like Dropbox or Google Drive.
 
 `$HOLOVIZ_REP` is the path to the directory where you have cloned the different repos.
 
+The folder structure I use is:
+
+```sh
+> tree -d -L 2 $HOLOVIZ_DEV
+├── development
+│   ├── dev_datashader
+│   ├── dev_geoviews
+│   ├── dev_holoviews
+│   ├── dev_hvplot
+│   ├── dev_lumen
+│   ├── dev_panel
+│   ├── dev_param
+│   ├── discourse
+└── repos -> $HOLOVIZ_REP
+```
+
 `$GITHUB_TOKEN` is the token you get from GitHub to access the API. You can get one from your GitHub account
 settings
 [here](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token).
