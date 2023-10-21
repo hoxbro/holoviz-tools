@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+
+from __future__ import annotations
+
 import json
 import os
 import re
@@ -31,7 +34,8 @@ def get_code_and_info(url):
     elif "discourse.holoviz.org" in url:
         codeblocks, repo, filename = _get_discourse(url)
     else:
-        raise ValueError(f"Not valid url: {url}")
+        msg = f"Not valid url: {url}"
+        raise ValueError(msg)
 
     assert len(codeblocks) > 0
 
@@ -123,10 +127,7 @@ def create_python(codeblocks, url):
 
 def ignore_code(code) -> bool:
     bad_code = ["Traceback (most recent call last)", "Coverage Diff"]
-    for bad in bad_code:
-        if bad in code:
-            return True
-    return False
+    return any(bad in code for bad in bad_code)
 
 
 def link(uri, label=None, parameters=None):

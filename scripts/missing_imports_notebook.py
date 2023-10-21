@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import importlib
 import re
 from inspect import getfile
@@ -27,7 +29,6 @@ def get_nb_imports(file):
 
 
 def main(package):
-
     imports = set()
     for file in root(package).rglob("*.ipynb"):
         imports |= get_nb_imports(file)

@@ -1,27 +1,13 @@
 from __future__ import annotations
 
 import os
-from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
 import requests
 from rich.console import Console
-from rich.progress import track
 from rich.table import Table
 
-
-def trackpool(func, iterable, description) -> list:
-    with ThreadPoolExecutor() as executor:
-        futures = list(
-            track(
-                executor.map(func, iterable),
-                description=description,
-                total=len(iterable),
-                transient=True,
-            )
-        )
-    return futures
-
+from utilities import trackpool
 
 COLUMNS = {
     "name": "Workflow",

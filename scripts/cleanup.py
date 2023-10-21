@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
+from __future__ import annotations
+
 import os
 import re
-from concurrent.futures import ThreadPoolExecutor
+from contextlib import suppress
 from functools import lru_cache
 from pathlib import Path
 from shutil import move, rmtree
@@ -11,7 +13,8 @@ from subprocess import check_output
 import requests  # type: ignore[import]
 from bs4 import BeautifulSoup
 from rich.console import Console
-from rich.progress import track
+
+from utilities import trackpool
 
 console = Console()
 PATH = Path(os.environ["HOLOVIZ_DEV"]).resolve() / "development"
@@ -24,26 +27,11 @@ HEADERS = {
 }
 
 
-def trackpool(func, iterable, description) -> list:
-    with ThreadPoolExecutor() as executor:
-        futures = list(
-            track(
-                executor.map(func, iterable),
-                description=description,
-                total=len(iterable),
-                transient=True,
-            )
-        )
-    return futures
-
-
 def remove_temp() -> None:
     files = PATH.parent.glob("*.ipynb")
     for file in files:
-        try:
+        with suppress(Exception):
             move(file, PATH)
-        except Exception:
-            pass
 
     tmps = [
         ".ipynb_checkpoints",
@@ -142,7 +130,7 @@ def title(msg) -> None:
     console.print(msg, style="green")
 
 
-if "__main__" == __name__:
+if __name__ == "__main__":
     title("Removing temporary files and directories")
     remove_temp()
 

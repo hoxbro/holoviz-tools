@@ -36,16 +36,16 @@ elif [[ $1 == "sync" ]]; then
     bash $TOOLS/setup.sh "SYNC"
 elif [[ $1 == "clean" ]]; then
     ccd
-    python $TOOLS/cleanup.py
+    PYTHONPATH=$TOOLS python $TOOLS/cleanup.py
 elif [[ $1 == "action-status" ]]; then
-    python $TOOLS/action_status.py
+    PYTHONPATH=$TOOLS python $TOOLS/action_status.py
 elif [[ $1 == "version-finder" ]]; then
-    python $TOOLS/version_finder.py
+    PYTHONPATH=$TOOLS python $TOOLS/version_finder.py
 elif [[ $1 == "artifact" ]]; then
     shift
-    python $TOOLS/artifact.py $@
+    PYTHONPATH=$TOOLS python $TOOLS/artifact.py $@
 elif [[ $1 == "changelog" ]]; then
-    python $TOOLS/changelog.py
+    PYTHONPATH=$TOOLS python $TOOLS/changelog.py
 else
     ccd
 fi

@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import collections
 import os
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from functools import cache
 from runpy import run_path
@@ -30,9 +29,10 @@ from packaging.requirements import Requirement
 from packaging.specifiers import SpecifierSet
 from packaging.version import InvalidVersion, Version
 from rich.console import Console
-from rich.progress import track
 from rich.prompt import Prompt
 from rich.table import Table
+
+from utilities import trackpool
 
 py_releases = {
     "3.8": datetime(2019, 10, 14),
@@ -44,19 +44,6 @@ py_releases = {
 spec_drop_date = datetime.now() - timedelta(days=int(365 * 2))
 HEADERS = {"Accept": "application/vnd.pypi.simple.v1+json"}
 console = Console()
-
-
-def trackpool(func, iterable, description) -> list:
-    with ThreadPoolExecutor() as executor:
-        futures = list(
-            track(
-                executor.map(func, iterable),
-                description=description,
-                total=len(iterable),
-                transient=True,
-            )
-        )
-    return futures
 
 
 @cache
@@ -174,7 +161,7 @@ def query(main_package, python_requires=None) -> None:
 
 def main() -> None:
     while True:
-        main_package = Prompt.ask("Package (no input to quit)", console=console)
+        main_package = Prompt.ask("Package (empty to quit)", console=console)
         if not main_package:
             break
 
