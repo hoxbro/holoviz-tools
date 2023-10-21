@@ -119,10 +119,15 @@ def get_files(
         download_artifact(repo, good_run, good_url)
         download_artifact(repo, bad_run, bad_url)
 
+    found = False
     for file in good_path.iterdir():
         name = file.name.lower()
         if os in name and python in name and f"_{test}" in name:
+            found = True
             break
+
+    if not found:
+        return None, None
 
     good_file = good_path / file.name
     bad_file = bad_path / file.name
@@ -152,7 +157,7 @@ def get_files(
 )
 @click.option(
     "--python",
-    default="3.10",
+    default="3.11",
     type=click.Choice(["3.8", "3.9", "3.10", "3.11"]),
     help="Python version",
 )
@@ -172,15 +177,15 @@ def cli(good_run, bad_run, repo, test, os, python, workflow, force) -> None:
         repo, good_run, bad_run, test, os, python, workflow, force
     )
 
-    if not good_file.exists():
+    if not good_file or not good_file.exists():
         console.print(
-            "Good artifact does not exists. Please check the parameters.",
+            "Good artifact does not exists. Please check the options.",
             style="bright_red",
         )
         return
-    if not bad_file.exists():
+    if not bad_file or not bad_file.exists():
         console.print(
-            "Bad artifact does not exists. Please check the parameters.",
+            "Bad artifact does not exists. Please check the options.",
             style="bright_red",
         )
         return
