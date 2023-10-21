@@ -31,6 +31,7 @@ The folder structure I use is:
 
 ```sh
 > tree -d -L 2 $HOLOVIZ_DEV
+$HOLOVIZ_DEV
 ├── development
 │   ├── dev_datashader
 │   ├── dev_geoviews

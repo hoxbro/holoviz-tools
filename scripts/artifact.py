@@ -41,7 +41,7 @@ def download_runs(repo, workflow, page=1) -> tuple[dict, dict]:
         if run["status"] == "completed":
             no = run["run_number"]
             date = datetime.fromisoformat(run["created_at"])
-            display = f"{no:<5} {run['conclusion']:<13} {date:%Y-%m-%d %H:%m}    branch: {run['head_branch']} "
+            display = f"{no:<5} {run['conclusion']:<13} {date:%Y-%m-%d %H:%M}    branch: {run['head_branch']} "
             results[no] = display
             urls[no] = run["url"] + "/artifacts"
 
