@@ -7,6 +7,7 @@ from shutil import rmtree
 from subprocess import check_output
 from zipfile import ZipFile
 from functools import cache
+from datetime import datetime
 
 import requests
 import rich_click as click
@@ -38,8 +39,11 @@ def download_runs(repo, workflow, page=1) -> tuple[dict, dict]:
     results, urls = {}, {}
     for run in resp.json()["workflow_runs"]:
         if run["status"] == "completed":
-            results[run["run_number"]] = f"{run['run_number']} ({run['conclusion']})"
-            urls[run["run_number"]] = run["url"] + "/artifacts"
+            no = run["run_number"]
+            date = datetime.fromisoformat(run["created_at"])
+            display = f"{no:<5} {run['conclusion']:<13} {date:%Y-%m-%d %H:%m}    branch: {run['head_branch']} "
+            results[no] = display
+            urls[no] = run["url"] + "/artifacts"
 
     return results, urls
 
