@@ -45,9 +45,9 @@ unfixable = [
 ]
 
 [per-file-ignores]
-"__init__.py" = ["F403"]
+"_vendor/*" = ["*"]
 
 [isort]
-known-first-party = ["utilities"]
+known-first-party = ["utilities", "_vendor"]
 required-imports = ["from __future__ import annotations"]
 combine-as-imports = true
