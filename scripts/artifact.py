@@ -25,6 +25,7 @@ HEADERS = {
     "Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
     "X-GitHub-Api-Version": "2022-11-28",
 }
+REPOS = ["holoviews", "panel", "hvplot", "datashader", "geoviews"]
 console = Console()
 
 
@@ -33,7 +34,9 @@ def download_runs(repo, workflow, page=1) -> tuple[dict, dict]:
     url = (
         f"https://api.github.com/repos/holoviz/{repo}/actions/workflows/{workflow}/runs"
     )
-    resp = requests.get(url, params={"page": page, "per_page": 30}, headers=HEADERS)
+    resp = requests.get(
+        url, params={"page": page, "per_page": 30}, headers=HEADERS, timeout=20
+    )
     assert resp.ok
 
     results, urls = {}, {}
@@ -50,7 +53,7 @@ def download_runs(repo, workflow, page=1) -> tuple[dict, dict]:
 
 def select_runs(repo, workflow) -> tuple[int, int]:
     with console.status("Fetching runs..."):
-        runs, _ = download_runs(repo, workflow)
+        runs, _ = download_runs(repo, workflow, 1)
 
     terminal_menu = TerminalMenu(
         runs.values(),
@@ -68,6 +71,12 @@ def select_runs(repo, workflow) -> tuple[int, int]:
     bad_run = list(runs)[menu]
 
     return good_run, bad_run
+
+
+def select_repo() -> str:
+    terminal_menu = TerminalMenu(REPOS, title=f"Select a repo")
+    menu = terminal_menu.show()
+    return REPOS[menu]
 
 
 def get_artifact_urls(repo, workflow, good_run, bad_run) -> tuple[str, str]:
@@ -109,7 +118,9 @@ def get_files(
 ) -> tuple[Path, Path]:
     if good_run is None or bad_run is None:
         good_run, bad_run = select_runs(repo, workflow)
-        click.echo(f"Selected good run {good_run} and bad run {bad_run}")
+        console.print(
+            f"Selected: [green]Good run {good_run}[/green] and [red]bad run {bad_run}[/red]"
+        )
 
     good_path = PATH / f"{repo}_{good_run}"
     bad_path = PATH / f"{repo}_{bad_run}"
@@ -139,14 +150,9 @@ def get_files(
 
 
 @click.command(context_settings={"show_default": True})
+@click.argument("repo", type=click.Choice(REPOS), required=False)
 @click.argument("good_run", type=int, required=False)
 @click.argument("bad_run", type=int, required=False)
-@click.option(
-    "--repo",
-    default="holoviews",
-    type=click.Choice(["holoviews", "panel", "hvplot", "datashader", "geoviews"]),
-    help="Repository",
-)
 @click.option(
     "--test",
     default="unit",
@@ -177,6 +183,9 @@ def get_files(
     help="Force download artifacts",
 )
 def cli(good_run, bad_run, repo, test, os, python, workflow, force) -> None:
+    if repo is None:
+        repo = select_repo()
+
     good_file, bad_file = get_files(
         repo, good_run, bad_run, test, os, python, workflow, force
     )
