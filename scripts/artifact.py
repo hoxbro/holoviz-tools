@@ -6,10 +6,13 @@ from pathlib import Path
 from shutil import rmtree
 from subprocess import check_output
 from zipfile import ZipFile
+from functools import cache
 
 import requests
 import rich_click as click
 from rich.console import Console
+
+from _vendor.simple_term_menu import TerminalMenu
 
 # Needs diff-so-fancy in path
 
@@ -21,30 +24,63 @@ HEADERS = {
     "Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
     "X-GitHub-Api-Version": "2022-11-28",
 }
+console = Console()
 
 
-def get_runs(repo, workflow, prs) -> dict | None:
+@cache
+def download_runs(repo, workflow) -> tuple[dict, dict]:
     url = (
         f"https://api.github.com/repos/holoviz/{repo}/actions/workflows/{workflow}/runs"
     )
-    results = {}
-    for page in range(1, 10):
-        resp = requests.get(url, params={"page": page, "per_page": 30}, headers=HEADERS)
-        assert resp.ok
-        for run in resp.json()["workflow_runs"]:
-            if run["run_number"] in prs:
-                results[run["run_number"]] = run["url"] + "/artifacts"
+    resp = requests.get(url, params={"page": 1, "per_page": 30}, headers=HEADERS)
+    assert resp.ok
 
-            if len(prs) == len(results):
-                return results
+    results, urls = {}, {}
+    for run in resp.json()["workflow_runs"]:
+        if run["status"] == "completed":
+            results[run["run_number"]] = f"{run['run_number']} ({run['conclusion']})"
+            urls[run["run_number"]] = run["url"] + "/artifacts"
+
+    return results, urls
+
+
+def select_runs(repo, workflow) -> tuple[int, int]:
+    with console.status("Fetching runs..."):
+        runs, _ = download_runs(repo, workflow)
+
+    terminal_menu = TerminalMenu(
+        runs.values(),
+        title=f"Select a good run for {repo}",
+    )
+    menu = terminal_menu.show()
+    good_run = list(runs)[menu]
+    del runs[good_run]
+
+    terminal_menu = TerminalMenu(
+        runs.values(),
+        title=f"Select a bad run for {repo}",
+    )
+    menu = terminal_menu.show()
+    bad_run = list(runs)[menu]
+
+    return good_run, bad_run
+
+
+def get_artifact_urls(repo, workflow, good_run, bad_run) -> tuple[str, str]:
+    _, urls = download_runs(repo, workflow)
+    return urls[good_run], urls[bad_run]
 
 
 def download_artifact(repo, pr, url) -> None:
+    download_path = PATH / f"{repo}_{pr}"
+    if download_path.exists():
+        return
+
     resp = requests.get(url, headers=HEADERS)
     assert resp.ok
     artifact = resp.json()["artifacts"]
     if not artifact:
-        (PATH / f"{repo}_{pr}").mkdir(exist_ok=True)
+        download_path.mkdir(exist_ok=True)
         return
     download_url = artifact[0]["archive_download_url"]
     zipfile = requests.get(download_url, headers=HEADERS)
@@ -53,12 +89,16 @@ def download_artifact(repo, pr, url) -> None:
     bio = BytesIO(zipfile.content)
     bio.seek(0)
     with ZipFile(bio) as zip_ref:
-        zip_ref.extractall(PATH / f"{repo}_{pr}")
+        zip_ref.extractall(download_path)
 
 
 def get_files(
     repo, good_run, bad_run, test, os, python, workflow, force
 ) -> tuple[Path, Path]:
+    if good_run is None or bad_run is None:
+        good_run, bad_run = select_runs(repo, workflow)
+        click.echo(f"Selected good run {good_run} and bad run {bad_run}")
+
     good_path = PATH / f"{repo}_{good_run}"
     bad_path = PATH / f"{repo}_{bad_run}"
 
@@ -66,16 +106,10 @@ def get_files(
         rmtree(good_path, ignore_errors=True)
         rmtree(bad_path, ignore_errors=True)
 
-    prs = []
-    if not good_path.exists():
-        prs.append(good_run)
-    if not bad_path.exists():
-        prs.append(bad_run)
-
-    if prs:
-        runs = get_runs(repo, workflow, prs)
-        for pr, url in runs.items():
-            download_artifact(repo, pr, url)
+    with console.status("Downloading artifacts..."):
+        good_url, bad_url = get_artifact_urls(repo, workflow, good_run, bad_run)
+        download_artifact(repo, good_run, good_url)
+        download_artifact(repo, bad_run, bad_url)
 
     for file in good_path.iterdir():
         name = file.name.lower()
@@ -88,8 +122,8 @@ def get_files(
 
 
 @click.command(context_settings={"show_default": True})
-@click.argument("good_run", type=int)
-@click.argument("bad_run", type=int)
+@click.argument("good_run", type=int, required=False)
+@click.argument("bad_run", type=int, required=False)
 @click.option(
     "--repo",
     default="holoviews",
@@ -123,14 +157,12 @@ def get_files(
 @click.option(
     "--force/--no-force",
     default=False,
-    help="Force download artifacts (default: False)",
+    help="Force download artifacts",
 )
 def cli(good_run, bad_run, repo, test, os, python, workflow, force) -> None:
-    console = Console()
-    with console.status("Downloading artifacts..."):
-        good_file, bad_file = get_files(
-            repo, good_run, bad_run, test, os, python, workflow, force
-        )
+    good_file, bad_file = get_files(
+        repo, good_run, bad_run, test, os, python, workflow, force
+    )
 
     if not good_file.exists():
         console.print(
