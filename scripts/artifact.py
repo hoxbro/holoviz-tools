@@ -28,11 +28,11 @@ console = Console()
 
 
 @cache
-def download_runs(repo, workflow) -> tuple[dict, dict]:
+def download_runs(repo, workflow, page=1) -> tuple[dict, dict]:
     url = (
         f"https://api.github.com/repos/holoviz/{repo}/actions/workflows/{workflow}/runs"
     )
-    resp = requests.get(url, params={"page": 1, "per_page": 30}, headers=HEADERS)
+    resp = requests.get(url, params={"page": page, "per_page": 30}, headers=HEADERS)
     assert resp.ok
 
     results, urls = {}, {}
@@ -67,8 +67,16 @@ def select_runs(repo, workflow) -> tuple[int, int]:
 
 
 def get_artifact_urls(repo, workflow, good_run, bad_run) -> tuple[str, str]:
-    _, urls = download_runs(repo, workflow)
-    return urls[good_run], urls[bad_run]
+    good_url, bad_url = None, None
+    for page in range(1, 10):
+        _, urls = download_runs(repo, workflow, page)
+        if good_run in urls:
+            good_url = urls[good_run]
+        if bad_run in urls:
+            bad_url = urls[bad_run]
+        if good_url and bad_url:
+            break
+    return good_url, bad_url
 
 
 def download_artifact(repo, pr, url) -> None:
