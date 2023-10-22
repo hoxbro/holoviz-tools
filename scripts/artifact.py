@@ -13,7 +13,7 @@ import requests
 import rich_click as click
 from rich.console import Console
 
-from _vendor.simple_term_menu import TerminalMenu
+from rich_menu import live_menu
 
 # Needs diff-so-fancy in path
 
@@ -55,28 +55,24 @@ def select_runs(repo, workflow) -> tuple[int, int]:
     with console.status("Fetching runs..."):
         runs, _ = download_runs(repo, workflow, 1)
 
-    terminal_menu = TerminalMenu(
-        runs.values(),
-        title=f"Select a good run for {repo}",
+    good_run = live_menu(
+        runs,
+        console=console,
+        title=f"Select a [green bold]good run[/green bold] for [bold]{repo}[/bold]",
     )
-    menu = terminal_menu.show()
-    good_run = list(runs)[menu]
     del runs[good_run]
 
-    terminal_menu = TerminalMenu(
-        runs.values(),
-        title=f"Select a bad run for {repo}",
+    bad_run = live_menu(
+        runs,
+        console=console,
+        title=f"Select a [red bold]bad run[/red bold] for [bold]{repo}[/bold]",
+        select_style="red bold",
     )
-    menu = terminal_menu.show()
-    bad_run = list(runs)[menu]
-
     return good_run, bad_run
 
 
 def select_repo() -> str:
-    terminal_menu = TerminalMenu(REPOS, title=f"Select a repo")
-    menu = terminal_menu.show()
-    return REPOS[menu]
+    return live_menu(REPOS, console=console, title=f"Select a repo")
 
 
 def get_artifact_urls(repo, workflow, good_run, bad_run) -> tuple[str, str]:
