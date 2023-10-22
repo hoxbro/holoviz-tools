@@ -8,6 +8,8 @@ import tty
 from typing import TYPE_CHECKING
 
 from rich.live import Live
+from rich.style import Style
+from rich.text import Text
 
 if TYPE_CHECKING:
     from rich.console import Console, ConsoleOptions, RenderResult
@@ -25,11 +27,23 @@ def get_key_press():
 
 
 class Menu:
-    def __init__(self, items, title=None, lock=None):
+    def __init__(
+        self, items, *, title=None, select_style=None, non_style=None, lock=None
+    ) -> None:
         self.items = items
         self.title = title
         self._key_count = 0
         self.selected_item = 0
+
+        if select_style is None:
+            self.select_style = Style(color="green", bold=True)
+        else:
+            self.select_style = select_style
+
+        if non_style is None:
+            self.non_style = Style(color="white")
+        else:
+            self.non_style = non_style
 
         self._lock = lock if lock else threading.RLock()
         self._thread = threading.Thread(target=self.get_user_input)
@@ -40,9 +54,9 @@ class Menu:
         self.selected_item = self._key_count % len(self.items)
         for i, item in enumerate(self.items):
             if i == self.selected_item:
-                yield f"[bold][green]➤  {item}[/green][/bold]"
+                yield Text(f"➤  {item}", style=self.select_style)
             else:
-                yield f"[white]   {item}[/white]"
+                yield Text(f"   {item}", style=self.non_style)
 
     def get_user_input(self):
         while not self._stop:
@@ -75,12 +89,12 @@ class Menu:
             self._threadstart = True
 
 
-def live_menu(menu_items, console, title=None):
+def live_menu(menu_items, console, **menu_kwargs):
     menu_keys = list(menu_items)
     menu_values = menu_items.values() if isinstance(menu_items, dict) else menu_items
 
     with Live(console=console, transient=True) as live:
-        menu = Menu(menu_values, title=title, lock=live._lock)
+        menu = Menu(menu_values, lock=live._lock, **menu_kwargs)
         while not menu._stop:
             live.update(menu)
             time.sleep(0.05)
