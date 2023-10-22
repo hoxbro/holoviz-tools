@@ -26,11 +26,12 @@ def get_key_press():
 
 
 class Menu:
-    def __init__(self, items):
+    def __init__(self, items, title=None, lock=None):
         self.items = items
+        self.title = title
         self.selected_item = 0
 
-        self._threadlock = threading.Lock()
+        self._lock = lock if lock else threading.RLock()
         self._thread = threading.Thread(target=self.get_user_input)
         self._threadstart = False
         self._stop = False
@@ -44,7 +45,7 @@ class Menu:
 
     def get_user_input(self):
         while not self._stop:
-            with self._threadlock:
+            with self._lock:
                 key = get_key_press()
 
                 # Process user input
@@ -61,22 +62,25 @@ class Menu:
     def __rich_console__(
         self, console: Console, options: ConsoleOptions
     ) -> RenderResult:
-        with self._threadlock:
-            for d in self.display():
-                console.file.write("\r")
-                yield from console.render(console.render_str(d))
+        if self.title:
+            yield self.title
+
+        with self._lock:
+            yield from self.display()
 
         if not self._threadstart:
             self._thread.start()
             self._threadstart = True
 
 
-def live_menu(menu_items, console):
-    menu = Menu(menu_items.values())
-    with Live(console=console) as live:
+def live_menu(menu_items, console, title=None):
+    with Live(console=console, transient=True) as live:
+        menu = Menu(menu_items.values(), title=title, lock=live._lock)
         while not menu._stop:
-            time.sleep(0.01)
+            time.sleep(0.05)
             live.update(menu)
+        menu._thread.join()
+
     return list(menu_items)[menu.selected_item]
 
 
@@ -84,7 +88,6 @@ if __name__ == "__main__":
     from rich.console import Console
 
     console = Console()
-    console.print("This is a test")
     menu_items = {"Option 1": "Test 1", "Option 2": "Test 2", "Option 3": "Test 3"}
-    selected = live_menu(menu_items, console)
+    selected = live_menu(menu_items, console, title="Select an option")
     console.print(f"You selected: {selected}")
