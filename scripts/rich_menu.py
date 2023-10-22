@@ -5,7 +5,7 @@ import termios
 import threading
 import time
 import tty
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterator
 
 from rich.live import Live
 from rich.style import Style
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 # Function to update the last clicked key
-def get_key_press():
+def get_key_press() -> str:
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
     try:
@@ -50,7 +50,7 @@ class Menu:
         self._threadstart = False
         self._stop = False
 
-    def display(self):
+    def display(self) -> Iterator[Text]:
         self.selected_item = self._key_count % len(self.items)
         for i, item in enumerate(self.items):
             if i == self.selected_item:
@@ -58,7 +58,7 @@ class Menu:
             else:
                 yield Text(f"   {item}", style=self.non_style)
 
-    def get_user_input(self):
+    def get_user_input(self) -> None:
         while not self._stop:
             with self._lock:
                 key = get_key_press()
