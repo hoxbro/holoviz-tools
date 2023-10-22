@@ -52,7 +52,7 @@ def download_runs(repo, workflow, page=1) -> tuple[dict, dict]:
 
 
 def select_runs(repo, workflow) -> tuple[int, int]:
-    with console.status("Fetching runs..."):
+    with console.status(f"Fetching runs for {repo}..."):
         runs, _ = download_runs(repo, workflow, 1)
 
     good_run = live_menu(
