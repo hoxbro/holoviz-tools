@@ -18,17 +18,17 @@ def get_key_press():
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
     try:
-        tty.setraw(sys.stdin.fileno())
-        ch = sys.stdin.read(1)
+        tty.setraw(fd)
+        return sys.stdin.read(1)
     finally:
-        termios.tcsetattr(fd, termios.TCSAFLUSH, old_settings)
-    return ch
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
 
 class Menu:
     def __init__(self, items, title=None, lock=None):
         self.items = items
         self.title = title
+        self._key_count = 0
         self.selected_item = 0
 
         self._lock = lock if lock else threading.RLock()
@@ -37,6 +37,7 @@ class Menu:
         self._stop = False
 
     def display(self):
+        self.selected_item = self._key_count % len(self.items)
         for i, item in enumerate(self.items):
             if i == self.selected_item:
                 yield f"[bold][green]➤  {item}[/green][/bold]"
@@ -47,13 +48,14 @@ class Menu:
         while not self._stop:
             with self._lock:
                 key = get_key_press()
-
-                # Process user input
-                if key == "A":
-                    self.selected_item = (self.selected_item - 1) % len(self.items)
-                elif key == "B":
-                    self.selected_item = (self.selected_item + 1) % len(self.items)
-                elif key == "\r" or key == "\n":
+                if key == "\x1b":
+                    # The Escape key was pressed (arrow keys usually start with ESC)
+                    char = sys.stdin.read(2)
+                    if char == "[A":  # Up arrow
+                        self._key_count = self._key_count - 1
+                    elif char == "[B":  # Down arrow
+                        self._key_count = self._key_count + 1
+                elif key == "\r":
                     self._stop = True
                     break
 
@@ -74,14 +76,16 @@ class Menu:
 
 
 def live_menu(menu_items, console, title=None):
-    with Live(console=console, transient=True) as live:
-        menu = Menu(menu_items.values(), title=title, lock=live._lock)
-        while not menu._stop:
-            time.sleep(0.05)
-            live.update(menu)
-        menu._thread.join()
+    menu_keys = list(menu_items)
+    menu_values = menu_items.values() if isinstance(menu_items, dict) else menu_items
 
-    return list(menu_items)[menu.selected_item]
+    with Live(console=console, transient=True) as live:
+        menu = Menu(menu_values, title=title, lock=live._lock)
+        while not menu._stop:
+            live.update(menu)
+            time.sleep(0.05)
+
+    return menu_keys[menu.selected_item]
 
 
 if __name__ == "__main__":
