@@ -126,6 +126,9 @@ def get_packages_from_pypi(main_package) -> tuple[set[str], str]:
 
     python_requires = resp["info"]["requires_python"].replace(">=", "")
 
+    if resp["info"]["requires_dist"] is None:
+        return set(), python_requires
+
     packages = {Requirement(r).name for r in resp["info"]["requires_dist"]}
 
     return packages, python_requires
