@@ -125,7 +125,7 @@ def get_files(
         rmtree(good_path, ignore_errors=True)
         rmtree(bad_path, ignore_errors=True)
 
-    if not good_path.exists() or not good_path.exists():
+    if not good_path.exists() or not bad_path.exists():
         with console.status("Downloading artifacts..."):
             good_url, bad_url = get_artifact_urls(repo, workflow, good_run, bad_run)
             download_artifact(repo, good_run, good_url)
