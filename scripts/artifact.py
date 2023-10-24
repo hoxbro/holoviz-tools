@@ -12,8 +12,9 @@ from datetime import datetime
 import requests
 import rich_click as click
 from rich.console import Console
+from rich.live import Live
 
-from rich_menu import live_menu
+from rich_menu import live_menu, menu
 
 # Needs diff-so-fancy in path
 
@@ -55,19 +56,20 @@ def select_runs(repo, workflow) -> tuple[int, int]:
     with console.status(f"Fetching runs for {repo}..."):
         runs, _ = download_runs(repo, workflow, 1)
 
-    good_run = live_menu(
-        runs,
-        console=console,
-        title=f"Select a [green bold]good run[/green bold] for [bold]{repo}[/bold]",
-    )
-    del runs[good_run]
+    with Live(console=console, transient=True) as live:
+        good_run = menu(
+            runs,
+            live=live,
+            title=f"Select a [green bold]good run[/green bold] for [bold]{repo}[/bold]",
+        )
+        del runs[good_run]
 
-    bad_run = live_menu(
-        runs,
-        console=console,
-        title=f"Select a [red bold]bad run[/red bold] for [bold]{repo}[/bold]",
-        select_style="red bold",
-    )
+        bad_run = menu(
+            runs,
+            live=live,
+            title=f"Select a [red bold]bad run[/red bold] for [bold]{repo}[/bold]",
+            select_style="red bold",
+        )
     return good_run, bad_run
 
 

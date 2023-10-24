@@ -5,7 +5,7 @@ import termios
 import threading
 import time
 import tty
-from typing import TYPE_CHECKING, Iterator
+from typing import TYPE_CHECKING, Iterator, Any
 
 from rich.live import Live
 from rich.style import Style
@@ -93,17 +93,22 @@ class Menu:
             self._threadstart = True
 
 
-def live_menu(menu_items, console, **menu_kwargs):
+def live_menu(menu_items, console, **menu_kwargs) -> Any:
+    with Live(console=console, transient=True) as live:
+        return menu(menu_items, live=live, **menu_kwargs)
+
+
+def menu(menu_items, live, **menu_kwargs) -> Any:
     menu_keys = list(menu_items)
     menu_values = menu_items.values() if isinstance(menu_items, dict) else menu_items
+    menu = Menu(menu_values, lock=live._lock, **menu_kwargs)
 
-    with Live(console=console, transient=True) as live:
-        menu = Menu(menu_values, lock=live._lock, **menu_kwargs)
-        while not menu._stop:
-            live.update(menu)
-            time.sleep(0.05)
-        if menu._stop == KeyboardInterrupt:
-            raise KeyboardInterrupt
+    while not menu._stop:
+        live.update(menu)
+        time.sleep(0.05)
+
+    if menu._stop == KeyboardInterrupt:
+        raise KeyboardInterrupt
 
     return menu_keys[menu.selected_item]
 
