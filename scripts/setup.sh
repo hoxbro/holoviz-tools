@@ -8,8 +8,8 @@ ALL_PACKAGES=(
     bokeh plotly matplotlib seaborn altair
 
     # Data processing
-    numpy pandas xarray polars
-    dask-core scikit-image
+    numpy pandas xarray polars numba
+    dask-core scipy scikit-image
 
     # Data loading
     lxml openpyxl fastparquet pooch pyarrow
