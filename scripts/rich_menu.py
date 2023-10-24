@@ -69,6 +69,10 @@ class Menu:
                         self._key_count = self._key_count - 1
                     elif char == "[B":  # Down arrow
                         self._key_count = self._key_count + 1
+                elif key == "\x03":
+                    # The user has pressed Ctrl-C
+                    self._stop = KeyboardInterrupt
+                    break
                 elif key == "\r":
                     self._stop = True
                     break
@@ -98,6 +102,8 @@ def live_menu(menu_items, console, **menu_kwargs):
         while not menu._stop:
             live.update(menu)
             time.sleep(0.05)
+        if menu._stop == KeyboardInterrupt:
+            raise KeyboardInterrupt
 
     return menu_keys[menu.selected_item]
 
