@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-set -euox pipefail
+# No x as we don't want to see the commands
+set -euo pipefail
 
 BRANCH=`git branch --show-current`
 
