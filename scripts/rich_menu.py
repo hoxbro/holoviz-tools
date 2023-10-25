@@ -48,7 +48,8 @@ class Menu:
         self._lock = lock if lock else threading.RLock()
         self._thread = threading.Thread(target=self.get_user_input)
         self._threadstart = False
-        self._stop = False
+        self._thread.start()
+        self.stopsignal = False
 
     def display(self) -> Iterator[Text]:
         self.selected_item = self._key_count % len(self.items)
@@ -59,7 +60,11 @@ class Menu:
                 yield Text(f"   {item}", style=self.non_style)
 
     def get_user_input(self) -> None:
-        while not self._stop:
+        while not self._threadstart:
+            # Wait for the first display to be done
+            time.sleep(0.1)
+
+        while not self.stopsignal:
             with self._lock:
                 key = get_key_press()
                 if key == "\x1b":
@@ -71,10 +76,10 @@ class Menu:
                         self._key_count = self._key_count + 1
                 elif key == "\x03":
                     # The user has pressed Ctrl-C
-                    self._stop = KeyboardInterrupt
+                    self.stopsignal = KeyboardInterrupt
                     break
                 elif key == "\r":
-                    self._stop = True
+                    self.stopsignal = True
                     break
 
             time.sleep(0.1)
@@ -88,9 +93,7 @@ class Menu:
         with self._lock:
             yield from self.display()
 
-        if not self._threadstart:
-            self._thread.start()
-            self._threadstart = True
+        self._threadstart = True
 
 
 def live_menu(menu_items, console, **menu_kwargs) -> Any:
@@ -103,11 +106,11 @@ def menu(menu_items, live, **menu_kwargs) -> Any:
     menu_values = menu_items.values() if isinstance(menu_items, dict) else menu_items
     menu = Menu(menu_values, lock=live._lock, **menu_kwargs)
 
-    while not menu._stop:
+    while not menu.stopsignal:
         live.update(menu)
         time.sleep(0.05)
 
-    if menu._stop == KeyboardInterrupt:
+    if menu.stopsignal == KeyboardInterrupt:
         raise KeyboardInterrupt
 
     return menu_keys[menu.selected_item]
