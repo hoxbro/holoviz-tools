@@ -92,7 +92,8 @@ create_environments() {
     conda activate $CONDA_ENV
 
     if [ "$1" == "CLEAN" ] || [ "$1" == "UPDATE" ]; then
-        echo "No custom install"
+        # echo "No custom install"
+        mamba install numba=0.58 numpy=1.26 -c numba -y
     fi
     # Environment variables
     if [ "$1" == "CLEAN" ]; then
