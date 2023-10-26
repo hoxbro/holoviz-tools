@@ -94,6 +94,7 @@ create_environments() {
     if [ "$1" == "CLEAN" ] || [ "$1" == "UPDATE" ]; then
         # echo "No custom install"
         mamba install numba=0.58 numpy=1.26 -c numba -y
+        python -m pip install --no-deps -ve ./holonote
     fi
     # Environment variables
     if [ "$1" == "CLEAN" ]; then
