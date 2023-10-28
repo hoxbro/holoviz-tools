@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 fetch_main() {
     git --git-dir=$PACKAGE/.git --work-tree=$PACKAGE fetch origin main &>/dev/null
     COUNT=$(git --git-dir="$PACKAGE/.git" --work-tree="$PACKAGE" rev-list --count main..origin/main)
