@@ -25,7 +25,7 @@ elif [[ $1 == "lab" ]]; then
         firefox localhost:8888
     fi
 elif [[ $1 == "save" ]]; then
-    conda run -n holoviz python $TOOLS/save.py $2
+    PYTHONPATH=$TOOLS python  $TOOLS/save.py $2
 elif [[ $1 == "fetch" ]]; then
     bash $TOOLS/fetch.sh
 elif [[ $1 == "setup" ]]; then
