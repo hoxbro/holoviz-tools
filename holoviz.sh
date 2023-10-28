@@ -30,8 +30,6 @@ elif [[ $1 == "fetch" ]]; then
     bash $TOOLS/fetch.sh
 elif [[ $1 == "setup" ]]; then
     bash $TOOLS/setup.sh "CLEAN"
-elif [[ $1 == "update" ]]; then
-    bash $TOOLS/setup.sh "UPDATE"
 elif [[ $1 == "sync" ]]; then
     bash $TOOLS/setup.sh "SYNC"
 elif [[ $1 == "clean" ]]; then

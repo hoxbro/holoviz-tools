@@ -75,17 +75,10 @@ create_environments() {
             mamba create -n $CONDA_ENV"_gpu" ${ALL_PACKAGES[@]} ${GPU_PACKAGES[@]} -y
         fi
 
-    elif [ "$1" == "UPDATE" ]; then
-        mamba update --all -n $CONDA_ENV -y
-        mamba update --all -n $CONDA_ENV"_clean" -y
-        if [[ $OS == "linux" ]] && $NVIDIA; then
-            mamba update --all -n $CONDA_ENV"_gpu" -y
-        fi
-
     elif [ "$1" == "SYNC" ]; then
         echo -n ""
     else
-        echo "Options for holoviz setup are clean, update, and sync."
+        echo "Options for holoviz setup are clean and sync."
         exit 1
     fi
 
@@ -93,13 +86,12 @@ create_environments() {
 
     conda activate $CONDA_ENV
 
-    if [ "$1" == "CLEAN" ] || [ "$1" == "UPDATE" ]; then
+    if [ "$1" == "CLEAN" ]; then
         # echo "No custom install"
         mamba install numba=0.58 numpy=1.26 -c numba -y
         python -m pip install --no-deps -ve ./holonote || echo "no holonote"
-    fi
-    # Environment variables
-    if [ "$1" == "CLEAN" ]; then
+
+        # Environment variables
         # https://docs.bokeh.org/en/latest/docs/dev_guide/setup.html
         conda env config vars set BOKEH_RESOURCES=server -n $CONDA_ENV
         conda env config vars set BOKEH_BROWSER=none -n $CONDA_ENV
@@ -109,7 +101,7 @@ create_environments() {
         conda env config vars set USE_PYGEOS=0 -n $CONDA_ENV
 
         # https://discourse.jupyter.org/t/debugger-warning-it-seems-that-frozen-modules-are-being-used-python-3-11-0
-        conda env config vars set  PYDEVD_DISABLE_FILE_VALIDATION=1 -n $CONDA_ENV
+        conda env config vars set PYDEVD_DISABLE_FILE_VALIDATION=1 -n $CONDA_ENV
         # Crashes pytest https://github.com/microsoft/vscode-python/issues/20259
         # conda env config vars set PYTHONWARNINGS=default
 
