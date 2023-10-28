@@ -16,8 +16,8 @@ ALL_PACKAGES=(
     # Data loading
     lxml openpyxl fastparquet pooch pyarrow
     intake intake-sql intake-parquet intake-xarray
-    s3fs h5netcdf zarr "hdf5!=1.14.1"
-    ibis-sqlite "sqlalchemy<2" duckdb
+    s3fs h5netcdf zarr hdf5
+    ibis-sqlite "sqlalchemy<2" python-duckdb
 
     # Notebook
     "jupyterlab<4" ipywidgets jupyterlab_code_formatter
