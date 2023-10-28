@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 CONDA_ENV="holoviz"
 PYTHON="python=3.11"
 PACKAGES=(panel holoviews hvplot param datashader geoviews lumen colorcet)
@@ -62,7 +64,7 @@ sync_vscode_settings() {
 create_environments() {
     if [ "$1" == "CLEAN" ]; then
         # Clean up old environment
-        conda env list | grep $CONDA_ENV | awk '{print $1}' | xargs -r -L1 conda env remove -n
+        conda env list | grep $CONDA_ENV | awk '{print $1}' | xargs -r -L1 conda env remove -n || echo "No environment to remove"
 
         # Creating environment (can't clone because they are linked)
         mamba create -n $CONDA_ENV $PYTHON ${ALL_PACKAGES[@]} -y
