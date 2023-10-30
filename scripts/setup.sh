@@ -164,12 +164,7 @@ install_package() {
 }
 
 run() {
-    $1 $2 &>"/tmp/holoviz_$p.log"
-    if [[ $? -eq 0 ]]; then
-        echo "Finished installing $p"
-    else
-        echo "!!! Failed installing $p !!!"
-    fi
+    ($1 $2 &>"/tmp/holoviz_$p.log") && echo "Finished installing $p" || echo "!!! Failed installing $p !!!"
     echo -ne "\r" # Clean new line
 }
 
