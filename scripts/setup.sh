@@ -68,7 +68,7 @@ create_environments() {
 
         # Creating environment (can't clone because they are linked)
         mamba create -n $CONDA_ENV $PYTHON ${ALL_PACKAGES[@]} -y
-        mamba create -n $CONDA_ENV"_clean" $PYTHON ${PACKAGES[@]} ${ALL_PACKAGES[@]} -y
+        # mamba create -n $CONDA_ENV"_clean" $PYTHON ${PACKAGES[@]} ${ALL_PACKAGES[@]} -y
 
         if [[ $OS == "linux" ]] && $NVIDIA; then
             # cudf / dask_cudf pins hard
@@ -130,7 +130,7 @@ install_package() {
         git reset --hard origin/main
 
         # Clean up
-        if [ "$1" == "CLEAN" ]; then git clean -fxd; fi
+        if [ "$1" == "CLEAN" ]; then git clean -fxd; fi || echo "No clean"
         git fetch --all --prune
 
         # Go back branch and unstash files
@@ -143,7 +143,7 @@ install_package() {
         pre-commit install --allow-missing-config
     fi
     # .vscode settings
-    sync_vscode_settings
+    sync_vscode_settings || echo "No vscode settings"
 
     # pre-commit initialize
     pre-commit
@@ -153,7 +153,7 @@ install_package() {
     conda uninstall --force --offline --yes $p || echo "already uninstalled"
     conda develop .  # adding to environments .pth file
     python -m pip install --no-deps -e .
-    if [["$p" == "panel"]]; then
+    if [[ "$p" == "panel" ]]; then
         panel bundle --all &>/dev/null &
     elif [[ "$p" == "holoviews" ]]; then
         # Don't want the holoviews command
@@ -164,12 +164,11 @@ install_package() {
 }
 
 run() {
-    LOGNAME="/tmp/holoviz_$p.log"
-    $1 &>$LOGNAME
-    if (($? > 0)); then
-        echo "!!! Failed installing $p !!!"
-    else
+    $1 $2 &>"/tmp/holoviz_$p.log"
+    if [[ $? -eq 0 ]]; then
         echo "Finished installing $p"
+    else
+        echo "!!! Failed installing $p !!!"
     fi
     echo -ne "\r" # Clean new line
 }
@@ -201,7 +200,7 @@ create_environments $1
 # Install packages
 conda activate $CONDA_ENV
 for p in ${PACKAGES[@]}; do
-    run install_package &
+    run install_package $1 &
 done
 
 if [[ $OS == "linux" ]] && $NVIDIA; then
@@ -210,7 +209,7 @@ if [[ $OS == "linux" ]] && $NVIDIA; then
     conda activate $CONDA_ENV"_gpu"
 
     for p in ${PACKAGES[@]}; do
-        run install_package &
+        run install_package $1 &
     done
 fi
 
