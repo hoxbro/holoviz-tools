@@ -26,7 +26,7 @@ HEADERS = {
     "Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
     "X-GitHub-Api-Version": "2022-11-28",
 }
-REPOS = ["holoviews", "panel", "hvplot", "datashader", "geoviews"]
+REPOS = ["holoviews", "panel", "hvplot", "datashader", "geoviews", "lumen"]
 console = Console()
 
 
