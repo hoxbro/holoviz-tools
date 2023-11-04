@@ -158,6 +158,9 @@ install_package() {
     elif [[ "$p" == "holoviews" ]]; then
         # Don't want the holoviews command
         rm $(which holoviews) || echo "already uninstalled"
+    elif [[ "$p" == "colorcet" ]]; then
+        # Keep context in the first folder
+        ln -s $HOLOVIZ_DEV/.vscode-repos/keep-context.json .vscode/
     fi
     rm -rf build/
     cd ..
