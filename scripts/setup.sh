@@ -24,7 +24,7 @@ ALL_PACKAGES=(
     "jupyter_bokeh>=3.0.7" "jupyter_client<8" bokeh::ipywidgets_bokeh
 
     # Testing
-    pytest pytest-xdist flaky pytest-benchmark parameterized pytest-asyncio
+    pytest pytest-xdist flaky pytest-benchmark parameterized "pytest-asyncio!=0.22"
     nbsmoke nbval microsoft::pytest-playwright
 
     # Geo
@@ -88,6 +88,7 @@ create_environments() {
 
     if [ "$1" == "CLEAN" ]; then
         # echo "No custom install"
+        mamba install bokeh=3.3.1 -c bokeh/label/dev -y
         mamba install numba=0.58 numpy=1.26 -c numba -y
         python -m pip install --no-deps -ve ./holonote || echo "no holonote"
 
