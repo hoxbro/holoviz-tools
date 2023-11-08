@@ -12,14 +12,15 @@ def main() -> None:
     cl = clipboard_get()
 
     commits = re.findall("\\* (.+?)\\.? by (@.+?) in (.+?)\n", cl)
-    users, msgs = set(), ""
+    users, msgs = set(), {}
     for c in commits:
         no = c[2].split("/")[-1]
         msg = c[0].strip()
         msg = msg[0].upper() + msg[1:]
-        msgs += f"- {msg} ([#{no}]({c[2]}))\n"
+        msgs[no] = f"- {msg} ([#{no}]({c[2]}))\n"
         users |= {c[1]}
 
+    msgs = "".join([msgs[k] for k in sorted(msgs, key=int)])
     new_users = set(re.findall("\\* (@.+?) ", cl))
     users = users - new_users
 
