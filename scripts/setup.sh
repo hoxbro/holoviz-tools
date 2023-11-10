@@ -88,8 +88,6 @@ create_environments() {
 
     if [ "$1" == "CLEAN" ]; then
         # echo "No custom install"
-        mamba install bokeh=3.3.1 -c bokeh/label/dev -y
-        mamba install numba=0.58 numpy=1.26 -c numba -y
         python -m pip install --no-deps -ve ./holonote || echo "no holonote"
 
         # Environment variables
