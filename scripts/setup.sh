@@ -24,7 +24,7 @@ ALL_PACKAGES=(
     "jupyter_bokeh>=3.0.7" "jupyter_client<8" bokeh::ipywidgets_bokeh
 
     # Testing
-    pytest pytest-xdist flaky pytest-benchmark parameterized "pytest-asyncio!=0.22"
+    pytest pytest-xdist pytest-rerunfailures pytest-benchmark parameterized "pytest-asyncio!=0.22"
     nbsmoke nbval microsoft::pytest-playwright
 
     # Geo
