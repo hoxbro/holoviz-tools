@@ -4,7 +4,7 @@ set -euo pipefail
 
 CONDA_ENV="holoviz"
 PYTHON="python=3.11"
-PACKAGES=(panel holoviews hvplot param datashader geoviews lumen colorcet)
+PACKAGES=(panel holoviews hvplot param datashader geoviews lumen colorcet holonote)
 ALL_PACKAGES=(
     # Visualization
     bokeh plotly matplotlib seaborn altair
@@ -32,8 +32,8 @@ ALL_PACKAGES=(
     cartopy pyogrio iris esmpy xesmf geodatasets metpy
 
     # Dev Tools
-    nodejs
-    black ruff isort pre-commit
+    nodejs build
+    black ruff
     pyinstrument snakeviz memray psutil py-spy tuna asv
     pyviz::nbsite
 
@@ -87,8 +87,7 @@ create_environments() {
     conda activate $CONDA_ENV
 
     if [ "$1" == "CLEAN" ]; then
-        # echo "No custom install"
-        python -m pip install --no-deps -ve ./holonote || echo "no holonote"
+        # Insert custom install
 
         # Environment variables
         # https://docs.bokeh.org/en/latest/docs/dev_guide/setup.html
@@ -150,7 +149,8 @@ install_package() {
 
     # Install the package
     conda uninstall --force --offline --yes $p || echo "already uninstalled"
-    conda develop .  # adding to environments .pth file
+    # conda develop .  # adding to environments .pth file
+    pwd >> $(python -c "import site; print(site.getsitepackages()[0])")/holoviz.pth
     python -m pip install --no-deps -e .
     if [[ "$p" == "panel" ]]; then
         panel bundle --all &>/dev/null &
