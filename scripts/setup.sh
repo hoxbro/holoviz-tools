@@ -17,14 +17,14 @@ ALL_PACKAGES=(
     lxml openpyxl fastparquet pooch pyarrow
     intake intake-sql intake-parquet intake-xarray
     s3fs h5netcdf zarr hdf5
-    ibis-sqlite "sqlalchemy<2" python-duckdb
+    ibis-sqlite sqlalchemy python-duckdb connectorx
 
     # Notebook
-    "jupyterlab<4" ipywidgets jupyterlab_code_formatter
+    "jupyterlab<4" ipywidgets jupyterlab_code_formatter jupyterlab-myst
     "jupyter_bokeh>=3.0.7" "jupyter_client<8" bokeh::ipywidgets_bokeh
 
     # Testing
-    pytest pytest-xdist pytest-rerunfailures pytest-benchmark parameterized "pytest-asyncio!=0.22"
+    pytest pytest-xdist pytest-rerunfailures pytest-benchmark parameterized "pytest-asyncio=0.21"
     nbsmoke nbval microsoft::pytest-playwright
 
     # Geo
@@ -38,8 +38,8 @@ ALL_PACKAGES=(
     pyviz::nbsite
 
     # Misc
-    diskcache streamz aiohttp rich-click setuptools_scm
-    datashape "pyviz_comms<3" tqdm pyct
+    diskcache streamz aiohttp rich-click setuptools_scm watchfiles
+    "pyviz_comms<3" tqdm pyct
     markdown markdown-it-py mdit-py-plugins linkify-it-py
 )
 GPU_PACKAGES=(
@@ -88,6 +88,7 @@ create_environments() {
 
     if [ "$1" == "CLEAN" ]; then
         # Insert custom install
+        mamba install -c numba/label/dev numba=0.59.0dev0 -y
 
         # Environment variables
         # https://docs.bokeh.org/en/latest/docs/dev_guide/setup.html
@@ -204,6 +205,7 @@ if [[ $OS == "linux" ]] && $NVIDIA; then
     wait
     echo "Installing in GPU environment"
     conda activate $CONDA_ENV"_gpu"
+    conda env config vars set DATASHADER_TEST_GPU=1 -n $CONDA_ENV"_gpu"
 
     for p in ${PACKAGES[@]}; do
         run install_package $1 &
