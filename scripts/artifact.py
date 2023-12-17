@@ -1,19 +1,18 @@
 from __future__ import annotations
 
 import os
+from datetime import datetime
+from functools import cache
 from io import BytesIO
 from pathlib import Path
 from shutil import rmtree
 from subprocess import check_output
 from zipfile import ZipFile
-from functools import cache
-from datetime import datetime
 
 import requests
 import rich_click as click
 from rich.console import Console
 from rich.live import Live
-
 from rich_menu import live_menu, menu
 
 # Needs diff-so-fancy in path
@@ -74,7 +73,7 @@ def select_runs(repo, workflow) -> tuple[int, int]:
 
 
 def select_repo() -> str:
-    return live_menu(REPOS, console=console, title=f"Select a repo")
+    return live_menu(REPOS, console=console, title="Select a repo")
 
 
 def get_artifact_urls(repo, workflow, good_run, bad_run) -> tuple[str, str]:

@@ -39,7 +39,7 @@ ALL_PACKAGES=(
 
     # Misc
     diskcache streamz aiohttp rich-click setuptools_scm watchfiles
-    "pyviz_comms<3" tqdm pyct
+    "pyviz_comms<3" tqdm pyct httpx
     markdown markdown-it-py mdit-py-plugins linkify-it-py
 )
 GPU_PACKAGES=(

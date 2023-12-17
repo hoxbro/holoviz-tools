@@ -1,4 +1,3 @@
-target-version = "py39"
 line-length = 99
 
 select = [
@@ -45,7 +44,7 @@ unfixable = [
 ]
 
 [per-file-ignores]
-"_vendor/*" = ["*"]
+"_vendor/*" = ["ALL"]
 
 [isort]
 known-first-party = ["utilities", "_vendor"]
