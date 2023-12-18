@@ -10,6 +10,7 @@ import httpx
 import rich_click as click
 from pandas.io.clipboard import clipboard_set
 from rich.console import Console
+from rich.markdown import Markdown
 from rich_menu import live_menu
 
 HEADERS = {
@@ -97,12 +98,9 @@ async def get_changelog(owner, repo, release):
     text = dedent(text)
 
     for label, title in LABELS.items():
-        msg = labels[label]
-        if not msg:
-            continue
-
         text += f"{title}:\n"
-        text += "- " + "\n- ".join(map(clean_message, msg))
+        if msg := labels[label]:
+            text += "- " + "\n- ".join(map(clean_message, msg))
         text += "\n\n"
 
     text = re.sub(
@@ -129,10 +127,9 @@ def cli(repo) -> None:
     ):
         text = asyncio.run(get_changelog(owner, repo, latest_release))
 
+    console.print(Markdown(text))
     clipboard_set(text)
-    click.echo(text)
-
-    console.print("Changelog copied to clipboard", style="italic white")
+    console.print("\nChangelog copied to clipboard", style="italic white")
 
 
 if __name__ == "__main__":

@@ -43,7 +43,8 @@ elif [[ $1 == "artifact" ]]; then
     shift
     PYTHONPATH=$TOOLS python $TOOLS/artifact.py $@
 elif [[ $1 == "changelog" ]]; then
-    PYTHONPATH=$TOOLS python $TOOLS/changelog.py
+    shift
+    PYTHONPATH=$TOOLS python $TOOLS/changelog.py $@
 elif [[ $1 ]]; then
     (exit 1)
 else
