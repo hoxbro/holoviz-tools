@@ -58,7 +58,7 @@ def get_commits_since_last_release(owner, repo, head):
     commits = {
         int(no.group(1)): msg
         for c in raw
-        if (no := no_re.search(msg := c["commit"]["message"]))
+        if (no := no_re.search(msg := c["commit"]["message"].splitlines()[0]))
     }
     return commits
 
