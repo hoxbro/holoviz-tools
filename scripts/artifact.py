@@ -13,7 +13,7 @@ import requests
 import rich_click as click
 from rich.console import Console
 from rich.live import Live
-from rich_menu import live_menu, menu
+from rich_menu import argument_menu, menu
 
 # Needs diff-so-fancy in path
 
@@ -70,10 +70,6 @@ def select_runs(repo, workflow) -> tuple[int, int]:
             select_style="red bold",
         )
     return good_run, bad_run
-
-
-def select_repo() -> str:
-    return live_menu(REPOS, console=console, title="Select a repo")
 
 
 def get_artifact_urls(repo, workflow, good_run, bad_run) -> tuple[str, str]:
@@ -148,7 +144,7 @@ def get_files(
 
 
 @click.command(context_settings={"show_default": True})
-@click.argument("repo", type=click.Choice(REPOS), required=False)
+@argument_menu("repo", choises=REPOS, console=console, title="Select a repo")
 @click.argument("good_run", type=int, required=False)
 @click.argument("bad_run", type=int, required=False)
 @click.option(
@@ -181,9 +177,6 @@ def get_files(
     help="Force download artifacts",
 )
 def cli(good_run, bad_run, repo, test, os, python, workflow, force) -> None:
-    if repo is None:
-        repo = select_repo()
-
     good_file, bad_file = get_files(
         repo, good_run, bad_run, test, os, python, workflow, force
     )

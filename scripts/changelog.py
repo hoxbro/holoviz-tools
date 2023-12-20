@@ -11,7 +11,7 @@ import rich_click as click
 from pandas.io.clipboard import clipboard_set
 from rich.console import Console
 from rich.markdown import Markdown
-from rich_menu import live_menu
+from rich_menu import argument_menu
 
 HEADERS = {
     "Accept": "application/vnd.github+json",
@@ -112,13 +112,13 @@ async def get_changelog(owner, repo, release):
 
 
 @click.command(context_settings={"show_default": True})
-@click.argument("repo", type=click.Choice(REPOS), required=False)
+@argument_menu(
+    "repo",
+    console=console,
+    choises=REPOS,
+    title="Select a repo to generate changelog for",
+)
 def cli(repo) -> None:
-    if repo is None:
-        repo = live_menu(
-            REPOS, console=console, title="Select a repo to generate changelog for"
-        )
-
     owner = "holoviz"
     latest_release = get_latest_release(owner, repo)
 
