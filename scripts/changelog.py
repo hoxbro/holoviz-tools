@@ -1,17 +1,19 @@
 from __future__ import annotations
 
-import asyncio
 import os
 import re
-from collections import defaultdict
-from textwrap import dedent
+import shutil
+import sqlite3
+import tempfile
+from functools import partial
+from pathlib import Path
 
 import httpx
 import rich_click as click
 from pandas.io.clipboard import clipboard_set
 from rich.console import Console
 from rich.markdown import Markdown
-from rich_menu import argument_menu
+from rich_menu import argument_menu, live_menu
 
 HEADERS = {
     "Accept": "application/vnd.github+json",
@@ -19,96 +21,65 @@ HEADERS = {
     "X-GitHub-Api-Version": "2022-11-28",
 }
 REPOS = ["holoviews", "panel", "hvplot", "datashader", "geoviews", "lumen"]
-LABELS = {
-    "type: feature": "New features",
-    "type: enhancement": "Enhancements",
-    "type: bug": "Bug fixes",
-    "type: compatibility": "Compatibility",
-    "type: docs": "Documentation",
-    "type: maintenance": "Maintenance",
-    None: "Other",
-}
-
 console = Console()
-no_re = re.compile(r"\(#(\d*)\)$")
 
 
-def clean_message(msg):
-    msg = msg.strip()
-    return msg[0].upper() + msg[1:]
+def get_session_id() -> str:
+    # https://github.com/yt-dlp/yt-dlp/blob/c39358a54bc6675ae0c50b81024e5a086e41656a/yt_dlp/cookies.py#l117
+    firefox_dir = Path("~/.mozilla/firefox").expanduser()
+    profile = next(firefox_dir.rglob("cookies.sqlite"))
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        file = shutil.copy(profile, tmpdir)
+
+        conn = sqlite3.connect(file)
+        c = conn.cursor()
+        c.execute(
+            "SELECT value FROM moz_cookies WHERE name = 'user_session' and host = 'github.com'"
+        )
+        session_id = c.fetchone()[0]
+        conn.close()
+        return session_id
 
 
-def get_latest_release(owner, repo):
-    url = f"https://api.github.com/repos/{owner}/{repo}/releases/latest"
+def get_changelog(owner, repo, release):
+    url = "https://github.com/holoviz/holoviews/releases/notes?commitish=v1.18.2a6&tag_name=v1.18.2a6&previous_tag_name="
+    url = f"https://github.com/{owner}/{repo}/releases/notes?commitish=main&tag_name=main&previous_tag_name={release}"
+    headers = {
+        "Accept": "application/json",
+        "Cookie": f"user_session={get_session_id()}",
+    }
+    with httpx.Client() as client:
+        response = client.get(url, headers=headers)
+        response.raise_for_status()
+
+    body = response.json()["body"]
+    users = set()
+    body = re.sub(
+        r"\*(.+?) by (@.+?) in (.+?)\n", partial(update_message, users=users), body
+    )
+    body += f'\n\n Users: {", ".join(sorted(users, key=lambda x: x.lower()))}'
+    return body
+
+
+def update_message(match, users=None):
+    users.add(match.group(2))
+    text = match.group(1).strip()
+    text = text[0].upper() + text[1:]
+    commit = match.group(3)
+    commit_no = commit.split("/")[-1]
+    msg = f"- {text} ([#{commit_no}]({commit}))\n"
+    return msg
+
+
+def get_releases(owner, repo):
+    url = f"https://api.github.com/repos/{owner}/{repo}/releases"
 
     with httpx.Client() as client:
         response = client.get(url, headers=HEADERS)
         response.raise_for_status()
-
-    return response.json()["tag_name"]
-
-
-def get_commits_since_last_release(owner, repo, head):
-    url = f"https://api.github.com/repos/{owner}/{repo}/compare/{head}...main"
-
-    with httpx.Client() as client:
-        response = client.get(url, headers=HEADERS)
-        raw = response.raise_for_status().json()["commits"]
-
-    commits = {
-        int(no.group(1)): msg
-        for c in raw
-        if (no := no_re.search(msg := c["commit"]["message"].splitlines()[0]))
-    }
-    return commits
-
-
-async def get_commit_info(owner, repo, pull_request_number):
-    url = f"https://api.github.com/repos/{owner}/{repo}/issues/{pull_request_number}"
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url, headers=HEADERS)
-        data = response.raise_for_status().json()
-
-    user = "@" + data["user"]["login"]
-    label = None
-    for l in data["labels"]:
-        if l["name"] in LABELS:
-            label = l["name"]
-            break
-
-    return user, label
-
-
-async def get_changelog(owner, repo, release):
-    commits = get_commits_since_last_release(owner, repo, release)
-
-    info = await asyncio.gather(*[get_commit_info(owner, repo, c) for c in commits])
-
-    users = set()
-    labels = defaultdict(list)
-
-    for v, (user, label) in zip(commits.values(), info):
-        labels[label].append(v)
-        users.add(user)
-
-    text = f"""
-    Users: {", ".join(sorted(users, key=lambda x: x.lower()))}
-
-    """
-    text = dedent(text)
-
-    for label, title in LABELS.items():
-        text += f"{title}:\n"
-        if msg := labels[label]:
-            text += "- " + "\n- ".join(map(clean_message, msg))
-        text += "\n\n"
-
-    text = re.sub(
-        r"\(#(\d*)\)",
-        lambda x: f"([#{x.group(1)}](https://github.com/{owner}/{repo}/pull/{x.group(1)}))",
-        text,
-    )
-    return text
+    tags = [r["tag_name"] for r in response.json()]
+    return tags
 
 
 @click.command(context_settings={"show_default": True})
@@ -118,14 +89,22 @@ async def get_changelog(owner, repo, release):
     choises=REPOS,
     title="Select a repo to generate changelog for",
 )
-def cli(repo) -> None:
+@click.argument("use_latest", type=bool, default=True)
+def cli(repo, use_latest) -> None:
     owner = "holoviz"
-    latest_release = get_latest_release(owner, repo)
-
+    releases = get_releases(owner, repo)
+    if use_latest:
+        release = releases[0]
+    else:
+        release = live_menu(
+            releases,
+            console=console,
+            title="Select a previous release to generate changelog from",
+        )
     with console.status(
-        f"Generating changelog for {repo} for latest relase {latest_release} to now..."
+        f"Generating changelog for {repo} for latest relase {release} to now..."
     ):
-        text = asyncio.run(get_changelog(owner, repo, latest_release))
+        text = get_changelog(owner, repo, release)
 
     console.print(Markdown(text))
     clipboard_set(text)
