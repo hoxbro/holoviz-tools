@@ -19,12 +19,13 @@ from __future__ import annotations
 
 import collections
 import os
+from contextlib import suppress
 from datetime import datetime, timedelta
 from functools import cache
 from runpy import run_path
 from typing import Any
 
-import requests
+import httpx
 from packaging.requirements import Requirement
 from packaging.specifiers import SpecifierSet
 from packaging.version import InvalidVersion, Version
@@ -49,11 +50,9 @@ console = Console()
 @cache
 def get_resp(url, with_headers=True) -> dict[str, Any] | None:
     headers = HEADERS if with_headers else {}
-    resp = requests.get(url, headers=headers)
-    if resp.ok:
-        return resp.json()
-    else:
-        return None
+    resp = httpx.get(url, headers=headers)
+    with suppress(Exception):
+        return resp.raise_for_status().json()
 
 
 @cache
@@ -169,7 +168,7 @@ def main() -> None:
             break
 
         python_requires = Prompt.ask(
-            "Python version", console=console, choices=py_releases, default="3.9"
+            "Python version", console=console, choices=list(py_releases), default="3.9"
         )
         query(main_package, python_requires)
 
