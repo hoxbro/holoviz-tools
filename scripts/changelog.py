@@ -42,9 +42,8 @@ def get_session_id() -> str:
         return session_id
 
 
-def get_changelog(owner, repo, release):
-    url = "https://github.com/holoviz/holoviews/releases/notes?commitish=v1.18.2a6&tag_name=v1.18.2a6&previous_tag_name="
-    url = f"https://github.com/{owner}/{repo}/releases/notes?commitish=main&tag_name=main&previous_tag_name={release}"
+def get_changelog(owner, repo, previous_release, branch="main"):
+    url = f"https://github.com/{owner}/{repo}/releases/notes?commitish={branch}&tag_name={branch}&previous_tag_name={previous_release}"
     headers = {
         "Accept": "application/json",
         "Cookie": f"user_session={get_session_id()}",
@@ -58,11 +57,11 @@ def get_changelog(owner, repo, release):
     body = re.sub(
         r"\*(.+?) by (@.+?) in (.+?)\n", partial(update_message, users=users), body
     )
-    body += f'\n\n Users: {", ".join(sorted(users, key=lambda x: x.lower()))}'
+    body += f'\n\n Contributors: {", ".join(sorted(users, key=lambda x: x.lower()))}'
     return body
 
 
-def update_message(match, users=None):
+def update_message(match, users):
     users.add(match.group(2))
     text = match.group(1).strip()
     text = text[0].upper() + text[1:]
@@ -90,7 +89,8 @@ def get_releases(owner, repo):
     title="Select a repo to generate changelog for",
 )
 @click.argument("use_latest", type=bool, default=True)
-def cli(repo, use_latest) -> None:
+@click.argument("branch", type=str, default="main")
+def cli(repo, use_latest, branch) -> None:
     owner = "holoviz"
     releases = get_releases(owner, repo)
     if use_latest:
@@ -102,9 +102,9 @@ def cli(repo, use_latest) -> None:
             title="Select a previous release to generate changelog from",
         )
     with console.status(
-        f"Generating changelog for {repo} for latest relase {release} to now..."
+        f"Generating changelog for {repo} for latest relase {release} to {branch}..."
     ):
-        text = get_changelog(owner, repo, release)
+        text = get_changelog(owner, repo, release, branch)
 
     console.print(Markdown(text))
     clipboard_set(text)
