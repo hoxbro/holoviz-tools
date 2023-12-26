@@ -9,7 +9,7 @@ import uuid
 from datetime import date
 from pathlib import Path
 
-import requests  # type: ignore[import]
+import httpx
 from bs4 import BeautifulSoup
 from pandas.io.clipboard import clipboard_get, clipboard_set
 
@@ -47,8 +47,7 @@ def sanitize_string(s):
 
 
 def _get_github(url):
-    resp = requests.get(url)
-    assert resp.ok, f"Failed {url}"
+    resp = httpx.get(url).raise_for_status()
 
     soup = BeautifulSoup(resp.text, features="html.parser")
     codeblocks = soup.find_all("div", class_={"highlight", "notranslate"})
@@ -64,8 +63,7 @@ def _get_github(url):
 
 def _get_discourse(url):
     url = url + ".json"
-    resp = requests.get(url)
-    assert resp.ok, f"Failed {url}"
+    resp = httpx.get(url).raise_for_status()
 
     data = resp.json()
     regex = re.compile("lang-")
