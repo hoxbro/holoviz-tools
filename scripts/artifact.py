@@ -9,7 +9,7 @@ from shutil import rmtree
 from subprocess import check_output
 from zipfile import ZipFile
 
-import requests
+import httpx
 import rich_click as click
 from rich.console import Console
 from rich.live import Live
@@ -34,10 +34,9 @@ def download_runs(repo, workflow, page=1) -> tuple[dict, dict]:
     url = (
         f"https://api.github.com/repos/holoviz/{repo}/actions/workflows/{workflow}/runs"
     )
-    resp = requests.get(
+    resp = httpx.get(
         url, params={"page": page, "per_page": 30}, headers=HEADERS, timeout=20
-    )
-    assert resp.ok
+    ).raise_for_status()
 
     results, urls = {}, {}
     for run in resp.json()["workflow_runs"]:
@@ -72,7 +71,7 @@ def select_runs(repo, workflow) -> tuple[int, int]:
     return good_run, bad_run
 
 
-def get_artifact_urls(repo, workflow, good_run, bad_run) -> tuple[str, str]:
+def get_artifact_urls(repo, workflow, good_run, bad_run) -> tuple[str, str] | None:
     good_url, bad_url = None, None
     for page in range(1, 10):
         _, urls = download_runs(repo, workflow, page)
@@ -81,8 +80,7 @@ def get_artifact_urls(repo, workflow, good_run, bad_run) -> tuple[str, str]:
         if bad_run in urls:
             bad_url = urls[bad_run]
         if good_url and bad_url:
-            break
-    return good_url, bad_url
+            return good_url, bad_url
 
 
 def download_artifact(repo, pr, url) -> None:
@@ -90,16 +88,15 @@ def download_artifact(repo, pr, url) -> None:
     if download_path.exists():
         return
 
-    resp = requests.get(url, headers=HEADERS)
-    assert resp.ok
+    resp = httpx.get(url, headers=HEADERS).raise_for_status()
     artifact = resp.json()["artifacts"]
     if not artifact:
         download_path.mkdir(exist_ok=True)
         return
     download_url = artifact[0]["archive_download_url"]
-    zipfile = requests.get(download_url, headers=HEADERS)
-    assert resp.ok
-
+    zipfile = httpx.get(
+        download_url, headers=HEADERS, follow_redirects=True
+    ).raise_for_status()
     bio = BytesIO(zipfile.content)
     bio.seek(0)
     with ZipFile(bio) as zip_ref:
@@ -108,7 +105,7 @@ def download_artifact(repo, pr, url) -> None:
 
 def get_files(
     repo, good_run, bad_run, test, os, python, workflow, force
-) -> tuple[Path, Path]:
+) -> tuple[Path | None, Path | None]:
     if good_run is None or bad_run is None:
         good_run, bad_run = select_runs(repo, workflow)
         console.print(
