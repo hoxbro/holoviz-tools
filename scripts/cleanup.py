@@ -5,12 +5,12 @@ from __future__ import annotations
 import os
 import re
 from contextlib import suppress
-from functools import lru_cache
+from functools import cache
 from pathlib import Path
 from shutil import move, rmtree
 from subprocess import check_output
 
-import requests  # type: ignore[import]
+import httpx
 from bs4 import BeautifulSoup
 from rich.console import Console
 
@@ -62,19 +62,18 @@ def remove_temp() -> None:
             )
 
 
-@lru_cache
+@cache
 def check_pr_closed(repo, no) -> bool:
     # Use API
     url = f"https://api.github.com/repos/holoviz/{repo}/issues/{no}"
-    resp = requests.get(url, headers=HEADERS)
-    if resp.ok:
-        tag = resp.json()["state"]
+    resp = httpx.get(url, headers=HEADERS)
+    with suppress(httpx.HTTPError):
+        tag = resp.raise_for_status().json()["state"]
         return tag in ["closed", "merged"]
 
     # Else Web-Scraping
     url = f"https://github.com/holoviz/{repo}/issues/{no}"
-    resp = requests.get(url)
-    assert resp.ok, f"Check if {url} is valid!"
+    resp = httpx.get(url, follow_redirects=True).raise_for_status()
 
     soup = BeautifulSoup(resp.text, features="html.parser")
     tag = soup.find(class_="State").text.strip().lower()

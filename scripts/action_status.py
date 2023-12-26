@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import os
 
+import httpx
 import pandas as pd
-import requests
 from rich.console import Console
 from rich.table import Table
 
@@ -43,8 +43,7 @@ HEADERS = {
 
 def get_info(repo) -> pd.DataFrame | None:
     url = f"https://api.github.com/repos/holoviz/{repo}/actions/runs"
-    resp = requests.get(url, params={"per_page": 30}, headers=HEADERS)
-    assert resp.ok, "API timeout"
+    resp = httpx.get(url, params={"per_page": 30}, headers=HEADERS).raise_for_status()
     df = pd.json_normalize(resp.json(), "workflow_runs")
     df = df[df["status"] != "completed"]
     if df.empty:
