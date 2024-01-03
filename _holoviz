@@ -11,6 +11,7 @@ subcmds=(
   'changelog:Generate changelog for Holoviz repos'
   'clean:Clean up Holoviz dev files'
   'artifact:Compare artifact for Holoviz repos'
+  'nvim:Open Neovim with Holoviz workspace'
 )
 
 _arguments '1: :->subcmds' && return
