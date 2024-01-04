@@ -45,7 +45,7 @@ elif [[ $1 == "artifact" ]]; then
 elif [[ $1 == "changelog" ]]; then
     shift
     PYTHONPATH=$TOOLS python $TOOLS/changelog.py $@
-elif [[ $1 == "nvim" ]]; then
+elif [[ $1 == "nvim" || $1 == "vim" ]]; then
     ccd
     nvim $HOLOVIZ_DEV
 elif [[ $1 ]]; then
