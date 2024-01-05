@@ -32,7 +32,7 @@ ALL_PACKAGES=(
     cartopy pyogrio iris esmpy xesmf geodatasets metpy
 
     # Dev Tools
-    nodejs build
+    nodejs build debugpy
     black ruff
     pyinstrument snakeviz memray psutil py-spy tuna asv
     pyviz::nbsite
