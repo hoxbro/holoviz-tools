@@ -14,7 +14,10 @@ ccd() {
     fi
 }
 
-if [[ (-z $1 && -z $(pgrep code -a | grep holoviz)) || ($1 == "code") ]]; then
+if [[ -z $1 || $1 == "nvim" || $1 == "vim" ]]; then
+    ccd
+    nvim $HOLOVIZ_DEV
+elif [[ ($1 == "code") ]]; then
     ccd
     code $HOLOVIZ_DEV/holoviz.code-workspace
 elif [[ $1 == "lab" ]]; then
@@ -45,9 +48,6 @@ elif [[ $1 == "artifact" ]]; then
 elif [[ $1 == "changelog" ]]; then
     shift
     PYTHONPATH=$TOOLS python $TOOLS/changelog.py $@
-elif [[ $1 == "nvim" || $1 == "vim" ]]; then
-    ccd
-    nvim $HOLOVIZ_DEV
 elif [[ $1 ]]; then
     (exit 1)
 else
