@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import ast
 import json
 import os
 import re
 import uuid
+from contextlib import suppress
 from datetime import date
 from pathlib import Path
 
@@ -37,6 +39,7 @@ def get_code_and_info(url):
         msg = f"Not valid url: {url}"
         raise ValueError(msg)
 
+    codeblocks = sanitize_codeblock(codeblocks)
     assert len(codeblocks) > 0
 
     return codeblocks, repo, filename
@@ -44,6 +47,16 @@ def get_code_and_info(url):
 
 def sanitize_string(s):
     return "".join(x for x in s.strip() if x.isalnum() or x == " ").replace(" ", "_")
+
+
+def sanitize_codeblock(codeblocks):
+    new = []
+    for n in codeblocks:
+        with suppress(SyntaxError):
+            n = n.text
+            ast.parse(n)
+            new.append(n)
+    return new
 
 
 def _get_github(url):
@@ -100,11 +113,9 @@ def create_notebook(codeblocks, url):
         "execution_count": None,
     }
     for code in codeblocks:
-        if ignore_code(code.text):
-            continue
         cell = empty_code_cell.copy()
         cell["id"] = get_id()
-        cell["source"] = [c + "\n" for c in code.text.split("\n")]
+        cell["source"] = [c + "\n" for c in code.split("\n")]
         notebook["cells"].append(cell)
 
     return notebook
@@ -116,16 +127,13 @@ def create_python(codeblocks, url):
     python_file = [info]
 
     for i, code in enumerate(codeblocks):
-        if ignore_code(code.text):
-            continue
-        python_file.extend([f"# %% Codeblock {i+1}\n", code.text, "\n\n"])
+        if i == 0 and "import panel as pn" not in code:
+            code = "import panel as pn\n" + code
+        # if '.servable(' not in code:
+        #     n
+        python_file.extend([f"# %% Codeblock {i+1}\n", code, "\n\n"])
 
     return python_file
-
-
-def ignore_code(code) -> bool:
-    bad_code = ["Traceback (most recent call last)", "Coverage Diff"]
-    return any(bad in code for bad in bad_code)
 
 
 def link(uri, label=None, parameters=None):
@@ -146,14 +154,14 @@ def save_notebook(repo, filename, notebook):
     repo_path.mkdir(exist_ok=True)
     file = repo_path / f"{filename}.ipynb"
 
-    here_url = f"http://localhost:8888/lab/workspaces/auto-W/tree/development/{repo}/{filename}.ipynb"
+    here_url = (
+        f"http://localhost:8888/lab/workspaces/auto-W/tree/development/{repo}/{filename}.ipynb"
+    )
     clipboard_set(here_url)
     here_url = link(here_url, "here")
 
     if file.exists():
-        print(
-            f"{repo.replace('dev_', '')} #{filename.split('_')[0]} already exists {here_url}"
-        )
+        print(f"{repo.replace('dev_', '')} #{filename.split('_')[0]} already exists {here_url}")
         return
 
     with open(file, "w") as f:
