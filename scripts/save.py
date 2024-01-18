@@ -176,15 +176,13 @@ def save_python(repo, filename, python):
     file = repo_path / f"{filename}.py"
 
     if file.exists():
-        print(f"{repo.replace('dev_', '')} #{filename.split('_')[0]} already exists:")
-        print(f"\t{file}")
+        print(file)
         return
 
     with open(file, "w") as f:
         f.write("".join(python))
 
-    print(f"{repo.replace('dev_', '')} #{filename.split('_')[0]} saved:")
-    print(f"\t{file}")
+    print(file)
 
 
 if __name__ == "__main__":

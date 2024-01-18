@@ -28,7 +28,9 @@ elif [[ $1 == "lab" ]]; then
         firefox localhost:8888
     fi
 elif [[ $1 == "save" ]]; then
-    PYTHONPATH=$TOOLS python  $TOOLS/save.py $2
+    RESULT=$(PYTHONPATH=$TOOLS python $TOOLS/save.py)
+    echo $(echo $RESULT | grep -v '^/home/') 
+    export PANEL_SERVE_FILE=$(echo $RESULT | grep -E '^/home/')
 elif [[ $1 == "fetch" ]]; then
     bash $TOOLS/fetch.sh
 elif [[ $1 == "setup" ]]; then
@@ -48,6 +50,9 @@ elif [[ $1 == "artifact" ]]; then
 elif [[ $1 == "changelog" ]]; then
     shift
     PYTHONPATH=$TOOLS python $TOOLS/changelog.py $@
+elif [[ $1 == "serve" ]]; then
+    shift
+    source $TOOLS/serve.sh $@
 elif [[ $1 ]]; then
     (exit 1)
 else

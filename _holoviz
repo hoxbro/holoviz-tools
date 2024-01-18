@@ -13,6 +13,7 @@ subcmds=(
   'artifact:Compare artifact for Holoviz repos'
   'nvim:Open Neovim with Holoviz workspace'
   'vim:Open Neovim with Holoviz workspace'
+  'serve:Start panel serve of development file'
 )
 
 _arguments '1: :->subcmds' && return
