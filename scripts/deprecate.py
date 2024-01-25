@@ -70,7 +70,7 @@ def main(module) -> None:
     version, _, path = get_info(module)
     files = check_output(["git", "ls-files", "."], cwd=path)
     deprecations = 0
-    print(f"Current version is '{version}'.")
+    print(f"Current version of {module} is '{version}'.")
     for file in files.decode().split("\n"):
         if file.endswith(".py"):
             deprecations += check_file(file, module)

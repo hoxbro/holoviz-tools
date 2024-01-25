@@ -50,6 +50,9 @@ elif [[ $1 == "artifact" ]]; then
 elif [[ $1 == "changelog" ]]; then
     shift
     PYTHONPATH=$TOOLS python $TOOLS/changelog.py $@
+elif [[ $1 == "deprecate" ]]; then
+    shift
+    PYTHONPATH=$TOOLS python $TOOLS/deprecate.py $@
 elif [[ $1 == "serve" ]]; then
     shift
     source $TOOLS/serve.sh $@
