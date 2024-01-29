@@ -11,7 +11,7 @@ ALL_PACKAGES=(
 
     # Data processing
     numpy pandas xarray polars numba
-    dask-core scipy scikit-image
+    dask-core scipy scikit-image tsdownsample
 
     # Data loading
     lxml openpyxl fastparquet pooch pyarrow
