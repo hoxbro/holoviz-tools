@@ -89,7 +89,7 @@ create_environments() {
     if [ "$1" == "CLEAN" ]; then
         # Insert custom install
         mamba install -c numba/label/dev numba=0.59.0rc1 -y
-        mamba install bokeh=3.4 -c bokeh/channel/dev -y 
+        # mamba install bokeh=3.4 -c bokeh/channel/dev -y 
 
 
         # Environment variables
