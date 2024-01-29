@@ -50,7 +50,7 @@ console = Console()
 @cache
 def get_resp(url, with_headers=True) -> dict[str, Any] | None:
     headers = HEADERS if with_headers else {}
-    resp = httpx.get(url, headers=headers)
+    resp = httpx.get(url, headers=headers, follow_redirects=True)
     with suppress(httpx.HTTPError):
         return resp.raise_for_status().json()
 
