@@ -15,7 +15,7 @@ ALL_PACKAGES=(
 
     # Data loading
     lxml openpyxl fastparquet pooch pyarrow
-    intake intake-sql intake-parquet intake-xarray
+    "intake<2" intake-sql intake-parquet intake-xarray
     s3fs h5netcdf zarr hdf5
     ibis-sqlite sqlalchemy python-duckdb connectorx
 
@@ -24,12 +24,15 @@ ALL_PACKAGES=(
     "jupyter_bokeh>=3.0.7" "jupyter_client<8" bokeh::ipywidgets_bokeh
 
     # Testing
-    pytest pytest-xdist pytest-rerunfailures pytest-benchmark parameterized "pytest-asyncio=0.21"
+    pytest pytest-xdist pytest-rerunfailures pytest-benchmark parameterized pytest-asyncio
     nbsmoke nbval microsoft::pytest-playwright
 
     # Geo
     geopandas rioxarray rasterio spatialpandas
     cartopy pyogrio iris esmpy xesmf geodatasets metpy
+
+    # Machine Learning
+    openai langchain
 
     # Dev Tools
     nodejs build debugpy
@@ -88,8 +91,7 @@ create_environments() {
 
     if [ "$1" == "CLEAN" ]; then
         # Insert custom install
-        mamba install -c numba/label/dev numba=0.59.0rc1 -y
-        # mamba install bokeh=3.4 -c bokeh/channel/dev -y 
+        # mamba install bokeh=3.4 -c bokeh/channel/dev -y
 
 
         # Environment variables
