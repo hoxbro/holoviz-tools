@@ -3,7 +3,7 @@
 set -euo pipefail
 
 CONDA_ENV="holoviz"
-PYTHON="python=3.11"
+PYTHON="python=3.12"
 PACKAGES=(panel holoviews hvplot param datashader geoviews lumen colorcet holonote)
 ALL_PACKAGES=(
     # Visualization
@@ -17,7 +17,7 @@ ALL_PACKAGES=(
     lxml openpyxl fastparquet pooch pyarrow
     "intake<2" intake-sql intake-parquet intake-xarray
     s3fs h5netcdf zarr hdf5
-    ibis-sqlite sqlalchemy python-duckdb connectorx
+    ibis-sqlite sqlalchemy  # python-duckdb connectorx
 
     # Notebook
     "jupyterlab<4" ipywidgets jupyterlab_code_formatter jupyterlab-myst
@@ -91,8 +91,7 @@ create_environments() {
 
     if [ "$1" == "CLEAN" ]; then
         # Insert custom install
-        # mamba install bokeh=3.4 -c bokeh/channel/dev -y
-
+        mamba install bokeh=3.4 -c bokeh/channel/dev -y
 
         # Environment variables
         # https://docs.bokeh.org/en/latest/docs/dev_guide/setup.html
