@@ -1,13 +1,17 @@
 import ast
 import os
 import sys
+import warnings
 from functools import cache
 from importlib import import_module
 from subprocess import check_output
 
 from packaging.version import Version
 
-GREEN, RED, RESET = "\033[92m", "\033[91m", "\033[0m"
+if sys.stdout.isatty():
+    GREEN, RED, RESET = "\033[92m", "\033[91m", "\033[0m"
+else:
+    GREEN = RED = RESET = ""
 
 
 class StackLevelChecker(ast.NodeVisitor):
@@ -19,7 +23,7 @@ class StackLevelChecker(ast.NodeVisitor):
     def _check_version(self, node: ast.Call) -> None:
         if node.func.id != "deprecated":
             return
-        deprecated_version = Version(node.args[0].s)
+        deprecated_version = Version(node.args[0].value)
         if self.base_version >= deprecated_version:
             msg = (
                 f"{RED}{self.file}:{node.lineno}:{node.col_offset}: "
@@ -52,7 +56,11 @@ def get_info(module):
 def check_file(file, module) -> int:
     _, base_version, path = get_info(module)
     with open(os.path.join(path, file)) as f:
-        tree = ast.parse(f.read())
+        data = f.read()
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", SyntaxWarning)
+        tree = ast.parse(data, file)
 
     stacklevel_checker = StackLevelChecker(file, base_version)
     stacklevel_checker.visit(tree)
