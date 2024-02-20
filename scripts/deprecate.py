@@ -2,8 +2,7 @@ import ast
 import os
 import sys
 import warnings
-from functools import cache
-from importlib import import_module
+from importlib.util import find_spec
 from subprocess import check_output
 
 from packaging.version import Version
@@ -18,7 +17,7 @@ class StackLevelChecker(ast.NodeVisitor):
     def __init__(self, file, base_version) -> None:
         self.file = file
         self.base_version = base_version
-        self.deprecations = set()
+        self.deprecations = 0
 
     def _check_version(self, node: ast.Call) -> None:
         if node.func.id != "deprecated":
@@ -29,13 +28,13 @@ class StackLevelChecker(ast.NodeVisitor):
                 f"{RED}{self.file}:{node.lineno}:{node.col_offset}: "
                 f"Found version '{deprecated_version}' in 'deprecated' should have been removed.{RESET}"
             )
-            self.deprecations.add((True, msg))
+            self.deprecations += 1
         else:
             msg = (
                 f"{GREEN}{self.file}:{node.lineno}:{node.col_offset}: "
                 f"Found version '{deprecated_version}' in 'deprecated'.{RESET}"
             )
-            self.deprecations.add((False, msg))
+        print(msg)
 
     def visit_Call(self, node: ast.Expr) -> None:
         if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
@@ -44,19 +43,20 @@ class StackLevelChecker(ast.NodeVisitor):
         self.generic_visit(node)
 
 
-@cache
 def get_info(module):
-    mod = import_module(module)
-    version = Version(mod.__version__)
+    path = find_spec(module).submodule_search_locations[0]
+    tag = check_output(["git", "describe", "--abbrev=0", "main"], cwd=path).strip().decode()
+    version = Version(tag)
     base_version = Version(version.base_version)
-    path = os.path.dirname(mod.__file__)
     return version, base_version, path
 
 
-def check_file(file, module) -> int:
-    _, base_version, path = get_info(module)
+def check_file(file, path, base_version) -> int:
     with open(os.path.join(path, file)) as f:
         data = f.read()
+
+    if "deprecated" not in data:
+        return 0
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", SyntaxWarning)
@@ -64,24 +64,17 @@ def check_file(file, module) -> int:
 
     stacklevel_checker = StackLevelChecker(file, base_version)
     stacklevel_checker.visit(tree)
-
-    errs = 0
-    for err, msg in stacklevel_checker.deprecations:
-        if err:
-            errs += 1
-        print(msg)
-
-    return errs
+    return stacklevel_checker.deprecations
 
 
 def main(module) -> None:
-    version, _, path = get_info(module)
+    version, base_version, path = get_info(module)
     files = check_output(["git", "ls-files", "."], cwd=path)
     deprecations = 0
-    print(f"Current version of {module} is '{version}'.")
+    print(f"Latest tag of {module} on main is '{version}'.")
     for file in files.decode().split("\n"):
         if file.endswith(".py"):
-            deprecations += check_file(file, module)
+            deprecations += check_file(file, path, base_version)
     sys.exit(deprecations > 0)
 
 
