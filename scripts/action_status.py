@@ -45,6 +45,8 @@ def get_info(repo) -> pd.DataFrame | None:
     url = f"https://api.github.com/repos/holoviz/{repo}/actions/runs"
     resp = httpx.get(url, params={"per_page": 30}, headers=HEADERS).raise_for_status()
     df = pd.json_normalize(resp.json(), "workflow_runs")
+    if df.empty:
+        return
     df = df[df["status"] != "completed"]
     if df.empty:
         return
