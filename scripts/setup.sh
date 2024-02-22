@@ -20,8 +20,8 @@ ALL_PACKAGES=(
     ibis-sqlite sqlalchemy  # python-duckdb connectorx
 
     # Notebook
-    "jupyterlab<4" ipywidgets jupyterlab_code_formatter jupyterlab-myst
-    "jupyter_bokeh>=3.0.7" "jupyter_client<8" bokeh::ipywidgets_bokeh
+    jupyterlab ipywidgets jupyterlab_code_formatter jupyterlab-myst
+    bokeh::ipywidgets_bokeh  # jupyter_bokeh
 
     # Testing
     pytest pytest-xdist pytest-rerunfailures pytest-benchmark parameterized pytest-asyncio
@@ -42,7 +42,7 @@ ALL_PACKAGES=(
 
     # Misc
     diskcache streamz aiohttp rich-click setuptools_scm watchfiles
-    "pyviz_comms<3" tqdm pyct httpx
+    pyviz_comms tqdm pyct httpx
     markdown markdown-it-py mdit-py-plugins linkify-it-py
 )
 GPU_PACKAGES=(
