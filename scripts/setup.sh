@@ -21,7 +21,7 @@ ALL_PACKAGES=(
 
     # Notebook
     jupyterlab ipywidgets jupyterlab_code_formatter jupyterlab-myst
-    bokeh::ipywidgets_bokeh  # jupyter_bokeh
+    bokeh::ipywidgets_bokeh jupyter_bokeh
 
     # Testing
     pytest pytest-xdist pytest-rerunfailures pytest-benchmark parameterized pytest-asyncio
@@ -154,7 +154,7 @@ install_package() {
     # Install the package
     conda uninstall --force --offline --yes $p || echo "already uninstalled"
     # conda develop .  # adding to environments .pth file
-    pwd >> $(python -c "import site; print(site.getsitepackages()[0])")/holoviz.pth
+    # pwd >> $(python -c "import site; print(site.getsitepackages()[0])")/holoviz.pth
     python -m pip install --no-deps -e .
     if [[ "$p" == "panel" ]]; then
         panel bundle --all &>/dev/null &
