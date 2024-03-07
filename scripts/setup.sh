@@ -21,7 +21,7 @@ ALL_PACKAGES=(
 
     # Notebook
     jupyterlab ipywidgets jupyterlab_code_formatter jupyterlab-myst
-    bokeh::ipywidgets_bokeh jupyter_bokeh
+    bokeh::ipywidgets_bokeh  jupyter_bokeh
 
     # Testing
     pytest pytest-xdist pytest-rerunfailures pytest-benchmark parameterized pytest-asyncio
@@ -67,7 +67,7 @@ sync_vscode_settings() {
 create_environments() {
     if [ "$1" == "CLEAN" ]; then
         # Clean up old environment
-        conda env list | grep $CONDA_ENV | awk '{print $1}' | xargs -r -L1 conda env remove -n || echo "No environment to remove"
+        conda env list | grep $CONDA_ENV | awk '{print $1}' | xargs -r -L1 conda env remove -y -n || echo "No environment to remove"
 
         # Creating environment (can't clone because they are linked)
         mamba create -n $CONDA_ENV $PYTHON ${ALL_PACKAGES[@]} -y
@@ -91,7 +91,7 @@ create_environments() {
 
     if [ "$1" == "CLEAN" ]; then
         # Insert custom install
-        mamba install bokeh=3.4 -c bokeh/channel/dev -y
+        mamba install bokeh==3.4.0rc1 -c bokeh/channel/dev -y
 
         # Environment variables
         # https://docs.bokeh.org/en/latest/docs/dev_guide/setup.html
