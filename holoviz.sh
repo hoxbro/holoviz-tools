@@ -17,9 +17,6 @@ ccd() {
 if [[ -z $1 || $1 == "nvim" || $1 == "vim" ]]; then
     ccd
     nvim $HOLOVIZ_DEV
-elif [[ ($1 == "code") ]]; then
-    ccd
-    code $HOLOVIZ_DEV/holoviz.code-workspace
 elif [[ $1 == "lab" ]]; then
     ccd
     if [[ $(jupyter server list 2>&1 | grep -o "localhost:8888" | wc -l) -eq 0 ]]; then
@@ -29,7 +26,7 @@ elif [[ $1 == "lab" ]]; then
     fi
 elif [[ $1 == "save" ]]; then
     RESULT=$(PYTHONPATH=$TOOLS python $TOOLS/save.py)
-    echo $(echo $RESULT | grep -v '^/home/') 
+    echo $(echo $RESULT | grep -v '^/home/')
     export PANEL_SERVE_FILE=$(echo $RESULT | grep -E '^/home/')
 elif [[ $1 == "fetch" ]]; then
     bash $TOOLS/fetch.sh

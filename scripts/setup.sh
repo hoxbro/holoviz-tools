@@ -49,21 +49,6 @@ GPU_PACKAGES=(
     python=3.10 cupy cudf dask-cudf -c rapidsai --no-channel-priority
 )
 
-sync_vscode_settings() {
-    SRC=$HOLOVIZ_DEV/.vscode-repos/$p-settings.json
-
-    if [ -f "$SRC" ]; then
-        echo "Custom setting file exists for $p"
-    else
-        echo "Custom setting file does not exists for $p"
-        SRC=$HOLOVIZ_DEV/.vscode-repos/settings.json
-    fi
-
-    DST=$HOLOVIZ_REP/$p/.vscode/settings.json
-    mkdir $(dirname $DST)
-    ln -s $SRC $DST
-}
-
 create_environments() {
     if [ "$1" == "CLEAN" ]; then
         # Clean up old environment
@@ -102,9 +87,7 @@ create_environments() {
         conda env config vars set SETUPTOOLS_ENABLE_FEATURES=legacy-editable -n $CONDA_ENV
         conda env config vars set USE_PYGEOS=0 -n $CONDA_ENV
 
-        # https://discourse.jupyter.org/t/debugger-warning-it-seems-that-frozen-modules-are-being-used-python-3-11-0
         conda env config vars set PYDEVD_DISABLE_FILE_VALIDATION=1 -n $CONDA_ENV
-        # Crashes pytest https://github.com/microsoft/vscode-python/issues/20259
         # conda env config vars set PYTHONWARNINGS=default
 
         if [[ $OS == "windows" ]]; then
@@ -144,8 +127,6 @@ install_package() {
         cd $p
         pre-commit install --allow-missing-config
     fi
-    # .vscode settings
-    sync_vscode_settings || echo "No vscode settings"
 
     # pre-commit initialize
     pre-commit
@@ -161,9 +142,6 @@ install_package() {
     elif [[ "$p" == "holoviews" ]]; then
         # Don't want the holoviews command
         rm $(which holoviews) || echo "already uninstalled"
-    elif [[ "$p" == "colorcet" ]]; then
-        # Keep context in the first folder
-        ln -s $HOLOVIZ_DEV/.vscode-repos/keep-context.json .vscode/
     fi
     rm -rf build/
     cd ..

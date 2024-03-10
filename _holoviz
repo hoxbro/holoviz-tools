@@ -3,7 +3,6 @@ local -a subcmds state
 subcmds=(
   'setup:Setup a Holoviz environment'
   'sync:Sync Git repo in Holoviz environment'
-  'code:Open VSCode with Holoviz workspace'
   'lab:Open JupyterLab with Holoviz environment'
   'version-finder:Find versions of packages'
   'action-status:Check status of Holoviz Github Actions'
