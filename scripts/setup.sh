@@ -4,7 +4,7 @@ set -euo pipefail
 
 CONDA_ENV="holoviz"
 PYTHON="python=3.12"
-PACKAGES=(panel holoviews hvplot param datashader geoviews lumen colorcet holonote)
+PACKAGES=(panel holoviews hvplot param datashader geoviews lumen holonote)
 ALL_PACKAGES=(
     # Visualization
     bokeh plotly matplotlib seaborn altair
@@ -42,7 +42,7 @@ ALL_PACKAGES=(
 
     # Misc
     diskcache streamz aiohttp rich-click setuptools_scm watchfiles
-    pyviz_comms tqdm pyct httpx
+    pyviz_comms tqdm pyct httpx colorcet
     markdown markdown-it-py mdit-py-plugins linkify-it-py
 )
 GPU_PACKAGES=(
@@ -76,7 +76,6 @@ create_environments() {
 
     if [ "$1" == "CLEAN" ]; then
         # Insert custom install
-        mamba install bokeh==3.4.0rc1 -c bokeh/channel/dev -y
 
         # Environment variables
         # https://docs.bokeh.org/en/latest/docs/dev_guide/setup.html
