@@ -17,7 +17,7 @@ ALL_PACKAGES=(
     lxml openpyxl fastparquet pooch pyarrow
     "intake<2" intake-sql intake-parquet intake-xarray
     s3fs h5netcdf zarr hdf5
-    ibis-sqlite sqlalchemy  # python-duckdb connectorx
+    ibis-sqlite sqlalchemy python-duckdb # connectorx
 
     # Notebook
     jupyterlab ipywidgets jupyterlab_code_formatter jupyterlab-myst
