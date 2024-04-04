@@ -7,8 +7,12 @@ fi
 
 if [ -z "$PANEL_SERVE_FILE" ]; then
     UNSORTED_FILES=$(fd --regex '\d{3,5}.+?\.py$' -t f $DIR --print0)
-    SORTED_FILES=$(echo $UNSORTED_FILES | xargs -0 stat -c "%Y %N" 2>/dev/null  | sort -r | awk '{print $2}' | tr -d "'" | grep -v 'archive' | sed "s?$DIR??" | grep -e '^dev_')
-    FILE=$(echo $SORTED_FILES | fzf  --preview  "bat $DIR{} --color always")
+    SORTED_FILES=$(echo $UNSORTED_FILES | xargs -0 stat -c "%Y %N" 2>/dev/null | sort -r | awk '{print $2}' | tr -d "'" | grep -v 'archive' | sed "s?$DIR??" | grep -e '^dev_')
+    if [ -z "$1" ]; then
+        FILE=$(echo $SORTED_FILES | fzf --preview "bat $DIR{} --color always")
+    else
+        FILE=$(echo $SORTED_FILES | fzf --preview "bat $DIR{} --color always" --select-1 --query $1)
+    fi
     export PANEL_SERVE_FILE=$DIR$FILE
 fi
 
