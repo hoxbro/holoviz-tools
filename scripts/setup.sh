@@ -96,8 +96,6 @@ create_environments() {
 }
 
 install_package() {
-    # This should be removed when packages uses pyproject.toml
-    export SETUPTOOLS_ENABLE_FEATURES=legacy-editable
 
     if [ -d "$p" ]; then
         cd $p
@@ -109,8 +107,8 @@ install_package() {
         git checkout main
 
         # Update main
-        git fetch
-        git pull --tags
+        git fetch origin
+        git pull origin --tags
         git reset --hard origin/main
 
         # Clean up
@@ -129,15 +127,17 @@ install_package() {
 
     # pre-commit initialize
     pre-commit
-    cp -a ~/Repos/holoviz-tools/scripts/pre-push .git/hooks/pre-push
+    cp -a ~/projects/holoviz-tools/scripts/pre-push .git/hooks/pre-push
 
     # Install the package
     conda uninstall --force --offline --yes $p || echo "already uninstalled"
     # conda develop .  # adding to environments .pth file
     # pwd >> $(python -c "import site; print(site.getsitepackages()[0])")/holoviz.pth
-    python -m pip install --no-deps -e .
+
+    # This should be removed when packages uses pyproject.toml
+    SETUPTOOLS_ENABLE_FEATURES=legacy-editable python -m pip install --no-deps -e . || SETUPTOOLS_ENABLE_FEATURES= python -m pip install --no-deps -e .
     if [[ "$p" == "panel" ]]; then
-        panel bundle --all &>/dev/null &
+        panel bundle --verbose --all &>/dev/null &
     elif [[ "$p" == "holoviews" ]]; then
         # Don't want the holoviews command
         rm $(which holoviews) || echo "already uninstalled"
@@ -147,7 +147,13 @@ install_package() {
 }
 
 run() {
-    ($1 $2 &>"/tmp/holoviz_$p.log") && echo "Finished installing $p" || echo "!!! Failed installing $p !!!"
+    set +euo pipefail
+    (set -euxo pipefail && $1 $2) >"/tmp/holoviz_$p_$(date +%Y-%m-%d_%H.%M).log" 2>&1
+    if (($? > 0)); then
+        echo "!!! Failed installing $p !!!"
+    else
+        echo "Finished installing $p"
+    fi
     echo -ne "\r" # Clean new line
 }
 
@@ -191,7 +197,6 @@ if [[ $OS == "linux" ]] && $NVIDIA; then
         run install_package $1 &
     done
 fi
-
 
 # Download data
 conda activate $CONDA_ENV
