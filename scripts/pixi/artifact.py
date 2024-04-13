@@ -16,7 +16,6 @@ import yaml
 from pandas.io.clipboard import clipboard_set
 from rich.console import Console
 from rich.live import Live
-from rich.rule import Rule
 from rich.table import Table
 from rich_menu import argument_menu, menu
 
@@ -153,9 +152,6 @@ def compare_envs(repo, good_run, bad_run, env, arch, good_file, bad_file):
     for k_env, v_env in good_envs.items():
         if not k_env.startswith("test") or (env is not None and k_env != env):
             continue
-        if output:
-            console.print(Rule(style="bright_black", end=80))
-        output = False
         for k_arch, good_env in v_env["packages"].items():
             if arch is not None and k_arch != arch:
                 continue
@@ -164,6 +160,9 @@ def compare_envs(repo, good_run, bad_run, env, arch, good_file, bad_file):
             with contextlib.suppress(KeyError):
                 bad_env = bad_envs[k_env]["packages"][k_arch]
                 output |= table_output(repo, good_run, bad_run, k_env, k_arch, good_env, bad_env)
+
+    if output is False:
+        console.print("No differences found between the runs")
 
 
 def table_output(repo, good_run, bad_run, env, arch, good_env, bad_env):
@@ -183,11 +182,11 @@ def table_output(repo, good_run, bad_run, env, arch, good_env, bad_env):
         info.append((p, good[0] if good else "-", bad[0] if bad else "-"))
 
     table = Table(
-        title=f"Difference in packages on {repo!r} for env {env!r} on {arch!r}",
+        title=f"Difference in packages on {repo!r} for env {env!r} on arch {arch!r}",
     )
     table.add_column("Package", min_width=15)
-    table.add_column(f"Only in good lock (#{good_run})", style="green")
-    table.add_column(f"Only in bad lock (#{bad_run})", style="red")
+    table.add_column(f"[green]Good run (#{good_run})[/green]", style="green")
+    table.add_column(f"[red]Bad run (#{bad_run})[/red]", style="red")
 
     for i in info:
         table.add_row(*i)
