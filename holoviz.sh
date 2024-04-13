@@ -40,7 +40,7 @@ elif [[ $1 == "version-finder" ]]; then
     PYTHONPATH=$TOOLS python $TOOLS/version_finder.py
 elif [[ $1 == "artifact" ]]; then
     shift
-    PYTHONPATH=$TOOLS python $TOOLS/artifact.py $@
+    PYTHONPATH=$TOOLS python $TOOLS/pixi/artifact.py $@
 elif [[ $1 == "changelog" ]]; then
     shift
     PYTHONPATH=$TOOLS python $TOOLS/changelog.py $@
