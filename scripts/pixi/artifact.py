@@ -16,6 +16,7 @@ import yaml
 from pandas.io.clipboard import clipboard_set
 from rich.console import Console
 from rich.live import Live
+from rich.rule import Rule
 from rich.table import Table
 from rich_menu import argument_menu, menu
 
@@ -27,7 +28,7 @@ HEADERS = {
     "Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
     "X-GitHub-Api-Version": "2022-11-28",
 }
-REPOS = ["holoviews"] # , "panel", "hvplot", "datashader", "geoviews", "lumen"]
+REPOS = ["holoviews"]  # , "panel", "hvplot", "datashader", "geoviews", "lumen"]
 console = Console()
 
 
@@ -148,10 +149,13 @@ def get_env(file):
 def compare_envs(repo, good_run, bad_run, env, arch, good_file, bad_file):
     good_envs, bad_envs = get_env(good_file), get_env(bad_file)
 
+    output = False
     for k_env, v_env in good_envs.items():
         if not k_env.startswith("test") or (env is not None and k_env != env):
             continue
-
+        if output:
+            console.print(Rule(style="bright_black", end=80))
+        output = False
         for k_arch, good_env in v_env["packages"].items():
             if arch is not None and k_arch != arch:
                 continue
@@ -159,7 +163,7 @@ def compare_envs(repo, good_run, bad_run, env, arch, good_file, bad_file):
             # Assumes symmetry between runs if not we just ignore
             with contextlib.suppress(KeyError):
                 bad_env = bad_envs[k_env]["packages"][k_arch]
-                table_output(repo, good_run, bad_run, k_env, arch, good_env, bad_env)
+                output |= table_output(repo, good_run, bad_run, k_env, k_arch, good_env, bad_env)
 
 
 def table_output(repo, good_run, bad_run, env, arch, good_env, bad_env):
@@ -170,7 +174,7 @@ def table_output(repo, good_run, bad_run, env, arch, good_env, bad_env):
 
     packages = {p.split("-")[:-2][0] for p in good_only | bad_only}
     if not packages:
-        return
+        return False
 
     info = []
     for p in sorted(packages):
@@ -188,8 +192,8 @@ def table_output(repo, good_run, bad_run, env, arch, good_env, bad_env):
     for i in info:
         table.add_row(*i)
 
-    console.print()
     console.print(table)
+    return True
 
 
 @click.command(context_settings={"show_default": True})
