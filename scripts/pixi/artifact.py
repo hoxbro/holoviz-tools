@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import os
 import sys
 from datetime import datetime
@@ -18,8 +19,6 @@ from rich.live import Live
 from rich.table import Table
 from rich_menu import argument_menu, menu
 
-# Needs diff-so-fancy in path
-
 PATH = Path("~/.cache/holoviz-cli/artifact").expanduser().resolve()
 PATH.mkdir(parents=True, exist_ok=True)
 
@@ -28,7 +27,7 @@ HEADERS = {
     "Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
     "X-GitHub-Api-Version": "2022-11-28",
 }
-REPOS = ["holoviews", "panel", "hvplot", "datashader", "geoviews", "lumen"]
+REPOS = ["holoviews"] # , "panel", "hvplot", "datashader", "geoviews", "lumen"]
 console = Console()
 
 
@@ -139,34 +138,31 @@ def get_files(repo, good_run, bad_run, workflow, force) -> tuple[Path | None, Pa
     return good_file, bad_file, good_run, bad_run
 
 
-def get_env(file, env, os):  # RENAME
+def get_env(file):
     with open(file) as f:
         data = f.read()
     data = data.split("\npackages:")[0]
-    spaces = "  "
-
-    ns = [f"{spaces}{env}:"]
-    for n in data.split(f"\n{spaces}{env}:")[1].split("\n")[1:]:
-        if not n.startswith(spaces + " "):
-            break
-        ns.append(n)
-    data = "\n".join(ns)
-
-    spaces = "      "
-    ns = [f"{spaces}{os}:"]
-    for n in data.split(f"\n{spaces}{os}:")[1].split("\n")[1:]:
-        if not n.startswith(f"{spaces}-"):
-            break
-        ns.append(n)
-    data = "\n".join(ns)
-
-    return yaml.safe_load(data)[os]
+    return yaml.load(data, Loader=yaml.CLoader)["environments"]
 
 
-def compare_envs(repo, good_run, bad_run, environment, arch, good_file, bad_file):
-    good_env = get_env(good_file, environment, arch)
-    bad_env = get_env(bad_file, environment, arch)
+def compare_envs(repo, good_run, bad_run, env, arch, good_file, bad_file):
+    good_envs, bad_envs = get_env(good_file), get_env(bad_file)
 
+    for k_env, v_env in good_envs.items():
+        if not k_env.startswith("test") or (env is not None and k_env != env):
+            continue
+
+        for k_arch, good_env in v_env["packages"].items():
+            if arch is not None and k_arch != arch:
+                continue
+
+            # Assumes symmetry between runs if not we just ignore
+            with contextlib.suppress(KeyError):
+                bad_env = bad_envs[k_env]["packages"][k_arch]
+                table_output(repo, good_run, bad_run, k_env, arch, good_env, bad_env)
+
+
+def table_output(repo, good_run, bad_run, env, arch, good_env, bad_env):
     bad_list = {os.path.basename(next(iter(p.values()))) for p in bad_env}
     good_list = {os.path.basename(next(iter(p.values()))) for p in good_env}
     good_only = good_list - bad_list
@@ -174,7 +170,6 @@ def compare_envs(repo, good_run, bad_run, environment, arch, good_file, bad_file
 
     packages = {p.split("-")[:-2][0] for p in good_only | bad_only}
     if not packages:
-        click.echo("No differences found for the given parameters.")
         return
 
     info = []
@@ -184,7 +179,7 @@ def compare_envs(repo, good_run, bad_run, environment, arch, good_file, bad_file
         info.append((p, good[0] if good else "-", bad[0] if bad else "-"))
 
     table = Table(
-        title=f"Difference in packages on {repo!r} for environment {environment!r} on {arch!r}",
+        title=f"Difference in packages on {repo!r} for env {env!r} on {arch!r}",
     )
     table.add_column("Package", min_width=15)
     table.add_column(f"Only in good lock (#{good_run})", style="green")
@@ -193,6 +188,7 @@ def compare_envs(repo, good_run, bad_run, environment, arch, good_file, bad_file
     for i in info:
         table.add_row(*i)
 
+    console.print()
     console.print(table)
 
 
@@ -201,14 +197,14 @@ def compare_envs(repo, good_run, bad_run, environment, arch, good_file, bad_file
 @click.argument("good_run", type=int, required=False)
 @click.argument("bad_run", type=int, required=False)
 @click.option(
-    "--environment",
-    default="test-39",
+    "--env",
+    default=None,
     type=click.Choice(["test-39", "test-310", "test-311", "test-312", "test-ui", "test-core"]),
     help="Test type",
 )
 @click.option(
     "--arch",
-    default="linux-64",
+    default=None,
     type=click.Choice(["linux-64", "osx-arm64", "osx-64", "win-64"]),
     help="Operating system",
 )
@@ -223,15 +219,22 @@ def compare_envs(repo, good_run, bad_run, environment, arch, good_file, bad_file
     default=False,
     help="Force download artifacts",
 )
-def cli(repo, good_run, bad_run, environment, arch, workflow, force) -> None:
+def cli(repo, good_run, bad_run, env, arch, workflow, force) -> None:
     good_file, bad_file, good_run, bad_run = get_files(repo, good_run, bad_run, workflow, force)
 
-    code = (
-        f"holoviz artifact {repo} {good_run} {bad_run} --environment {environment} --arch {arch}"
-    )
-    clipboard_set(code)
+    # Save to command to clipboard
+    code = f"holoviz artifact {repo} {good_run} {bad_run}"
+    if env:
+        code += f" --env {env}"
+    if arch:
+        code += f" --arch {arch}"
+    if workflow != "test.yaml":
+        code += f" --workflow {workflow}"
+    if force:
+        code += " --force"
+    clipboard_set(code + " ")
 
-    compare_envs(repo, good_run, bad_run, environment, arch, good_file, bad_file)
+    compare_envs(repo, good_run, bad_run, env, arch, good_file, bad_file)
 
 
 if __name__ == "__main__":
