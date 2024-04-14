@@ -65,7 +65,7 @@ def generate_table(title, version1, version2, missing1, missing2):
 
 
 @click.command(context_settings={"show_default": True})
-@argument_menu("repo", choises=REPOS, console=console, title="Select a repo")
+@argument_menu("repo", choices=REPOS, console=console, title="Select a repo")
 @click.argument("good_run", type=int, required=False)
 @click.argument("bad_run", type=int, required=False)
 @click.option(

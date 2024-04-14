@@ -122,17 +122,17 @@ def menu(menu_items, live, **menu_kwargs) -> Any:
 
 
 class ArgumentMenu(click.Argument):
-    def __init__(self, *args, console=None, title=None, choises=None, **kwargs):
+    def __init__(self, *args, console=None, title=None, choices=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.required = False
-        self.choises = choises
+        self.choices = choices
         self.console = console
         self.title = title or "Choose an item:"
 
     def consume_value(self, ctx, opts):
         val = super().consume_value(ctx, opts)
         if val[0] is None:
-            value = live_menu(self.choises, self.console, title=self.title)
+            value = live_menu(self.choices, self.console, title=self.title)
             return (value, val[1])
         return val
 

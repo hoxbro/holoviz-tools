@@ -85,7 +85,7 @@ def get_releases(owner, repo):
 @argument_menu(
     "repo",
     console=console,
-    choises=REPOS,
+    choices=REPOS,
     title="Select a repo to generate changelog for",
 )
 @click.argument("use_latest", type=bool, default=True)
