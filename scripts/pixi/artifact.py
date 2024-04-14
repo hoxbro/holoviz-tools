@@ -17,7 +17,7 @@ REPOS = ["holoviews"]  # , "panel", "hvplot", "datashader", "geoviews", "lumen"]
 
 def get_files(repo, good_run, bad_run, workflow, force) -> tuple[Path | None, Path | None]:
     good_run, bad_run, good_path, bad_path = download_files(
-        repo, good_run, bad_run, workflow, force
+        repo, good_run, bad_run, workflow, force=force, artifact_names=["pixi-lock"]
     )
     good_file, bad_file = good_path / "pixi.lock", bad_path / "pixi.lock"
 

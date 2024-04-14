@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from functools import cache
 from io import BytesIO
@@ -76,7 +77,7 @@ def get_artifact_urls(repo, workflow, good_run, bad_run) -> tuple[str, str] | No
             return good_url, bad_url
 
 
-def download_artifact(download_path, url) -> None:
+def get_artifact_data_url(download_path, url, artifact_names) -> None:
     if download_path.exists():
         return
 
@@ -85,7 +86,18 @@ def download_artifact(download_path, url) -> None:
     if not artifact:
         download_path.mkdir(exist_ok=True)
         return
-    download_url = artifact[0]["archive_download_url"]
+    if artifact_names:
+        download_urls = [
+            (download_path, a["archive_download_url"])
+            for a in artifact
+            if a["name"] in artifact_names
+        ]
+    else:
+        download_urls = [(download_path, artifact[0]["archive_download_url"])]
+    return download_urls
+
+
+def download_url(download_path, download_url) -> None:
     zipfile = httpx.get(download_url, headers=HEADERS, follow_redirects=True).raise_for_status()
     bio = BytesIO(zipfile.content)
     bio.seek(0)
@@ -93,7 +105,7 @@ def download_artifact(download_path, url) -> None:
         zip_ref.extractall(download_path)
 
 
-def download_files(repo, good_run, bad_run, workflow, force=False) -> None:
+def download_files(repo, good_run, bad_run, workflow, *, force=False, artifact_names=None) -> None:
     if good_run is None or bad_run is None:
         good_run, bad_run = select_runs(repo, workflow)
         console.print(
@@ -110,7 +122,11 @@ def download_files(repo, good_run, bad_run, workflow, force=False) -> None:
     if not good_path.exists() or not bad_path.exists():
         with console.status("Downloading artifacts..."):
             good_url, bad_url = get_artifact_urls(repo, workflow, good_run, bad_run)
-            download_artifact(good_path, good_url)
-            download_artifact(bad_path, bad_url)
+            artifact_urls = [
+                *get_artifact_data_url(good_path, good_url, artifact_names),
+                *get_artifact_data_url(bad_path, bad_url, artifact_names),
+            ]
+            with ThreadPoolExecutor() as executor:
+                executor.map(lambda x: download_url(*x), artifact_urls)
 
     return good_run, bad_run, good_path, bad_path

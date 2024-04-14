@@ -16,7 +16,7 @@ def get_files(
     repo, good_run, bad_run, test, os, python, workflow, force
 ) -> tuple[Path | None, Path | None]:
     good_run, bad_run, good_path, bad_path = download_files(
-        repo, good_run, bad_run, workflow, force
+        repo, good_run, bad_run, workflow, force=force
     )
 
     found = False
