@@ -5,16 +5,16 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from functools import cache
 from io import BytesIO
-from pathlib import Path
 from shutil import rmtree
 from zipfile import ZipFile
 
 import httpx
+import platformdirs
 from rich.console import Console
 from rich.live import Live
 from rich_menu import menu
 
-ARTIFACT_PATH = Path("~/.cache/holoviz-cli/artifact").expanduser().resolve()
+ARTIFACT_PATH = platformdirs.user_cache_path() / "holoviz-cli" / "artifact"
 ARTIFACT_PATH.mkdir(parents=True, exist_ok=True)
 
 HEADERS = {
