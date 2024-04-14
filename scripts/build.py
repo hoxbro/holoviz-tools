@@ -13,18 +13,26 @@ from rich_menu import argument_menu
 REPOS = ["holoviews", "panel", "datashader", "geoviews"]
 
 
+def _get_version_re(repo_version):
+    repo_version = re.escape(repo_version)
+    repo_version = re.sub(r"(\d)(rc|a|b)(\d)", r"\1\-?\2\.?\3", repo_version)  # For JS versioning
+    repo_version = repo_version.replace(r"\-", ".")  # For repo/version path
+    return re.compile(repo_version)
+
+
 def zip_files(zip_path):
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         zip_file_list = zip_ref.namelist()
-    version = zip_path.name.split("-py3")[0]
-    re_version = re.compile(re.escape(version).replace(r"\-", "."))
+    repo_version = zip_path.name.split("-py3")[0].split("-py2")[0]
+    re_version = _get_version_re(repo_version)
     return {re_version.sub("$VERSION", f) for f in zip_file_list}
+
 
 def tar_files(tar_path):
     with tarfile.open(tar_path, "r") as tar_ref:
         tar_file_list = [member.name for member in tar_ref.getmembers() if member.isfile()]
-    version = tar_path.name.split(".tar")[0].split("-py_0")[0]
-    re_version = re.compile(re.escape(version).replace(r"\-", "."))
+    repo_version = tar_path.name.split(".tar")[0].split("-py_0")[0]
+    re_version = _get_version_re(repo_version)
     return {re_version.sub("$VERSION", f) for f in tar_file_list}
 
 
@@ -46,7 +54,7 @@ def compare_tar_files(tar1_path, tar2_path):
 
 def generate_table(title, version1, version2, missing1, missing2):
     if not missing1 and not missing2:
-        console.print(f"[green]{title} are identical[/green]")
+        console.print(f"[green]{title} has identical filelist[/green]")
         return
     table = Table(title=title)
     table.add_column(f"[green]Files only in run 1\n{version1}[/green]", style="green")
@@ -90,7 +98,7 @@ def cli(repo, good_run, bad_run, workflow, force) -> None:
         version1 = before_path.name.split("-py3")[0].replace("-", " ")
         version2 = after_path.name.split("-py3")[0].replace("-", " ")
         missing_whl1, missing_whl2 = compare_zip_files(before_path, after_path)
-        generate_table(f"{repo.title()} - wheels", version1, version2, missing_whl1, missing_whl2)
+        generate_table(f"{repo.title()} - wheel", version1, version2, missing_whl1, missing_whl2)
 
     with contextlib.suppress(StopIteration):  # Source distribution
         before_path = next(good_path.glob("*.tar.gz"))
@@ -101,7 +109,9 @@ def cli(repo, good_run, bad_run, workflow, force) -> None:
         #  Filter out top-level example folder, this is a known bug
         missing_sdist1 = [f for f in missing_sdist1 if not f.startswith("$VERSION/examples")]
         missing_sdist2 = [f for f in missing_sdist2 if not f.startswith("$VERSION/examples")]
-        generate_table(f"{repo} - sdist", version1, version2, missing_sdist1, missing_sdist2)
+        generate_table(
+            f"{repo.title()} - sdist", version1, version2, missing_sdist1, missing_sdist2
+        )
 
     with contextlib.suppress(StopIteration):  # Conda
         before_path = next(good_path.glob("*.tar.bz2"))
@@ -109,7 +119,9 @@ def cli(repo, good_run, bad_run, workflow, force) -> None:
         version1 = before_path.name.split(".tar")[0].split("-py_0")[0].replace("-", " ")
         version2 = after_path.name.split(".tar")[0].split("-py_0")[0].replace("-", " ")
         missing_conda1, missing_conda2 = compare_tar_files(before_path, after_path)
-        generate_table(f"{repo} - conda", version1, version2, missing_conda1, missing_conda2)
+        generate_table(
+            f"{repo.title()} - conda", version1, version2, missing_conda1, missing_conda2
+        )
 
 
 if __name__ == "__main__":
