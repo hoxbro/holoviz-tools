@@ -1,4 +1,5 @@
 import contextlib
+import re
 import tarfile
 import zipfile
 from itertools import zip_longest
@@ -15,14 +16,15 @@ def zip_files(zip_path):
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         zip_file_list = zip_ref.namelist()
     version = zip_path.name.split("-py3")[0]
-    return {f.replace(version, "$VERSION") for f in zip_file_list}
-
+    re_version = re.compile(version.replace("-", "."))
+    return {re_version.sub("$version", f) for f in zip_file_list}
 
 def tar_files(tar_path):
     with tarfile.open(tar_path, "r") as tar_ref:
         tar_file_list = [member.name for member in tar_ref.getmembers() if member.isfile()]
     version = tar_path.name.split(".tar")[0].split("-py_0")[0]
-    return {f.replace(version, "$VERSION") for f in tar_file_list}
+    re_version = re.compile(version.replace("-", "."))
+    return {re_version.sub("$version", f) for f in tar_file_list}
 
 
 def compare_zip_files(zip1_path, zip2_path):
@@ -76,35 +78,29 @@ def cli(repo, good_run, bad_run, workflow, force) -> None:
     with contextlib.suppress(StopIteration):  # Wheel
         before_path = next(good_path.glob("*.whl"))
         after_path = next(bad_path.glob("*.whl"))
-        version1 = before_path.name.split("-py3")[0].split("-")[-1]
-        version2 = after_path.name.split("-py3")[0].split("-")[-1]
+        version1 = before_path.name.split("-py3")[0].replace("-", " ")
+        version2 = after_path.name.split("-py3")[0].replace("-", " ")
         missing_whl1, missing_whl2 = compare_zip_files(before_path, after_path)
-        generate_table(
-            f"{repo} - wheels", version1, version2, missing_whl1, missing_whl2
-        )
+        generate_table(f"{repo.title()} - wheels", version1, version2, missing_whl1, missing_whl2)
 
     with contextlib.suppress(StopIteration):  # Source distribution
         before_path = next(good_path.glob("*.tar.gz"))
         after_path = next(bad_path.glob("*.tar.gz"))
-        version1 = before_path.name.split(".tar")[0].split("-")[-1]
-        version2 = after_path.name.split(".tar")[0].split("-")[-1]
+        version1 = before_path.name.split(".tar")[0].replace("-", " ")
+        version2 = after_path.name.split(".tar")[0].replace("-", " ")
         missing_sdist1, missing_sdist2 = compare_tar_files(before_path, after_path)
         #  Filter out top-level example folder, this is a known bug
         missing_sdist1 = [f for f in missing_sdist1 if not f.startswith("$VERSION/examples")]
         missing_sdist2 = [f for f in missing_sdist2 if not f.startswith("$VERSION/examples")]
-        generate_table(
-            f"{repo} - sdist", version1, version2, missing_sdist1, missing_sdist2
-        )
+        generate_table(f"{repo} - sdist", version1, version2, missing_sdist1, missing_sdist2)
 
     with contextlib.suppress(StopIteration):  # Conda
         before_path = next(good_path.glob("*.tar.bz2"))
         after_path = next(bad_path.glob("*.tar.bz2"))
-        version1 = before_path.name.split(".tar")[0].split("-py_0")[0].split("-")[-1]
-        version2 = after_path.name.split(".tar")[0].split("-py_0")[0].split("-")[-1]
+        version1 = before_path.name.split(".tar")[0].split("-py_0")[0].replace("-", " ")
+        version2 = after_path.name.split(".tar")[0].split("-py_0")[0].replace("-", " ")
         missing_conda1, missing_conda2 = compare_tar_files(before_path, after_path)
-        generate_table(
-            f"{repo} - conda", version1, version2, missing_conda1, missing_conda2
-        )
+        generate_table(f"{repo} - conda", version1, version2, missing_conda1, missing_conda2)
 
 
 if __name__ == "__main__":
