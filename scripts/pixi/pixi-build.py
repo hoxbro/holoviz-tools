@@ -1,66 +1,45 @@
-import os.path
 import tarfile
 import zipfile
-from glob import glob
+
+from _artifact import download_files
+
+
+def zip_files(zip_path):
+    with zipfile.ZipFile(zip_path, "r") as zip_ref:
+        zip_file_list = zip_ref.namelist()
+    version = zip_path.name.split("-py3")[0]
+    return {f.replace(version, "$VERSION") for f in zip_file_list}
+
+
+def tar_files(tar_path):
+    with tarfile.open(tar_path, "r") as tar_ref:
+        tar_file_list = [member.name for member in tar_ref.getmembers() if member.isfile()]
+    version = tar_path.name.split(".tar")[0].split("-py_0")[0]
+    return {f.replace(version, "$VERSION") for f in tar_file_list}
 
 
 def compare_zip_files(zip1_path, zip2_path):
-    files_missing_from_zip1 = []
-    files_missing_from_zip2 = []
-
-    with zipfile.ZipFile(zip1_path, "r") as zip1:
-        zip1_file_list = zip1.namelist()
-
-    with zipfile.ZipFile(zip2_path, "r") as zip2:
-        zip2_file_list = zip2.namelist()
-
-    # Remove version difference
-    version = os.path.basename(zip1_path).split("-py3")[0]
-    zip1_file_list = [f.replace(version, "$VERSION") for f in zip1_file_list]
-    version = os.path.basename(zip2_path).split("-py3")[0]
-    zip2_file_list = [f.replace(version, "$VERSION") for f in zip2_file_list]
-
-    for file_name in zip1_file_list:
-        if file_name not in zip2_file_list:
-            files_missing_from_zip2.append(file_name)
-
-    for file_name in zip2_file_list:
-        if file_name not in zip1_file_list:
-            files_missing_from_zip1.append(file_name)
-
-    return files_missing_from_zip1, files_missing_from_zip2
+    zip1 = zip_files(zip1_path)
+    zip2 = zip_files(zip2_path)
+    zip1_missing = sorted(zip1 - zip2)
+    zip2_missing = sorted(zip2 - zip1)
+    return zip1_missing, zip2_missing
 
 
 def compare_tar_files(tar1_path, tar2_path):
-    files_missing_from_tar1 = []
-    files_missing_from_tar2 = []
-
-    with tarfile.open(tar1_path, "r") as tar1:
-        tar1_file_list = [member.name for member in tar1.getmembers() if member.isfile()]
-
-    with tarfile.open(tar2_path, "r") as tar2:
-        tar2_file_list = [member.name for member in tar2.getmembers() if member.isfile()]
-
-    # Remove version difference
-    version = os.path.basename(tar1_path).split(".tar")[0].split("-py_0")[0]
-    tar1_file_list = [f.replace(version, "$VERSION") for f in tar1_file_list]
-    version = os.path.basename(tar2_path).split(".tar")[0].split("-py_0")[0]
-    tar2_file_list = [f.replace(version, "$VERSION") for f in tar2_file_list]
-
-    for file_name in tar1_file_list:
-        if file_name not in tar2_file_list:
-            files_missing_from_tar2.append(file_name)
-
-    for file_name in tar2_file_list:
-        if file_name not in tar1_file_list:
-            files_missing_from_tar1.append(file_name)
-
-    return files_missing_from_tar1, files_missing_from_tar2
+    tar1 = tar_files(tar1_path)
+    tar2 = tar_files(tar2_path)
+    tar1_missing = sorted(tar1 - tar2)
+    tar2_missing = sorted(tar2 - tar1)
+    return tar1_missing, tar2_missing
 
 
-before_path = glob("/home/shh/Downloads/main/*.whl")[0]
-after_path = glob("/home/shh/projects/holoviz/repos/holoviews/dist/*.whl")[0]
+good_run, bad_run, good_path, bad_path = download_files(
+    "holoviews", 235, 246, "build.yaml", artifact_names=["pip", "conda"]
+)
 
+before_path = next(good_path.glob("*.whl"))
+after_path = next(bad_path.glob("*.whl"))
 missing_from_zip1, missing_from_zip2 = compare_zip_files(before_path, after_path)
 
 print("Files missing from main wheel:")
@@ -69,12 +48,13 @@ print("\nFiles missing from pixi wheel:")
 print(missing_from_zip2)
 print()
 
-before_path = glob("/home/shh/Downloads/main/*.tar.gz")[0]
-after_path = glob("/home/shh/projects/holoviz/repos/holoviews/dist/*.tar.gz")[0]
+before_path = next(good_path.glob("*.tar.gz"))
+after_path = next(bad_path.glob("*.tar.gz"))
 
 missing_from_tar1, missing_from_tar2 = compare_tar_files(before_path, after_path)
 
 #  Filter out top-level example folder, this is a known bug
+missing_from_tar1 = [f for f in missing_from_tar1 if not f.startswith("$VERSION/examples")]
 missing_from_tar2 = [f for f in missing_from_tar2 if not f.startswith("$VERSION/examples")]
 
 print("Files missing from main sdist:")
@@ -83,10 +63,8 @@ print("\nFiles missing from pixi sdist:")
 print(missing_from_tar2)
 print()
 
-before_path = glob("/home/shh/Downloads/main/*.tar.bz2")[0]
-after_path = glob("/home/shh/projects/holoviz/repos/holoviews/dist/*.tar.bz2")[0]
-
-missing_from_tar1, missing_from_tar2 = compare_tar_files(before_path, after_path)
+before_path = next(good_path.glob("*.tar.bz2"))
+after_path = next(bad_path.glob("*.tar.bz2"))
 
 print("Files missing from main conda:")
 print(missing_from_tar1)

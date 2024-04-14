@@ -79,13 +79,13 @@ def get_artifact_urls(repo, workflow, good_run, bad_run) -> tuple[str, str] | No
 
 def get_artifact_data_url(download_path, url, artifact_names) -> None:
     if download_path.exists():
-        return
+        return []
 
     resp = httpx.get(url, headers=HEADERS).raise_for_status()
     artifact = resp.json()["artifacts"]
     if not artifact:
         download_path.mkdir(exist_ok=True)
-        return
+        return []
     if artifact_names:
         download_urls = [
             (download_path, a["archive_download_url"])
