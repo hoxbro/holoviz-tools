@@ -124,7 +124,7 @@ def cli(repo, good_run, bad_run, env, arch, workflow, force) -> None:
     good_run, bad_run, good_file, bad_file = get_files(repo, good_run, bad_run, workflow, force)
 
     # Save to command to clipboard
-    code = f"holoviz artifact {repo} {good_run} {bad_run} "
+    code = f"holoviz artifact-test {repo} {good_run} {bad_run} "
     if env:
         code += f"--env {env} "
     if arch:

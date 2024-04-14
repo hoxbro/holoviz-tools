@@ -6,6 +6,7 @@ from itertools import zip_longest
 
 import rich_click as click
 from _artifact import console, download_files
+from pandas.io.clipboard import clipboard_set
 from rich.table import Table
 from rich_menu import argument_menu
 
@@ -16,15 +17,15 @@ def zip_files(zip_path):
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         zip_file_list = zip_ref.namelist()
     version = zip_path.name.split("-py3")[0]
-    re_version = re.compile(version.replace("-", "."))
-    return {re_version.sub("$version", f) for f in zip_file_list}
+    re_version = re.compile(re.escape(version).replace(r"\-", "."))
+    return {re_version.sub("$VERSION", f) for f in zip_file_list}
 
 def tar_files(tar_path):
     with tarfile.open(tar_path, "r") as tar_ref:
         tar_file_list = [member.name for member in tar_ref.getmembers() if member.isfile()]
     version = tar_path.name.split(".tar")[0].split("-py_0")[0]
-    re_version = re.compile(version.replace("-", "."))
-    return {re_version.sub("$version", f) for f in tar_file_list}
+    re_version = re.compile(re.escape(version).replace(r"\-", "."))
+    return {re_version.sub("$VERSION", f) for f in tar_file_list}
 
 
 def compare_zip_files(zip1_path, zip2_path):
@@ -74,6 +75,14 @@ def cli(repo, good_run, bad_run, workflow, force) -> None:
     good_run, bad_run, good_path, bad_path = download_files(
         repo, good_run, bad_run, workflow, artifact_names=["pip", "conda"]
     )
+
+    # Save to command to clipboard
+    code = f"holoviz artifact-build {repo} {good_run} {bad_run} "
+    if workflow != "build.yaml":
+        code += f"--workflow {workflow} "
+    if force:
+        code += "--force "
+    clipboard_set(code)
 
     with contextlib.suppress(StopIteration):  # Wheel
         before_path = next(good_path.glob("*.whl"))

@@ -38,7 +38,7 @@ elif [[ $1 == "action-status" ]]; then
     PYTHONPATH=$TOOLS python $TOOLS/action_status.py
 elif [[ $1 == "version-finder" ]]; then
     PYTHONPATH=$TOOLS python $TOOLS/version_finder.py
-elif [[ $1 == "artifact" ]]; then
+elif [[ $1 == "artifact-test" ]]; then
     shift
     PYTHONPATH=$TOOLS python $TOOLS/pixi/artifact.py $@
 elif [[ $1 == "artifact-build" ]]; then
