@@ -43,7 +43,7 @@ elif [[ $1 == "artifact" ]]; then
     PYTHONPATH=$TOOLS python $TOOLS/pixi/artifact.py $@
 elif [[ $1 == "artifact-build" ]]; then
     shift
-    PYTHONPATH=$TOOLS python $TOOLS/pixi/pixi-build.py $@
+    PYTHONPATH=$TOOLS python $TOOLS/build.py $@
 elif [[ $1 == "changelog" ]]; then
     shift
     PYTHONPATH=$TOOLS python $TOOLS/changelog.py $@
