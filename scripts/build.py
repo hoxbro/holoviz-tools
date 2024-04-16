@@ -15,7 +15,7 @@ REPOS = ["holoviews", "panel", "datashader", "geoviews"]
 
 def _get_version_re(repo_version):
     repo_version = re.escape(repo_version)
-    repo_version = re.sub(r"(\d)(rc|a|b)(\d)", r"\1\-?\2\.?\3", repo_version)  # For JS versioning
+    repo_version = re.sub(r"(\d)\-?(rc|a|b)\.?(\d)", r"\1\-?\2\.?\3", repo_version)  # For JS versioning
     repo_version = repo_version.replace(r"\-", ".")  # For repo/version path
     return re.compile(repo_version)
 
@@ -31,7 +31,7 @@ def zip_files(zip_path):
 def tar_files(tar_path):
     with tarfile.open(tar_path, "r") as tar_ref:
         tar_file_list = [member.name for member in tar_ref.getmembers() if member.isfile()]
-    repo_version = tar_path.name.split(".tar")[0].split("-py_0")[0]
+    repo_version = tar_path.name.split(".tar")[0].split("-py_0")[0].split(".tgz")[0].removeprefix("holoviz-")
     re_version = _get_version_re(repo_version)
     return {re_version.sub("$VERSION", f) for f in tar_file_list}
 
@@ -81,7 +81,7 @@ def generate_table(title, version1, version2, missing1, missing2):
 )
 def cli(repo, good_run, bad_run, workflow, force) -> None:
     good_run, bad_run, good_path, bad_path = download_files(
-        repo, good_run, bad_run, workflow, artifact_names=["pip", "conda"]
+        repo, good_run, bad_run, workflow, artifact_names=["pip", "conda", "npm"]
     )
 
     # Save to command to clipboard
@@ -121,6 +121,16 @@ def cli(repo, good_run, bad_run, workflow, force) -> None:
         missing_conda1, missing_conda2 = compare_tar_files(before_path, after_path)
         generate_table(
             f"{repo.title()} - conda", version1, version2, missing_conda1, missing_conda2
+        )
+
+    with contextlib.suppress(StopIteration):  # NPM
+        before_path = next(good_path.glob("*.tgz"))
+        after_path = next(bad_path.glob("*.tgz"))
+        version1 = before_path.name.split(".tgz")[0].replace("-", " ").strip("holoviz ")
+        version2 = after_path.name.split(".tgz")[0].replace("-", " ").strip("holoviz ")
+        missing_conda1, missing_conda2 = compare_tar_files(before_path, after_path)
+        generate_table(
+            f"{repo.title()} - npmjs", version1, version2, missing_conda1, missing_conda2
         )
 
 
