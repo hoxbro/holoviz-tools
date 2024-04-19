@@ -69,7 +69,7 @@ def table_output(repo, good_run, bad_run, env, arch, good_env, bad_env):
     good_only = good_list - bad_list
     bad_only = bad_list - good_list
 
-    packages = {p.split("-")[:-2][0] for p in good_only | bad_only}
+    packages = {p.split("-")[:-2][0] for p in good_only | bad_only if p != "."}
     if not packages:
         return False
 
