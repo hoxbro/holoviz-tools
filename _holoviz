@@ -15,6 +15,7 @@ subcmds=(
   'vim:Open Neovim with Holoviz workspace'
   'serve:Start panel serve of development file'
   'deprecate:Check for deprecated functionality'
+  'pixi-lock: Download pixi-lock to a repo'
 )
 
 _arguments '1: :->subcmds' && return

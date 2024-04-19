@@ -12,7 +12,7 @@ import httpx
 import platformdirs
 from rich.console import Console
 from rich.live import Live
-from rich_menu import menu
+from rich_menu import live_menu, menu
 
 ARTIFACT_PATH = platformdirs.user_cache_path() / "holoviz-cli" / "artifact"
 ARTIFACT_PATH.mkdir(parents=True, exist_ok=True)
@@ -42,6 +42,14 @@ def download_runs(repo, workflow, page=1) -> tuple[dict, dict]:
             urls[no] = run["url"] + "/artifacts"
 
     return results, urls
+
+
+def select_run(repo, workflow) -> tuple[int, int]:
+    with console.status(f"Fetching runs for {repo}..."):
+        runs, _ = download_runs(repo, workflow, 1)
+
+    run = live_menu(runs, title=f"Select a run for [bold]{repo}[/bold]", console=console)
+    return run
 
 
 def select_runs(repo, workflow) -> tuple[int, int]:
@@ -103,6 +111,26 @@ def download_url(download_path, download_url) -> None:
     bio.seek(0)
     with ZipFile(bio) as zip_ref:
         zip_ref.extractall(download_path)
+
+
+def download_file(repo, run, workflow, *, force=False, artifact_names=None) -> None:
+    if run is None:
+        run = select_run(repo, workflow)
+        console.print(f"Selected: [green]Run {run}[/green]")
+
+    path = ARTIFACT_PATH / f"{repo}_{workflow.split(".")[0]}_{run}"
+
+    if force:
+        rmtree(path, ignore_errors=True)
+
+    if not path.exists():
+        with console.status("Downloading artifacts..."):
+            good_url, _ = get_artifact_urls(repo, workflow, run, run)
+            artifact_urls = get_artifact_data_url(path, good_url, artifact_names)
+            with ThreadPoolExecutor() as executor:
+                executor.map(lambda x: download_url(*x), artifact_urls)
+
+    return run, path
 
 
 def download_files(repo, good_run, bad_run, workflow, *, force=False, artifact_names=None) -> None:

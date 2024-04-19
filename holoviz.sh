@@ -53,6 +53,9 @@ elif [[ $1 == "deprecate" ]]; then
 elif [[ $1 == "serve" ]]; then
     shift
     source $TOOLS/serve.sh $@
+elif [[ $1 == "pixi-lock" ]]; then
+    shift
+    PYTHONPATH=$TOOLS python $TOOLS/pixi/lock.py $@
 elif [[ $1 ]]; then
     (exit 1)
 else
