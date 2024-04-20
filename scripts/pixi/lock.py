@@ -31,7 +31,7 @@ def get_file(repo, run, workflow, force) -> tuple[Path | None, Path | None]:
 @click.argument("run", type=int, required=False)
 @click.option(
     "--workflow",
-    default="test.yaml",
+    default="nightly_lock.yaml",
     type=str,
     help="Workflow filename",
 )
