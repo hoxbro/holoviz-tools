@@ -31,9 +31,6 @@ ALL_PACKAGES=(
     geopandas rioxarray rasterio spatialpandas
     cartopy pyogrio iris esmpy xesmf geodatasets metpy
 
-    # Machine Learning
-    openai langchain
-
     # Dev Tools
     nodejs python-build debugpy
     black ruff
