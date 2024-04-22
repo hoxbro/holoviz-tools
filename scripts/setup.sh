@@ -35,7 +35,7 @@ ALL_PACKAGES=(
     openai langchain
 
     # Dev Tools
-    nodejs build debugpy
+    nodejs python-build debugpy
     black ruff
     pyinstrument snakeviz memray psutil py-spy tuna asv
     pyviz::nbsite
