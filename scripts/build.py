@@ -81,7 +81,7 @@ def generate_table(title, version1, version2, missing1, missing2):
 )
 def cli(repo, good_run, bad_run, workflow, force) -> None:
     good_run, bad_run, good_path, bad_path = download_files(
-        repo, good_run, bad_run, workflow, artifact_names=["pip", "conda", "npm"]
+        repo, good_run, bad_run, workflow, force=force, artifact_names=["pip", "conda", "npm"]
     )
 
     # Save to command to clipboard

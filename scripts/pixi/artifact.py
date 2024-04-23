@@ -12,7 +12,7 @@ from pandas.io.clipboard import clipboard_set
 from rich.table import Table
 from rich_menu import argument_menu
 
-REPOS = ["holoviews"]  # , "panel", "hvplot", "datashader", "geoviews", "lumen"]
+REPOS = ["holoviews", "panel"]  #  "hvplot", "datashader", "geoviews", "lumen"]
 
 
 def get_files(repo, good_run, bad_run, workflow, force) -> tuple[Path | None, Path | None]:
