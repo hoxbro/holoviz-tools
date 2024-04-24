@@ -41,6 +41,7 @@ ALL_PACKAGES=(
     diskcache streamz aiohttp rich-click setuptools_scm watchfiles
     pyviz_comms tqdm pyct httpx colorcet
     markdown markdown-it-py mdit-py-plugins linkify-it-py
+    cachecontrol lockfile platformdirs
 )
 GPU_PACKAGES=(
     python=3.10 cupy cudf dask-cudf -c rapidsai --no-channel-priority
