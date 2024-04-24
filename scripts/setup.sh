@@ -81,7 +81,7 @@ create_environments() {
         conda env config vars set BOKEH_BROWSER=none -n $CONDA_ENV
         conda env config vars set BOKEH_MINIFIED=false -n $CONDA_ENV
         conda env config vars set BOKEH_PRETTY=true -n $CONDA_ENV
-        conda env config vars set SETUPTOOLS_ENABLE_FEATURES=legacy-editable -n $CONDA_ENV
+        # conda env config vars set SETUPTOOLS_ENABLE_FEATURES=legacy-editable -n $CONDA_ENV
         conda env config vars set USE_PYGEOS=0 -n $CONDA_ENV
 
         conda env config vars set PYDEVD_DISABLE_FILE_VALIDATION=1 -n $CONDA_ENV
