@@ -14,26 +14,34 @@ REPOS = ["holoviews", "panel", "datashader", "geoviews"]
 
 
 def _get_version_re(repo_version):
+    repo_version1 = re.findall(r"^\w+.\d+.\d+.\d+", repo_version)[0]
+    repo_version1 = repo_version1.replace(r"-", ".")  # For repo/version path
+    re1 = re.compile(repo_version1)
+
+    # For JS versioning
     repo_version = re.escape(repo_version)
-    repo_version = re.sub(r"(\d)\-?(rc|a|b)\.?(\d)", r"\1\-?\2\.?\3", repo_version)  # For JS versioning
-    repo_version = repo_version.replace(r"\-", ".")  # For repo/version path
-    return re.compile(repo_version)
+    repo_version2 = re.sub(r"(\d)\-?(rc|a|b)\.?(\d)", r"\1\-?\2\.?\3", repo_version)
+    repo_version2 = repo_version2.replace(r"\-", ".")  # For repo/version path
+    re2 = re.compile(repo_version2)
+    return re1, re2
 
 
 def zip_files(zip_path):
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         zip_file_list = zip_ref.namelist()
     repo_version = zip_path.name.split("-py3")[0].split("-py2")[0]
-    re_version = _get_version_re(repo_version)
-    return {re_version.sub("$VERSION", f) for f in zip_file_list}
+    re1, re2 = _get_version_re(repo_version)
+    return {re1.sub("$VERSION", re2.sub("$VERSION", f)) for f in zip_file_list}
 
 
 def tar_files(tar_path):
     with tarfile.open(tar_path, "r") as tar_ref:
         tar_file_list = [member.name for member in tar_ref.getmembers() if member.isfile()]
-    repo_version = tar_path.name.split(".tar")[0].split("-py_0")[0].split(".tgz")[0].removeprefix("holoviz-")
-    re_version = _get_version_re(repo_version)
-    return {re_version.sub("$VERSION", f) for f in tar_file_list}
+    repo_version = (
+        tar_path.name.split(".tar")[0].split("-py_0")[0].split(".tgz")[0].removeprefix("holoviz-")
+    )
+    re1, re2 = _get_version_re(repo_version)
+    return {re1.sub("$VERSION", re2.sub("$VERSION", f)) for f in tar_file_list}
 
 
 def compare_zip_files(zip1_path, zip2_path):
@@ -108,7 +116,9 @@ def cli(repo, good_run, bad_run, workflow, force) -> None:
         missing_sdist1, missing_sdist2 = compare_tar_files(before_path, after_path)
         #  Filter out top-level example folder, this is a known bug
         missing_sdist1 = [f for f in missing_sdist1 if not f.startswith("$VERSION/examples")]
+        missing_sdist1 = [f for f in missing_sdist1 if not f.startswith("$VERSION/doc")]
         missing_sdist2 = [f for f in missing_sdist2 if not f.startswith("$VERSION/examples")]
+        missing_sdist2 = [f for f in missing_sdist2 if not f.startswith("$VERSION/doc")]
         generate_table(
             f"{repo.title()} - sdist", version1, version2, missing_sdist1, missing_sdist2
         )
