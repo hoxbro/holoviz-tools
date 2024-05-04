@@ -133,7 +133,11 @@ install_package() {
     # pwd >> $(python -c "import site; print(site.getsitepackages()[0])")/holoviz.pth
 
     # This should be removed when packages uses pyproject.toml
-    SETUPTOOLS_ENABLE_FEATURES=legacy-editable python -m pip install --no-deps -e . || SETUPTOOLS_ENABLE_FEATURES= python -m pip install --no-deps -e .
+    if [[ -f setup.py ]]; then
+        SETUPTOOLS_ENABLE_FEATURES=legacy-editable python -m pip install --no-deps -e .
+    else
+        SETUPTOOLS_ENABLE_FEATURES= python -m pip install --no-deps -e .
+    fi
     if [[ "$p" == "panel" ]]; then
         panel bundle --verbose --all &>/dev/null &
     elif [[ "$p" == "holoviews" ]]; then

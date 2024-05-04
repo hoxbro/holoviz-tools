@@ -34,12 +34,11 @@ def download_runs(repo, workflow, page=1) -> tuple[dict, dict]:
 
     results, urls = {}, {}
     for run in resp.json()["workflow_runs"]:
-        if run["status"] == "completed" and run["conclusion"] != "action_required":
-            no = run["run_number"]
-            date = datetime.fromisoformat(run["created_at"])
-            display = f"{no:<5} {run['conclusion']:<13} {date:%Y-%m-%d %H:%M}    branch: {run['head_branch']} "
-            results[no] = display
-            urls[no] = run["url"] + "/artifacts"
+        no = run["run_number"]
+        date = datetime.fromisoformat(run["created_at"])
+        display = f"{no:<5} {run['conclusion'] or 'running':<13} {date:%Y-%m-%d %H:%M}    branch: {run['head_branch']} "
+        results[no] = display
+        urls[no] = run["url"] + "/artifacts"
 
     return results, urls
 
