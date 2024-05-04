@@ -43,9 +43,6 @@ ALL_PACKAGES=(
     markdown markdown-it-py mdit-py-plugins linkify-it-py
     cachecontrol lockfile platformdirs
 )
-GPU_PACKAGES=(
-    python=3.10 cupy cudf dask-cudf -c rapidsai --no-channel-priority
-)
 
 create_environments() {
     if [ "$1" == "CLEAN" ]; then
@@ -55,11 +52,6 @@ create_environments() {
         # Creating environment (can't clone because they are linked)
         mamba create -n $CONDA_ENV $PYTHON ${ALL_PACKAGES[@]} -y
         # mamba create -n $CONDA_ENV"_clean" $PYTHON ${PACKAGES[@]} ${ALL_PACKAGES[@]} -y
-
-        if [[ $OS == "linux" ]] && $NVIDIA; then
-            # cudf / dask_cudf pins hard
-            mamba create -n $CONDA_ENV"_gpu" ${ALL_PACKAGES[@]} ${GPU_PACKAGES[@]} -y
-        fi
 
     elif [ "$1" == "SYNC" ]; then
         echo -n ""
@@ -188,17 +180,6 @@ conda activate $CONDA_ENV
 for p in ${PACKAGES[@]}; do
     run install_package $1 &
 done
-
-if [[ $OS == "linux" ]] && $NVIDIA; then
-    wait
-    echo "Installing in GPU environment"
-    conda activate $CONDA_ENV"_gpu"
-    conda env config vars set DATASHADER_TEST_GPU=1 -n $CONDA_ENV"_gpu"
-
-    for p in ${PACKAGES[@]}; do
-        run install_package $1 &
-    done
-fi
 
 # Download data
 conda activate $CONDA_ENV
