@@ -2,8 +2,10 @@
 
 set -euo pipefail
 
-CONDA_ENV="holoviz"
+CONDA_ENV=holoviz
 PACKAGES=(panel holoviews hvplot param datashader geoviews lumen holonote)
+NVIDIA_PACKAGES=(cupy)
+UNIX_PACKAGES=(memray tsdownsample)
 ALL_PACKAGES=(
     python=3.12
 
@@ -45,10 +47,7 @@ ALL_PACKAGES=(
     cachecontrol lockfile platformdirs
 )
 
-NVIDIA_PACKAGES=(cupy)
-UNIX_PACKAGES=(memray tsdownsample)
-
-create_environments() {
+create_environment() {
     # Clean up old environment
     conda env list | grep $CONDA_ENV | awk '{print $1}' | xargs -r -L1 conda env remove -y -n || echo "No environment to remove"
 
@@ -70,7 +69,7 @@ create_environments() {
     # conda env config vars set PYTHONWARNINGS=default
 
     if [[ $OS == "windows" ]]; then
-        rm "$HOME/miniconda3/envs/$CONDA_ENV/Library/usr/bin/cygpath.exe"
+        rm "$HOME/miniconda3/envs/$CONDA_ENV/Library/usr/bin/cygpath.exe" || true
     fi
 }
 
@@ -89,9 +88,6 @@ install_package() {
         git fetch origin
         git pull origin --tags
         git reset --hard origin/main
-
-        # Clean up
-        if [ "$1" == "CLEAN" ]; then git clean -fxd; fi || echo "No clean"
         git fetch --all --prune
 
         # Go back branch and unstash files
@@ -109,7 +105,7 @@ install_package() {
     cp -a ~/projects/holoviz-tools/scripts/pre-push .git/hooks/pre-push
 
     # Install the package
-    conda uninstall --force --offline --yes $p || echo "already uninstalled"
+    conda uninstall --force --offline --yes $p || true
     # conda develop .  # adding to environments .pth file
     # pwd >> $(python -c "import site; print(site.getsitepackages()[0])")/holoviz.pth
 
@@ -129,7 +125,7 @@ install_package() {
 
 run() {
     set +euo pipefail
-    (set -euxo pipefail && $1 $2) >"/tmp/holoviz_$p_$(date +%Y-%m-%d_%H.%M).log" 2>&1
+    (set -euxo pipefail && $1) >"/tmp/holoviz_$p_$(date +%Y-%m-%d_%H.%M).log" 2>&1
     if (($? > 0)); then
         echo "!!! Failed installing $p !!!"
     else
@@ -144,30 +140,25 @@ SECONDS=0
 mkdir -p $HOLOVIZ_REP
 cd $HOLOVIZ_REP
 
-# OS and NVIDIA detection
-case "$(uname -s)" in
-Darwin) OS="mac" ;;
-Linux) OS="linux" ;;
-CYGWIN* | MINGW32* | MSYS* | MINGW*) OS="windows" ;;
-*) OS="other" ;;
-esac
-
-if which nvidia-smi &>/dev/null; then NVIDIA=true; else NVIDIA=false; fi
-
-# Add custom packages
-if $NVIDIA; then ALL_PACKAGES+=(${NVIDIA_PACKAGES[@]}); fi
-if [[ $OS == "linux" || $OS == "mac" ]]; then ALL_PACKAGES+=(${UNIX_PACKAGES}); fi
-
+# Activate conda
 source $(conda info | grep -i 'base environment' | awk '{print $4}')/etc/profile.d/conda.sh
 conda activate base
 
+# OS and NVIDIA detection
+OS=$(python -c 'import platform; print(platform.system())')
+NVIDIA=$(conda info | (grep cuda || echo -n) | wc -l)
+
+# Add custom packages
+if [ $NVIDIA == "1" ]; then ALL_PACKAGES+=(${NVIDIA_PACKAGES[@]}); fi
+if [[ $OS == "Linux" || $OS == "Darwin" ]]; then ALL_PACKAGES+=(${UNIX_PACKAGES[@]}); fi
+
 # Starting up the machine
-create_environments $1
+create_environment
 
 # Install packages
 conda activate $CONDA_ENV
 for p in ${PACKAGES[@]}; do
-    run install_package $1 &
+    run install_package &
 done
 
 # Download data
