@@ -23,14 +23,11 @@ elif [[ $1 == "lab" ]]; then
     bash $TOOLS/lab.sh $@
 elif [[ $1 == "save" ]]; then
     RESULT=$(PYTHONPATH=$TOOLS python $TOOLS/save.py)
-    echo $(echo $RESULT | grep -v '^/home/')
     export PANEL_SERVE_FILE=$(echo $RESULT | grep -E '^/home/')
 elif [[ $1 == "fetch" ]]; then
     bash $TOOLS/fetch.sh
 elif [[ $1 == "setup" ]]; then
-    bash $TOOLS/setup.sh "CLEAN"
-elif [[ $1 == "sync" ]]; then
-    bash $TOOLS/setup.sh "SYNC"
+    bash $TOOLS/setup.sh
 elif [[ $1 == "clean" ]]; then
     ccd
     PYTHONPATH=$TOOLS python $TOOLS/cleanup.py

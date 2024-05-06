@@ -12,7 +12,7 @@ ALL_PACKAGES=(
 
     # Data processing
     numpy pandas xarray polars numba
-    dask-core scipy scikit-image tsdownsample
+    dask-core scipy scikit-image
 
     # Data loading
     lxml openpyxl fastparquet pooch pyarrow
@@ -46,44 +46,31 @@ ALL_PACKAGES=(
 )
 
 NVIDIA_PACKAGES=(cupy)
-UNIX_PACKAGES=(memray)
+UNIX_PACKAGES=(memray tsdownsample)
 
 create_environments() {
-    if [ "$1" == "CLEAN" ]; then
-        # Clean up old environment
-        conda env list | grep $CONDA_ENV | awk '{print $1}' | xargs -r -L1 conda env remove -y -n || echo "No environment to remove"
+    # Clean up old environment
+    conda env list | grep $CONDA_ENV | awk '{print $1}' | xargs -r -L1 conda env remove -y -n || echo "No environment to remove"
 
-        # Creating environment (can't clone because they are linked)
-        mamba create -n $CONDA_ENV ${ALL_PACKAGES[@]} -y
-        # mamba create -n $CONDA_ENV"_clean" $PYTHON ${PACKAGES[@]} ${ALL_PACKAGES[@]} -y
-
-    elif [ "$1" == "SYNC" ]; then
-        echo -n ""
-    else
-        echo "Options for holoviz setup are clean and sync."
-        exit 1
-    fi
-
-    wait
+    # Creating environment (can't clone because they are linked)
+    mamba create -n $CONDA_ENV ${ALL_PACKAGES[@]} -y
 
     conda activate $CONDA_ENV
 
-    if [ "$1" == "CLEAN" ]; then
-        # Insert custom install
+    # Insert custom install
 
-        # Environment variables
-        # https://docs.bokeh.org/en/latest/docs/dev_guide/setup.html
-        conda env config vars set BOKEH_RESOURCES=server -n $CONDA_ENV
-        conda env config vars set BOKEH_BROWSER=none -n $CONDA_ENV
-        conda env config vars set BOKEH_MINIFIED=false -n $CONDA_ENV
-        conda env config vars set BOKEH_PRETTY=true -n $CONDA_ENV
-        conda env config vars set USE_PYGEOS=0 -n $CONDA_ENV
+    # Environment variables
+    # https://docs.bokeh.org/en/latest/docs/dev_guide/setup.html
+    conda env config vars set BOKEH_RESOURCES=server -n $CONDA_ENV
+    conda env config vars set BOKEH_BROWSER=none -n $CONDA_ENV
+    conda env config vars set BOKEH_MINIFIED=false -n $CONDA_ENV
+    conda env config vars set BOKEH_PRETTY=true -n $CONDA_ENV
+    conda env config vars set USE_PYGEOS=0 -n $CONDA_ENV
 
-        # conda env config vars set PYTHONWARNINGS=default
+    # conda env config vars set PYTHONWARNINGS=default
 
-        if [[ $OS == "windows" ]]; then
-            rm "$HOME/miniconda3/envs/$CONDA_ENV/Library/usr/bin/cygpath.exe"
-        fi
+    if [[ $OS == "windows" ]]; then
+        rm "$HOME/miniconda3/envs/$CONDA_ENV/Library/usr/bin/cygpath.exe"
     fi
 }
 
