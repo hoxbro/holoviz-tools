@@ -3,9 +3,10 @@
 set -euo pipefail
 
 CONDA_ENV="holoviz"
-PYTHON="python=3.12"
 PACKAGES=(panel holoviews hvplot param datashader geoviews lumen holonote)
 ALL_PACKAGES=(
+    python=3.12
+
     # Visualization
     bokeh plotly matplotlib seaborn altair
 
@@ -17,7 +18,7 @@ ALL_PACKAGES=(
     lxml openpyxl fastparquet pooch pyarrow
     "intake<2" intake-sql intake-parquet intake-xarray
     s3fs h5netcdf zarr hdf5
-    ibis-sqlite sqlalchemy python-duckdb # connectorx
+    ibis-sqlite sqlalchemy python-duckdb
 
     # Notebook
     jupyterlab ipywidgets jupyterlab_code_formatter jupyterlab-myst
@@ -34,7 +35,7 @@ ALL_PACKAGES=(
     # Dev Tools
     nodejs python-build debugpy
     black ruff
-    pyinstrument snakeviz memray psutil py-spy tuna asv
+    pyinstrument snakeviz psutil py-spy tuna asv
     pyviz::nbsite
 
     # Misc
@@ -44,13 +45,16 @@ ALL_PACKAGES=(
     cachecontrol lockfile platformdirs
 )
 
+NVIDIA_PACKAGES=(cupy)
+UNIX_PACKAGES=(memray)
+
 create_environments() {
     if [ "$1" == "CLEAN" ]; then
         # Clean up old environment
         conda env list | grep $CONDA_ENV | awk '{print $1}' | xargs -r -L1 conda env remove -y -n || echo "No environment to remove"
 
         # Creating environment (can't clone because they are linked)
-        mamba create -n $CONDA_ENV $PYTHON ${ALL_PACKAGES[@]} -y
+        mamba create -n $CONDA_ENV ${ALL_PACKAGES[@]} -y
         # mamba create -n $CONDA_ENV"_clean" $PYTHON ${PACKAGES[@]} ${ALL_PACKAGES[@]} -y
 
     elif [ "$1" == "SYNC" ]; then
@@ -73,10 +77,8 @@ create_environments() {
         conda env config vars set BOKEH_BROWSER=none -n $CONDA_ENV
         conda env config vars set BOKEH_MINIFIED=false -n $CONDA_ENV
         conda env config vars set BOKEH_PRETTY=true -n $CONDA_ENV
-        # conda env config vars set SETUPTOOLS_ENABLE_FEATURES=legacy-editable -n $CONDA_ENV
         conda env config vars set USE_PYGEOS=0 -n $CONDA_ENV
 
-        conda env config vars set PYDEVD_DISABLE_FILE_VALIDATION=1 -n $CONDA_ENV
         # conda env config vars set PYTHONWARNINGS=default
 
         if [[ $OS == "windows" ]]; then
@@ -130,13 +132,11 @@ install_package() {
     else
         SETUPTOOLS_ENABLE_FEATURES= python -m pip install --no-deps -e .
     fi
-    if [[ "$p" == "panel" ]]; then
-        panel bundle --verbose --all &>/dev/null &
-    elif [[ "$p" == "holoviews" ]]; then
+    if [[ "$p" == "holoviews" ]]; then
         # Don't want the holoviews command
         rm $(which holoviews) || echo "already uninstalled"
     fi
-    rm -rf build/
+    # rm -rf build/
     cd ..
 }
 
@@ -157,8 +157,8 @@ SECONDS=0
 mkdir -p $HOLOVIZ_REP
 cd $HOLOVIZ_REP
 
-# Setting up OS, Nvidia, folder, and conda
-case "$(uname -s)" in # (SO: 3466166)
+# OS and NVIDIA detection
+case "$(uname -s)" in
 Darwin) OS="mac" ;;
 Linux) OS="linux" ;;
 CYGWIN* | MINGW32* | MSYS* | MINGW*) OS="windows" ;;
@@ -166,10 +166,12 @@ CYGWIN* | MINGW32* | MSYS* | MINGW*) OS="windows" ;;
 esac
 
 if which nvidia-smi &>/dev/null; then NVIDIA=true; else NVIDIA=false; fi
-if $NVIDIA; then ALL_PACKAGES+=(cupy); fi
 
-CONDA_PATH=$(conda info | grep -i 'base environment' | awk '{print $4}')
-source $CONDA_PATH/etc/profile.d/conda.sh
+# Add custom packages
+if $NVIDIA; then ALL_PACKAGES+=(${NVIDIA_PACKAGES[@]}); fi
+if [[ $OS == "linux" || $OS == "mac" ]]; then ALL_PACKAGES+=(${UNIX_PACKAGES}); fi
+
+source $(conda info | grep -i 'base environment' | awk '{print $4}')/etc/profile.d/conda.sh
 conda activate base
 
 # Starting up the machine
@@ -182,7 +184,6 @@ for p in ${PACKAGES[@]}; do
 done
 
 # Download data
-conda activate $CONDA_ENV
 python -m playwright install &>/dev/null &
 python -m bokeh sampledata &>/dev/null &
 
