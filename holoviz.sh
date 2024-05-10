@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-TOOLS=${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/holoviz/scripts
+TOOLS="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)/scripts"
 
 ccd() {
     if [[ $PWD != $HOLOVIZ_DEV* && $PWD != $HOLOVIZ_REP* ]]; then
