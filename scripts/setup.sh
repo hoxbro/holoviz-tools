@@ -75,8 +75,8 @@ create_environment() {
 
 install_package() {
 
-    if [ -d "$p" ]; then
-        cd $p
+    if [ -d "$1" ]; then
+        cd $1
 
         # Save current branch and stash files
         BRANCH=$(git branch --show-current)
@@ -95,17 +95,17 @@ install_package() {
         if (($DIRTY > 0)); then git stash pop; fi
 
     else
-        git clone git@github.com:holoviz/$p.git
-        cd $p
-        pre-commit install --allow-missing-config
+        git clone git@github.com:holoviz/$1.git
+        cd $1
+        pre-commit install --allow-missing-config || echo no pre-commit
     fi
 
     # pre-commit initialize
-    pre-commit install-hooks
+    pre-commit install-hooks || echo no pre-commit
     cp -a "$(cd -- "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)/pre-push" .git/hooks/pre-push
 
     # Install the package
-    conda uninstall --force --offline --yes $p || true
+    conda uninstall --force --offline --yes $1 || true
     # conda develop .  # adding to environments .pth file
     # pwd >> $(python -c "import site; print(site.getsitepackages()[0])")/holoviz.pth
 
@@ -115,7 +115,7 @@ install_package() {
     else
         SETUPTOOLS_ENABLE_FEATURES= python -m pip install --no-deps -e .
     fi
-    if [[ "$p" == "holoviews" ]]; then
+    if [[ "$1" == "holoviews" ]]; then
         # Don't want the holoviews command
         rm $(which holoviews) || echo "already uninstalled"
     fi
@@ -125,11 +125,11 @@ install_package() {
 
 run() {
     set +euo pipefail
-    (set -euxo pipefail && $1) >"/tmp/holoviz_$p_$(date +%Y-%m-%d_%H.%M).log" 2>&1
+    (set -euxo pipefail && $1 $2) >"/tmp/holoviz_$2_$(date +%Y-%m-%d_%H.%M).log" 2>&1
     if (($? > 0)); then
-        echo "!!! Failed installing $p !!!"
+        echo "!!! Failed installing $2 !!!"
     else
-        echo "Finished installing $p"
+        echo "Finished installing $2"
     fi
     echo -ne "\r" # Clean new line
 }
@@ -158,7 +158,7 @@ create_environment
 # Install packages
 conda activate $CONDA_ENV
 for p in ${PACKAGES[@]}; do
-    run install_package &
+    run install_package $p &
 done
 
 # Download data
