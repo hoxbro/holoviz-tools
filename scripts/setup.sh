@@ -102,7 +102,7 @@ install_package() {
 
     # pre-commit initialize
     pre-commit install-hooks
-    cp -a ~/projects/holoviz-tools/scripts/pre-push .git/hooks/pre-push
+    cp -a "$(cd -- "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)/pre-push" .git/hooks/pre-push
 
     # Install the package
     conda uninstall --force --offline --yes $p || true
