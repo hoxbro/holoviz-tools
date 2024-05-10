@@ -101,7 +101,7 @@ install_package() {
     fi
 
     # pre-commit initialize
-    pre-commit
+    pre-commit install-hooks
     cp -a ~/projects/holoviz-tools/scripts/pre-push .git/hooks/pre-push
 
     # Install the package

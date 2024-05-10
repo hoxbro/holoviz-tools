@@ -117,7 +117,7 @@ def download_file(repo, run, workflow, *, force=False, artifact_names=None) -> N
         run = select_run(repo, workflow)
         console.print(f"Selected: [green]Run {run}[/green]")
 
-    path = ARTIFACT_PATH / f"{repo}_{workflow.split(".")[0]}_{run}"
+    path = ARTIFACT_PATH / f"{repo}_{workflow.split('.')[0]}_{run}"
 
     if force:
         rmtree(path, ignore_errors=True)
