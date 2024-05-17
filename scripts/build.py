@@ -115,9 +115,9 @@ def cli(repo, good_run, bad_run, workflow, force) -> None:
         version2 = after_path.name.split(".tar")[0].replace("-", " ")
         missing_sdist1, missing_sdist2 = compare_tar_files(before_path, after_path)
         #  Filter out top-level example folder, this is a known bug
-        missing_sdist1 = [f for f in missing_sdist1 if not f.startswith("$VERSION/examples")]
+        # missing_sdist1 = [f for f in missing_sdist1 if not f.startswith("$VERSION/examples")]
         missing_sdist1 = [f for f in missing_sdist1 if not f.startswith("$VERSION/doc")]
-        missing_sdist2 = [f for f in missing_sdist2 if not f.startswith("$VERSION/examples")]
+        # missing_sdist2 = [f for f in missing_sdist2 if not f.startswith("$VERSION/examples")]
         missing_sdist2 = [f for f in missing_sdist2 if not f.startswith("$VERSION/doc")]
         generate_table(
             f"{repo.title()} - sdist", version1, version2, missing_sdist1, missing_sdist2

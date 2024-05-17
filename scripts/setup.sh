@@ -24,7 +24,7 @@ ALL_PACKAGES=(
 
     # Notebook
     jupyterlab ipywidgets jupyterlab_code_formatter jupyterlab-myst
-    bokeh::ipywidgets_bokeh jupyter_bokeh
+    ipywidgets_bokeh jupyter_bokeh
 
     # Testing
     pytest pytest-xdist pytest-rerunfailures pytest-benchmark parameterized pytest-asyncio
