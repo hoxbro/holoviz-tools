@@ -3,7 +3,28 @@
 Tools I use for the development of the different Holoviz repos. They are made available here in case they are
 useful to others, but no support is provided.
 
-### Installation
+## Installation
+
+### Zsh
+
+1. Clone this repository somewhere on your machine. This guide will assume `~/.holoviz-tools`.
+
+   ```sh
+   git clone https://github.com/Hoxbro/holoviz-tools ~/.holoviz-tools
+   ```
+
+2. Add the following to the end of your `~/.zshrc`:
+   ```sh
+   source ~/.holoviz-tools/holoviz-tools.zsh
+   ```
+
+3. Optional: Run the following lines after the previous line to enable autocompletion for the `holoviz` command:
+   ```sh
+   autoload -U compinit
+   compinit
+   ```
+
+### Oh My Zsh
 
 1. Clone this repository into `$ZSH_CUSTOM/plugins` (by default `~/.oh-my-zsh/custom/plugins`)
 
