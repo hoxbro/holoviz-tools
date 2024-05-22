@@ -31,7 +31,7 @@ ALL_PACKAGES=(
     nbsmoke nbval microsoft::pytest-playwright
 
     # Geo
-    geopandas rioxarray rasterio spatialpandas
+    geopandas rioxarray rasterio spatialpandas dask-geopandas
     cartopy pyogrio iris esmpy xesmf geodatasets metpy
 
     # Dev Tools
