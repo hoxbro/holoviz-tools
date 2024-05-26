@@ -28,7 +28,7 @@ ALL_PACKAGES=(
 
     # Testing
     pytest pytest-xdist pytest-rerunfailures pytest-benchmark parameterized pytest-asyncio
-    pytest-random-order detect-test-pollution nbsmoke nbval microsoft::pytest-playwright
+    pytest-randomly detect-test-pollution nbsmoke nbval microsoft::pytest-playwright
 
     # Geo
     geopandas rioxarray rasterio spatialpandas dask-geopandas
