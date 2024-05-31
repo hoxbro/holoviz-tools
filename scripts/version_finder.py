@@ -28,11 +28,17 @@ from typing import Any
 import httpx
 from packaging.requirements import Requirement
 from packaging.specifiers import SpecifierSet
-from packaging.version import InvalidVersion, Version
+from packaging.utils import (
+    InvalidSdistFilename,
+    InvalidWheelFilename,
+    parse_sdist_filename,
+    parse_wheel_filename,
+)
+from packaging.version import Version
 from rich.console import Console
 from rich.prompt import Prompt
 from rich.table import Table
-
+from tomllib import load
 from utilities import trackpool
 
 py_releases = {
@@ -66,10 +72,11 @@ def pypi_info(package: str, python_version: str = "3.9") -> tuple[str, ...]:
     releases = collections.defaultdict(list)
     results = collections.defaultdict(list)
     for f in resp["files"]:
-        ver = f["filename"].split("-")[1]
+        name = f["filename"]
         try:
-            version = Version(ver)
-        except InvalidVersion:
+            parse_filename = parse_wheel_filename if name.endswith(".whl") else parse_sdist_filename
+            _, version, *_ = parse_filename(name)
+        except (InvalidWheelFilename, InvalidSdistFilename):
             continue
 
         if version.is_prerelease:
@@ -79,9 +86,7 @@ def pypi_info(package: str, python_version: str = "3.9") -> tuple[str, ...]:
         releases[version].append(release_date)
 
         python_check1 = f["requires-python"] is None or (
-            SpecifierSet(f["requires-python"].replace(".*", "")).contains(
-                python_version
-            )
+            SpecifierSet(f["requires-python"].replace(".*", "")).contains(python_version)
         )
         python_check2 = release_date >= py_releases[python_version]
         if python_check1 and python_check2:
@@ -101,22 +106,55 @@ def pypi_info(package: str, python_version: str = "3.9") -> tuple[str, ...]:
 
 
 def get_packages_from_file(main_package: str) -> tuple[set[str], str]:
-    output = run_path(
-        f"{os.environ['HOLOVIZ_REP']}/{main_package}/setup.py",
-        run_name="not__main__",
-    )
-    setup = output["setup_args"]
+    pixi_toml = f"{os.environ['HOLOVIZ_REP']}/{main_package}/pixi.toml"
+    setup_py = f"{os.environ['HOLOVIZ_REP']}/{main_package}/setup.py"
 
-    python_requires = setup["python_requires"].replace(">=", "")
+    if os.path.exists(pixi_toml):
+        with open(pixi_toml, "rb") as f:
+            data = load(f)
+        features = [list(d.get("dependencies", [])) for d in data["feature"].values()]
+        deps = {*data["dependencies"], *sum(features, [])}  # noqa: RUF017
+        mapping = {
+            "conda-build": None,
+            "cuda-version": None,
+            "cudf": None,
+            "cuspatial": None,
+            "dask-core": "dask",
+            "dask-cudf": None,
+            "ffmpeg": None,
+            "graphviz": None,
+            "ibis-sqlite": "ibis-framework",
+            "matplotlib-base": "matplotlib",
+            "python": None,
+            "python-build": "build",
+            "python-kaleido": "kaleido",
+            "python-graphviz": None,
+            "rmm": None,
+        }
+        packages = {md for d in deps if (md := mapping.get(d, d))}
+        python_requires = min(
+            [f.replace("py3", "3.") for f in data["feature"] if f.startswith("py3")], key=Version
+        )
+        return packages, python_requires
+    elif os.path.exists(setup_py):
+        output = run_path(
+            f"{os.environ['HOLOVIZ_REP']}/{main_package}/setup.py",
+            run_name="not__main__",
+        )
+        setup = output["setup_args"]
 
-    install_requires, extras_require = (
-        setup["install_requires"],
-        setup["extras_require"],
-    )
-    all_packages = install_requires + sum(extras_require.values(), [])
-    packages = {Requirement(p).name for p in all_packages}
+        python_requires = setup["python_requires"].replace(">=", "")
 
-    return packages, python_requires
+        install_requires, extras_require = (
+            setup["install_requires"],
+            setup["extras_require"],
+        )
+        all_packages = install_requires + sum(extras_require.values(), [])  # noqa: RUF017
+        packages = {Requirement(p).name for p in all_packages}
+
+        return packages, python_requires
+    else:
+        raise FileNotFoundError()
 
 
 def get_packages_from_pypi(main_package) -> tuple[set[str], str]:
