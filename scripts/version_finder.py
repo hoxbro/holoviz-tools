@@ -48,6 +48,24 @@ py_releases = {
     "3.11": datetime(2022, 10, 24),
     "3.12": datetime(2023, 10, 2),
 }
+conda_mapping = {
+    "conda-build": None,
+    "cuda-version": None,
+    "cudf": None,
+    "cuspatial": None,
+    "dask-core": "dask",
+    "dask-cudf": None,
+    "ffmpeg": None,
+    "graphviz": None,
+    "ibis-sqlite": "ibis-framework",
+    "matplotlib-base": "matplotlib",
+    "nodejs": None,
+    "python": None,
+    "python-build": "build",
+    "python-kaleido": "kaleido",
+    "python-graphviz": None,
+    "rmm": None,
+}
 spec_drop_date = datetime.now() - timedelta(days=int(365 * 2))
 HEADERS = {"Accept": "application/vnd.pypi.simple.v1+json"}
 console = Console()
@@ -114,24 +132,7 @@ def get_packages_from_file(main_package: str) -> tuple[set[str], str]:
             data = load(f)
         features = [list(d.get("dependencies", [])) for d in data["feature"].values()]
         deps = {*data["dependencies"], *sum(features, [])}  # noqa: RUF017
-        mapping = {
-            "conda-build": None,
-            "cuda-version": None,
-            "cudf": None,
-            "cuspatial": None,
-            "dask-core": "dask",
-            "dask-cudf": None,
-            "ffmpeg": None,
-            "graphviz": None,
-            "ibis-sqlite": "ibis-framework",
-            "matplotlib-base": "matplotlib",
-            "python": None,
-            "python-build": "build",
-            "python-kaleido": "kaleido",
-            "python-graphviz": None,
-            "rmm": None,
-        }
-        packages = {md for d in deps if (md := mapping.get(d, d))}
+        packages = {md for d in deps if (md := conda_mapping.get(d, d))}
         python_requires = min(
             [f.replace("py3", "3.") for f in data["feature"] if f.startswith("py3")], key=Version
         )
