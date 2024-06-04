@@ -21,6 +21,7 @@ ALL_PACKAGES=(
     "intake<2" intake-sql intake-parquet intake-xarray
     s3fs h5netcdf zarr hdf5
     ibis-sqlite sqlalchemy python-duckdb
+    bokeh_sampledata
 
     # Notebook
     jupyterlab ipywidgets jupyterlab_code_formatter jupyterlab-myst
@@ -28,7 +29,7 @@ ALL_PACKAGES=(
 
     # Testing
     pytest pytest-xdist pytest-rerunfailures pytest-benchmark parameterized pytest-asyncio
-    pytest-randomly detect-test-pollution nbsmoke nbval microsoft::pytest-playwright
+    pytest-randomly detect-test-pollution nbval microsoft::pytest-playwright
 
     # Geo
     geopandas rioxarray rasterio spatialpandas dask-geopandas
@@ -48,15 +49,13 @@ ALL_PACKAGES=(
 )
 
 create_environment() {
-    # Clean up old environment
+    # Create environment
     conda env list | grep $CONDA_ENV | awk '{print $1}' | xargs -r -L1 conda env remove -y -n || echo "No environment to remove"
-
-    # Creating environment (can't clone because they are linked)
     mamba create -n $CONDA_ENV ${ALL_PACKAGES[@]} -y
-
     conda activate $CONDA_ENV
 
     # Insert custom install
+    mamba install bokeh==3.5.0.dev6 -c bokeh/label/dev -y
 
     # Environment variables
     # https://docs.bokeh.org/en/latest/docs/dev_guide/setup.html
