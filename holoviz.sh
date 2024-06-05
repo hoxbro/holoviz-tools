@@ -53,6 +53,9 @@ elif [[ $1 == "serve" ]]; then
 elif [[ $1 == "pixi-lock" ]]; then
     shift
     PYTHONPATH=$TOOLS python $TOOLS/pixi/lock.py $@
+elif [[ $1 == "workspace" ]]; then
+    shift
+    bash $TOOLS/workspace/$1.sh $@
 elif [[ $1 ]]; then
     (exit 1)
 else
