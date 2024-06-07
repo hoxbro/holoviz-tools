@@ -1,27 +1,32 @@
 #compdef holoviz
-local -a subcmds state
+local -a subcmds state workspace_opts
+
 subcmds=(
-  'setup:Setup a Holoviz environment'
-  'lab:Open JupyterLab with Holoviz environment'
-  'version-finder:Find versions of packages'
-  'action-status:Check status of Holoviz Github Actions'
-  'fetch:Fetch latest versions of Git repos'
-  'changelog:Generate changelog for Holoviz repos'
-  'clean:Clean up Holoviz dev files'
-  'artifact-test:Compare test artifact for different runs'
-  'artifact-build:Compare build artifact for different runs'
-  'nvim:Open Neovim with Holoviz workspace'
-  'vim:Open Neovim with Holoviz workspace'
-  'serve:Start panel serve of development file'
-  'deprecate:Check for deprecated functionality'
-  'pixi-lock: Download pixi-lock to a repo'
-  'workspace:Open custom workspace'
+    'setup:Setup a Holoviz environment'
+    'lab:Open JupyterLab with Holoviz environment'
+    'version-finder:Find versions of packages'
+    'action-status:Check status of Holoviz Github Actions'
+    'fetch:Fetch latest versions of Git repos'
+    'changelog:Generate changelog for Holoviz repos'
+    'clean:Clean up Holoviz dev files'
+    'artifact-test:Compare test artifact for different runs'
+    'artifact-build:Compare build artifact for different runs'
+    'nvim:Open Neovim with Holoviz workspace'
+    'vim:Open Neovim with Holoviz workspace'
+    'serve:Start panel serve of development file'
+    'deprecate:Check for deprecated functionality'
+    'pixi-lock:Download pixi-lock to a repo'
+    'workspace:Open custom workspace'
 )
 
-_arguments '1: :->subcmds' && return
+workspace_opts=(
+    'bokehjs:Open BokehJS workspace'
+    'panel-model:Open Panel-Model workspace'
+)
+
+_arguments '1: :->subcmds' '2: :->workspace' && return
 
 case "$state" in
-  subcmds)
-    _describe 'command' subcmds
-    ;;
+subcmds) _describe 'command' subcmds ;;
+workspace) _describe 'workspace option' workspace_opts ;;
 esac
