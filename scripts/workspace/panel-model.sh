@@ -1,8 +1,8 @@
 #!/usr/bin/bash
 set -euo pipefail
 
-PORT_USED=$(lsof -t -i :5006) || echo 0
-if ( $PORT_USED -neq 0 ); then
+PORT_USED=$(lsof -t -i :5006) || true
+if [ -n "$PORT_USED" ]; then
     kill $PORT_USED
     echo "$(date +'%Y-%m-%d %H.%M.%S.%3N') Killed running panel serve on port 5006"
 fi
@@ -14,7 +14,9 @@ tmux new-window -n "$name" -d
 tmux send-keys -t "$name" "$cmd" Enter
 
 name="build"
-cmd="watchfiles \"panel build panel\" panel/models/"
+watch_cmd="panel build panel"
+dir="panel/models"
+cmd="watchfiles \"sh -c 'tmux rename-window -t $name •$name; $watch_cmd; tmux rename-window -t •$name $name'\" $dir"
 tmux kill-window -t "$name" &>/dev/null || true
 tmux new-window -n "$name" -d
 tmux send-keys -t "$name" "$cmd" Enter
