@@ -5,7 +5,7 @@ set -euo pipefail
 
 BRANCH=`git branch --show-current`
 
-if [[ "$BRANCH" =~ ^(master|main)$ ]]; then
+if [[ "$BRANCH" =~ ^(master|main|branch-.*)$ ]]; then
   echo
   echo "Prevented pushing to $BRANCH. Use --no-verify to bypass this pre-push hook."
   echo
