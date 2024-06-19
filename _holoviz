@@ -17,6 +17,7 @@ subcmds=(
     'deprecate:Check for deprecated functionality'
     'pixi-lock:Download pixi-lock to a repo'
     'workspace:Open custom workspace'
+    'bump:Bump current directory version'
 )
 
 workspace_opts=(

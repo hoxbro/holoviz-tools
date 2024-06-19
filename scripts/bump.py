@@ -97,7 +97,11 @@ def js_update(package, version):
 
 def validate_version(package, version):
     try:
-        version = f"v{Version(version)}"
+        version_info = Version(version)
+        if version_info.pre:
+            version = f"v{version_info}"
+        else:
+            version = f"v{version_info.major}.{version_info.minor}.{version_info.micro}"
     except InvalidVersion:
         print(f"{RED}[{package}]{RESET} Invalid version: {version}")
         sys.exit(1)
@@ -119,10 +123,12 @@ def main():
     print(f"{GREEN}[{package}]{RESET} Current version: {current_tag}")
 
     version_options = get_possible_versions(Version(current_tag))
-    new_version = live_menu(version_options, console, title="Select an option")
+    new_version = live_menu([*version_options, "input"], console, title="Select a version")
+    if new_version == "input":
+        new_version = console.input("Enter a version: ")
+    new_version = validate_version(package, new_version)
     print(f"{GREEN}[{package}]{RESET} New version: {new_version}")
 
-    new_version = validate_version(package, new_version)
     js_update(package, new_version)
 
     commit = git("rev-parse", "HEAD")

@@ -56,6 +56,8 @@ elif [[ $1 == "pixi-lock" ]]; then
 elif [[ $1 == "workspace" ]]; then
     shift
     bash $TOOLS/workspace/$1.sh $@
+elif [[ $1 == "bump" ]]; then
+    PYTHONPATH=$TOOLS python $TOOLS/bump.py $@
 elif [[ $1 ]]; then
     (exit 1)
 else
