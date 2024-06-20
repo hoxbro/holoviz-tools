@@ -119,7 +119,7 @@ def archive() -> None:
 
 
 def clean_notebooks() -> None:
-    output = check_output(["clean-notebook", "."], cwd=PATH)
+    output = check_output(["clean-notebook", "-s", "."], cwd=PATH)
     console.print(output.decode(), style="bright_black")
 
 
