@@ -9,8 +9,9 @@ import rich_click as click
 from _artifact import console, download_file
 from pandas.io.clipboard import clipboard_set
 from rich_menu import argument_menu
+from utilities import clean_exit
 
-REPOS = ["holoviews"]  # , "panel", "hvplot", "datashader", "geoviews", "lumen"]
+REPOS = ["holoviews", "panel"]  # , "hvplot", "datashader", "geoviews", "lumen"]
 
 
 def get_file(repo, run, workflow, force) -> tuple[Path | None, Path | None]:
@@ -26,6 +27,7 @@ def get_file(repo, run, workflow, force) -> tuple[Path | None, Path | None]:
     return run, file
 
 
+@clean_exit
 @click.command(context_settings={"show_default": True})
 @argument_menu("repo", choices=REPOS, console=console, title="Select a repo")
 @click.argument("run", type=int, required=False)

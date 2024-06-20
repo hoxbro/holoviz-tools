@@ -6,11 +6,7 @@ from importlib.util import find_spec
 from subprocess import check_output
 
 from packaging.version import Version
-
-if sys.stdout.isatty():
-    GREEN, RED, RESET = "\033[92m", "\033[91m", "\033[0m"
-else:
-    GREEN = RED = RESET = ""
+from utilities import GREEN, RED, RESET, clean_exit
 
 
 class StackLevelChecker(ast.NodeVisitor):
@@ -67,6 +63,7 @@ def check_file(file, path, base_version) -> int:
     return stacklevel_checker.deprecations
 
 
+@clean_exit
 def main(module) -> None:
     version, base_version, path = get_info(module)
     files = check_output(["git", "ls-files", "."], cwd=path)

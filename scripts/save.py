@@ -14,6 +14,7 @@ from pathlib import Path
 import httpx
 from bs4 import BeautifulSoup
 from pandas.io.clipboard import clipboard_get, clipboard_set
+from utilities import clean_exit
 
 PATH = Path(os.environ["HOLOVIZ_DEV"]).resolve() / "development"
 
@@ -22,6 +23,7 @@ def get_id():
     return str(uuid.uuid4())
 
 
+@clean_exit
 def main(url):
     codeblocks, repo, filename = get_code_and_info(url)
     notebook = create_notebook(codeblocks, url)

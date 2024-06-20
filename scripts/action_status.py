@@ -6,8 +6,7 @@ import httpx
 import pandas as pd
 from rich.console import Console
 from rich.table import Table
-
-from utilities import trackpool
+from utilities import clean_exit, trackpool
 
 COLUMNS = {
     "name": "Workflow",
@@ -55,7 +54,7 @@ def get_info(repo) -> pd.DataFrame | None:
     df["Repo"] = repo
     return df
 
-
+@clean_exit
 def main() -> None:
     console = Console()
     futures = trackpool(get_info, REPOS, "Getting status of Github Actions")

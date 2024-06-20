@@ -39,7 +39,7 @@ from rich.console import Console
 from rich.prompt import Prompt
 from rich.table import Table
 from tomllib import load
-from utilities import trackpool
+from utilities import clean_exit, trackpool
 
 py_releases = {
     "3.8": datetime(2019, 10, 14),
@@ -200,6 +200,7 @@ def query(main_package, python_requires=None) -> None:
     console.print(table)
 
 
+@clean_exit
 def main() -> None:
     while True:
         main_package = Prompt.ask("Package (empty to quit)", console=console)

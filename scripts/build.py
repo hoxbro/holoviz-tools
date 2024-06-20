@@ -9,6 +9,7 @@ from _artifact import console, download_files
 from pandas.io.clipboard import clipboard_set
 from rich.table import Table
 from rich_menu import argument_menu
+from utilities import clean_exit
 
 REPOS = ["holoviews", "panel", "datashader", "geoviews"]
 
@@ -72,6 +73,7 @@ def generate_table(title, version1, version2, missing1, missing2):
     console.print(table)
 
 
+@clean_exit
 @click.command(context_settings={"show_default": True})
 @argument_menu("repo", choices=REPOS, console=console, title="Select a repo")
 @click.argument("good_run", type=int, required=False)

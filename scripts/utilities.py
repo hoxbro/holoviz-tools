@@ -5,7 +5,10 @@ from concurrent.futures import ThreadPoolExecutor
 
 from rich.progress import track
 
-GREEN, RED, RESET = "\033[0;32m", "\033[0;31m", "\033[0m"
+if sys.stdout.isatty():
+    GREEN, RED, RESET = "\033[0;32m", "\033[0;31m", "\033[0m"
+else:
+    GREEN = RED = RESET = ""
 
 
 def clean_exit(f):
