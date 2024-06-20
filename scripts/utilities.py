@@ -16,7 +16,7 @@ def clean_exit(f):
         try:
             return f(*args, **kwargs)
         except KeyboardInterrupt:
-            print(f"{RED}Aborted{RESET}")
+            print(f"\n{RED}Aborted.{RESET}")
             sys.exit(1)
 
     return wrapper
