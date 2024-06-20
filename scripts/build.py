@@ -1,10 +1,12 @@
 import contextlib
+import io
 import re
 import tarfile
 import zipfile
 from itertools import zip_longest
 
 import rich_click as click
+import zstandard as zstd
 from _artifact import console, download_files
 from pandas.io.clipboard import clipboard_set
 from rich.table import Table
@@ -27,38 +29,68 @@ def _get_version_re(repo_version):
     return re1, re2
 
 
-def zip_files(zip_path):
+def zip_filelist(zip_path):
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
-        zip_file_list = zip_ref.namelist()
+        zip_filelist = zip_ref.namelist()
     repo_version = zip_path.name.split("-py3")[0].split("-py2")[0]
     re1, re2 = _get_version_re(repo_version)
-    return {re1.sub("$VERSION", re2.sub("$VERSION", f)) for f in zip_file_list}
+    return {re1.sub("$VERSION", re2.sub("$VERSION", f)) for f in zip_filelist}
 
 
-def tar_files(tar_path):
+def tar_filelist(tar_path):
     with tarfile.open(tar_path, "r") as tar_ref:
-        tar_file_list = [member.name for member in tar_ref.getmembers() if member.isfile()]
+        tar_filelist = [member.name for member in tar_ref.getmembers() if member.isfile()]
     repo_version = (
         tar_path.name.split(".tar")[0].split("-py_0")[0].split(".tgz")[0].removeprefix("holoviz-")
     )
     re1, re2 = _get_version_re(repo_version)
-    return {re1.sub("$VERSION", re2.sub("$VERSION", f)) for f in tar_file_list}
+    return {re1.sub("$VERSION", re2.sub("$VERSION", f)) for f in tar_filelist}
+
+
+def conda_filelist(conda_path):
+    conda_filelist = []
+    with zipfile.ZipFile(conda_path, "r") as conda_zip:
+        conda_contents = conda_zip.namelist()
+
+        conda_filelist.extend([name for name in conda_contents if not name.endswith(".tar.zst")])
+
+        tar_zst_files = [name for name in conda_contents if name.endswith(".tar.zst")]
+        for tar_zst_file in tar_zst_files:
+            with conda_zip.open(tar_zst_file) as tar_zst_stream:
+                dctx = zstd.ZstdDecompressor()
+                decompressed = dctx.stream_reader(tar_zst_stream)
+
+                with tarfile.open(fileobj=io.BytesIO(decompressed.read())) as tar:
+                    for tarinfo in tar.getmembers():
+                        if tarinfo.isfile():
+                            conda_filelist.append(tarinfo.name)
+    repo_version = conda_path.name.split(".conda")[0].split("-py_0")[0]
+    re1, re2 = _get_version_re(repo_version)
+    return {re1.sub("$VERSION", re2.sub("$VERSION", f)) for f in conda_filelist}
 
 
 def compare_zip_files(zip1_path, zip2_path):
-    zip1 = zip_files(zip1_path)
-    zip2 = zip_files(zip2_path)
+    zip1 = zip_filelist(zip1_path)
+    zip2 = zip_filelist(zip2_path)
     zip1_missing = sorted(zip1 - zip2)
     zip2_missing = sorted(zip2 - zip1)
     return zip1_missing, zip2_missing
 
 
 def compare_tar_files(tar1_path, tar2_path):
-    tar1 = tar_files(tar1_path)
-    tar2 = tar_files(tar2_path)
+    tar1 = tar_filelist(tar1_path)
+    tar2 = tar_filelist(tar2_path)
     tar1_missing = sorted(tar1 - tar2)
     tar2_missing = sorted(tar2 - tar1)
     return tar1_missing, tar2_missing
+
+
+def compare_conda_files(conda1_path, conda2_path):
+    conda1 = conda_filelist(conda1_path)
+    conda2 = conda_filelist(conda2_path)
+    conda1_missing = sorted(conda1 - conda2)
+    conda2_missing = sorted(conda2 - conda1)
+    return conda1_missing, conda2_missing
 
 
 def generate_table(title, version1, version2, missing1, missing2):
@@ -125,14 +157,24 @@ def cli(repo, good_run, bad_run, workflow, force) -> None:
             f"{repo.title()} - sdist", version1, version2, missing_sdist1, missing_sdist2
         )
 
-    with contextlib.suppress(StopIteration):  # Conda
+    with contextlib.suppress(StopIteration):  # Conda pkg-version 1
         before_path = next(good_path.glob("*.tar.bz2"))
         after_path = next(bad_path.glob("*.tar.bz2"))
         version1 = before_path.name.split(".tar")[0].split("-py_0")[0].replace("-", " ")
         version2 = after_path.name.split(".tar")[0].split("-py_0")[0].replace("-", " ")
         missing_conda1, missing_conda2 = compare_tar_files(before_path, after_path)
         generate_table(
-            f"{repo.title()} - conda", version1, version2, missing_conda1, missing_conda2
+            f"{repo.title()} - conda #1", version1, version2, missing_conda1, missing_conda2
+        )
+
+    with contextlib.suppress(StopIteration):  # Conda pkg-version 2
+        before_path = next(good_path.glob("*.conda"))
+        after_path = next(bad_path.glob("*.conda"))
+        version1 = before_path.name.split(".conda")[0].split("-py_0")[0].replace("-", " ")
+        version2 = after_path.name.split(".conda")[0].split("-py_0")[0].replace("-", " ")
+        missing_conda1, missing_conda2 = compare_conda_files(before_path, after_path)
+        generate_table(
+            f"{repo.title()} - conda #2", version1, version2, missing_conda1, missing_conda2
         )
 
     with contextlib.suppress(StopIteration):  # NPM

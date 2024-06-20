@@ -45,7 +45,7 @@ ALL_PACKAGES=(
     diskcache streamz aiohttp rich-click setuptools_scm watchfiles
     pyviz_comms tqdm pyct httpx colorcet
     markdown markdown-it-py mdit-py-plugins linkify-it-py
-    cachecontrol lockfile platformdirs
+    cachecontrol lockfile platformdirs zstandard
 )
 
 create_environment() {
