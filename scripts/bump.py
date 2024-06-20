@@ -7,12 +7,12 @@ from subprocess import PIPE, STDOUT, CalledProcessError, run
 from packaging.version import InvalidVersion, Version
 from rich.console import Console
 from rich_menu import live_menu
+from utilities import GREEN, RED, RESET, clean_exit
 
-GREEN, RED, RESET = "\033[92m", "\033[91m", "\033[0m"
 console = Console()
 
 
-def git(*args, **kwargs):
+def git(*args, **kwargs) -> str:
     return (
         run(["git", *args], check=True, stdout=PIPE, stderr=STDOUT, **kwargs)
         .stdout.strip()
@@ -20,7 +20,7 @@ def git(*args, **kwargs):
     )
 
 
-def bump_version(version, part):
+def bump_version(version: Version, part: str | None) -> str:
     # Split the version into its parts
     major, minor, micro, pre = version.major, version.minor, version.micro, version.pre
     pre_letter, pre_num = pre if pre else (None, None)
@@ -49,7 +49,7 @@ def bump_version(version, part):
         case None:
             pre = None
         case _:
-            raise ValueError("Invalid part: choose 'major', 'minor', 'patch', 'a', 'b', or 'rc'")
+            raise ValueError("Invalid part")
 
     # Construct the new version string
     new_version = f"v{major}.{minor}.{micro}"
@@ -59,7 +59,8 @@ def bump_version(version, part):
     return new_version
 
 
-def get_possible_versions(current_version):
+def get_possible_versions(current_version: str) -> list[str]:
+    current_version = Version(current_version)
     if current_version.pre:
         parts = ["a", "b", "rc", None]
         return [bump_version(current_version, part=part) for part in parts]
@@ -71,7 +72,7 @@ def get_possible_versions(current_version):
         ]
 
 
-def js_update(package, version):
+def js_update(package: str, version: str):
     package_file = Path(f"{package}/package.json")
     if not package_file.exists():
         return
@@ -95,7 +96,7 @@ def js_update(package, version):
     git("commit", "-m", f"Update package.json to {js_ver}", "--no-verify")
 
 
-def validate_version(package, version):
+def validate_version(package: str, version: str):
     try:
         version_info = Version(version)
         if version_info.pre:
@@ -114,15 +115,15 @@ def validate_version(package, version):
     return version
 
 
+@clean_exit
 def main():
     directory = git("rev-parse", "--show-toplevel")
-    current_tag = git("describe", "--tags", "--abbrev=0")
+    current_version = git("describe", "--tags", "--abbrev=0")
     package = os.path.basename(directory)
     os.chdir(directory)
+    print(f"{GREEN}[{package}]{RESET} Current version: {current_version}")
 
-    print(f"{GREEN}[{package}]{RESET} Current version: {current_tag}")
-
-    version_options = get_possible_versions(Version(current_tag))
+    version_options = get_possible_versions(current_version)
     new_version = live_menu([*version_options, "input"], console, title="Select a version")
     if new_version == "input":
         new_version = console.input("Enter a version: ")
