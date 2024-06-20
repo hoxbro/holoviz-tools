@@ -44,7 +44,7 @@ def bump_version(version: Version, part: str | None) -> str:
                 pre_num += 1
             else:
                 pre_letter = part
-                pre_num = 1
+                pre_num = 0
             pre = (pre_letter, pre_num)
         case None:
             pre = None
@@ -63,6 +63,7 @@ def get_possible_versions(current_version: str) -> list[str]:
     current_version = Version(current_version)
     if current_version.pre:
         parts = ["a", "b", "rc", None]
+        parts = parts[parts.index(current_version.pre[0]):]
         return [bump_version(current_version, part=part) for part in parts]
     else:
         return [
@@ -124,7 +125,9 @@ def main():
     print(f"{GREEN}[{package}]{RESET} Current version: {current_version}")
 
     version_options = get_possible_versions(current_version)
-    new_version = live_menu([*version_options, "input"], console, title="Select a version")
+    title = rf"[green]\[{package}][/green] Select a version:"
+    new_version = live_menu([*version_options, "input"], console, title=title)
+
     if new_version == "input":
         new_version = console.input("Enter a version: ")
     new_version = validate_version(package, new_version)
