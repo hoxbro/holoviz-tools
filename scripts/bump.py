@@ -110,8 +110,12 @@ def validate_version(package: str, version: str):
 
 @clean_exit
 def main():
-    directory = git("rev-parse", "--show-toplevel")
-    current_version = git("describe", "--tags", "--abbrev=0")
+    try:
+        directory = git("rev-parse", "--show-toplevel")
+        current_version = git("describe", "--tags", "--abbrev=0")
+    except CalledProcessError:
+        print(f"{RED}Not a git repository{RESET}")
+        sys.exit(1)
     package = os.path.basename(directory)
     os.chdir(directory)
     print(f"{GREEN}[{package}]{RESET} Current version: {current_version}")
@@ -121,7 +125,7 @@ def main():
     new_version = live_menu([*version_options, "input"], console, title=title)
 
     if new_version == "input":
-        new_version = console.input("Enter a version: ")
+        new_version = console.input(rf"[green]\[{package}][/green] Enter a version: ")
     new_version = validate_version(package, new_version)
     print(f"{GREEN}[{package}]{RESET} New version: {new_version}")
 
