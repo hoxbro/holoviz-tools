@@ -2,22 +2,14 @@ import json
 import os
 import sys
 from pathlib import Path
-from subprocess import PIPE, STDOUT, CalledProcessError, run
+from subprocess import CalledProcessError, run
 
 from packaging.version import InvalidVersion, Version
 from rich.console import Console
 from rich_menu import live_menu
-from utilities import GREEN, RED, RESET, clean_exit
+from utilities import GREEN, RED, RESET, clean_exit, git
 
 console = Console()
-
-
-def git(*args, **kwargs) -> str:
-    return (
-        run(["git", *args], check=True, stdout=PIPE, stderr=STDOUT, **kwargs)
-        .stdout.strip()
-        .decode()
-    )
 
 
 def bump_version(version: Version, part: str | None) -> str:
@@ -63,7 +55,7 @@ def get_possible_versions(current_version: str) -> list[str]:
     current_version = Version(current_version)
     if current_version.pre:
         parts = ["a", "b", "rc", None]
-        parts = parts[parts.index(current_version.pre[0]):]
+        parts = parts[parts.index(current_version.pre[0]) :]
         return [bump_version(current_version, part=part) for part in parts]
     else:
         return [
