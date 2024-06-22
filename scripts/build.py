@@ -40,9 +40,9 @@ def zip_filelist(zip_path):
 def tar_filelist(tar_path):
     with tarfile.open(tar_path, "r") as tar_ref:
         tar_filelist = [member.name for member in tar_ref.getmembers() if member.isfile()]
-    repo_version = (
-        tar_path.name.split(".tar")[0].split("-py_0")[0].split(".tgz")[0].removeprefix("holoviz-")
-    )
+    repo_version = tar_path.name
+    repo_version = repo_version.replace("-core", "").split(".tar")[0].split("-py_0")[0]  # conda
+    repo_version = repo_version.split(".tgz")[0].removeprefix("holoviz-")  # npm
     re1, re2 = _get_version_re(repo_version)
     return {re1.sub("$VERSION", re2.sub("$VERSION", f)) for f in tar_filelist}
 
@@ -51,9 +51,7 @@ def conda_filelist(conda_path):
     conda_filelist = []
     with zipfile.ZipFile(conda_path, "r") as conda_zip:
         conda_contents = conda_zip.namelist()
-
         conda_filelist.extend([name for name in conda_contents if not name.endswith(".tar.zst")])
-
         tar_zst_files = [name for name in conda_contents if name.endswith(".tar.zst")]
         for tar_zst_file in tar_zst_files:
             with conda_zip.open(tar_zst_file) as tar_zst_stream:
@@ -64,7 +62,8 @@ def conda_filelist(conda_path):
                     for tarinfo in tar.getmembers():
                         if tarinfo.isfile():
                             conda_filelist.append(tarinfo.name)
-    repo_version = conda_path.name.split(".conda")[0].split("-py_0")[0]
+
+    repo_version = conda_path.name.replace("-core", "").split(".conda")[0].split("-py_0")[0]
     re1, re2 = _get_version_re(repo_version)
     return {re1.sub("$VERSION", re2.sub("$VERSION", f)) for f in conda_filelist}
 
@@ -148,16 +147,15 @@ def cli(repo, good_run, bad_run, workflow, force) -> None:
         version1 = before_path.name.split(".tar")[0].replace("-", " ")
         version2 = after_path.name.split(".tar")[0].replace("-", " ")
         missing_sdist1, missing_sdist2 = compare_tar_files(before_path, after_path)
-        #  Filter out top-level example folder, this is a known bug
-        # missing_sdist1 = [f for f in missing_sdist1 if not f.startswith("$VERSION/examples")]
-        missing_sdist1 = [f for f in missing_sdist1 if not f.startswith("$VERSION/doc")]
-        # missing_sdist2 = [f for f in missing_sdist2 if not f.startswith("$VERSION/examples")]
-        missing_sdist2 = [f for f in missing_sdist2 if not f.startswith("$VERSION/doc")]
+        # missing_sdist1 = [f for f in missing_sdist1 if not f.startswith("$VERSION/geoviews/examples")]
+        # missing_sdist1 = [f for f in missing_sdist1 if not f.startswith("$VERSION/doc")]
+        # missing_sdist2 = [f for f in missing_sdist2 if not f.startswith("$VERSION/geoviews/examples")]
+        # missing_sdist2 = [f for f in missing_sdist2 if not f.startswith("$VERSION/doc")]
         generate_table(
             f"{repo.title()} - sdist", version1, version2, missing_sdist1, missing_sdist2
         )
 
-    with contextlib.suppress(StopIteration):  # Conda pkg-version 1
+    with contextlib.suppress(StopIteration):  # Conda pkg-format 1
         before_path = next(good_path.glob("*.tar.bz2"))
         after_path = next(bad_path.glob("*.tar.bz2"))
         version1 = before_path.name.split(".tar")[0].split("-py_0")[0].replace("-", " ")
@@ -167,7 +165,7 @@ def cli(repo, good_run, bad_run, workflow, force) -> None:
             f"{repo.title()} - conda #1", version1, version2, missing_conda1, missing_conda2
         )
 
-    with contextlib.suppress(StopIteration):  # Conda pkg-version 2
+    with contextlib.suppress(StopIteration):  # Conda pkg-format 2
         before_path = next(good_path.glob("*.conda"))
         after_path = next(bad_path.glob("*.conda"))
         version1 = before_path.name.split(".conda")[0].split("-py_0")[0].replace("-", " ")
