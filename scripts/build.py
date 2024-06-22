@@ -133,17 +133,17 @@ def cli(repo, good_run, bad_run, workflow, force) -> None:
         code += "--force "
     clipboard_set(code)
 
-    with contextlib.suppress(StopIteration):  # Wheel
-        before_path = next(good_path.glob("*.whl"))
-        after_path = next(bad_path.glob("*.whl"))
+    with contextlib.suppress(IndexError):  # Wheel
+        before_path = sorted(good_path.glob("*.whl"))[0]
+        after_path = sorted(bad_path.glob("*.whl"))[0]
         version1 = before_path.name.split("-py3")[0].replace("-", " ")
         version2 = after_path.name.split("-py3")[0].replace("-", " ")
         missing_whl1, missing_whl2 = compare_zip_files(before_path, after_path)
         generate_table(f"{repo.title()} - wheel", version1, version2, missing_whl1, missing_whl2)
 
-    with contextlib.suppress(StopIteration):  # Source distribution
-        before_path = next(good_path.glob("*.tar.gz"))
-        after_path = next(bad_path.glob("*.tar.gz"))
+    with contextlib.suppress(IndexError):  # Source distribution
+        before_path = sorted(good_path.glob("*.tar.gz"))[0]
+        after_path = sorted(bad_path.glob("*.tar.gz"))[0]
         version1 = before_path.name.split(".tar")[0].replace("-", " ")
         version2 = after_path.name.split(".tar")[0].replace("-", " ")
         missing_sdist1, missing_sdist2 = compare_tar_files(before_path, after_path)
@@ -155,9 +155,9 @@ def cli(repo, good_run, bad_run, workflow, force) -> None:
             f"{repo.title()} - sdist", version1, version2, missing_sdist1, missing_sdist2
         )
 
-    with contextlib.suppress(StopIteration):  # Conda pkg-format 1
-        before_path = next(good_path.glob("*.tar.bz2"))
-        after_path = next(bad_path.glob("*.tar.bz2"))
+    with contextlib.suppress(IndexError):  # Conda pkg-format 1
+        before_path = sorted(good_path.glob("*.tar.bz2"), key=lambda x: "core" not in x.name)[0]
+        after_path = sorted(bad_path.glob("*.tar.bz2"), key=lambda x: "core" not in x.name)[0]
         version1 = before_path.name.split(".tar")[0].split("-py_0")[0].replace("-", " ")
         version2 = after_path.name.split(".tar")[0].split("-py_0")[0].replace("-", " ")
         missing_conda1, missing_conda2 = compare_tar_files(before_path, after_path)
@@ -165,9 +165,9 @@ def cli(repo, good_run, bad_run, workflow, force) -> None:
             f"{repo.title()} - conda #1", version1, version2, missing_conda1, missing_conda2
         )
 
-    with contextlib.suppress(StopIteration):  # Conda pkg-format 2
-        before_path = next(good_path.glob("*.conda"))
-        after_path = next(bad_path.glob("*.conda"))
+    with contextlib.suppress(IndexError):  # Conda pkg-format 2
+        before_path = sorted(good_path.glob("*.conda"), key=lambda x: "core" not in x.name)[0]
+        after_path = sorted(bad_path.glob("*.conda"), key=lambda x: "core" not in x.name)[0]
         version1 = before_path.name.split(".conda")[0].split("-py_0")[0].replace("-", " ")
         version2 = after_path.name.split(".conda")[0].split("-py_0")[0].replace("-", " ")
         missing_conda1, missing_conda2 = compare_conda_files(before_path, after_path)
@@ -175,9 +175,9 @@ def cli(repo, good_run, bad_run, workflow, force) -> None:
             f"{repo.title()} - conda #2", version1, version2, missing_conda1, missing_conda2
         )
 
-    with contextlib.suppress(StopIteration):  # NPM
-        before_path = next(good_path.glob("*.tgz"))
-        after_path = next(bad_path.glob("*.tgz"))
+    with contextlib.suppress(IndexError):  # NPM
+        before_path = sorted(good_path.glob("*.tgz"))[0]
+        after_path = sorted(bad_path.glob("*.tgz"))[0]
         version1 = before_path.name.split(".tgz")[0].replace("-", " ").strip("holoviz ")
         version2 = after_path.name.split(".tgz")[0].replace("-", " ").strip("holoviz ")
         missing_conda1, missing_conda2 = compare_tar_files(before_path, after_path)
