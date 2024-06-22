@@ -72,7 +72,7 @@ def js_update(package: str, version: str):
 
     print(f"{GREEN}[{package}]{RESET} Updating package.json")
     js_ver = version.removeprefix("v")
-    for n in ["a", "b", "c"]:
+    for n in ["a", "b", "rc"]:
         js_ver = js_ver.replace(n, f"-{n}.")
 
     package_json = json.loads(package_file.read_text())

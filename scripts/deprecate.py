@@ -3,10 +3,9 @@ import os
 import sys
 import warnings
 from importlib.util import find_spec
-from subprocess import check_output
 
 from packaging.version import Version
-from utilities import GREEN, RED, RESET, clean_exit
+from utilities import GREEN, RED, RESET, clean_exit, git
 
 
 class StackLevelChecker(ast.NodeVisitor):
@@ -41,7 +40,7 @@ class StackLevelChecker(ast.NodeVisitor):
 
 def get_info(module):
     path = find_spec(module).submodule_search_locations[0]
-    tag = check_output(["git", "describe", "--abbrev=0", "main"], cwd=path).strip().decode()
+    tag = git("describe", "--abbrev=0", "main", cwd=path)
     version = Version(tag)
     base_version = Version(version.base_version)
     return version, base_version, path
@@ -66,10 +65,10 @@ def check_file(file, path, base_version) -> int:
 @clean_exit
 def main(module) -> None:
     version, base_version, path = get_info(module)
-    files = check_output(["git", "ls-files", "."], cwd=path)
+    files = git("ls-files", ".", cwd=path)
     deprecations = 0
     print(f"Latest tag of {module} on main is '{version}'.")
-    for file in files.decode().split("\n"):
+    for file in files.split("\n"):
         if file.endswith(".py"):
             deprecations += check_file(file, path, base_version)
     sys.exit(deprecations > 0)
