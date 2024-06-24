@@ -14,7 +14,7 @@ ALL_PACKAGES=(
 
     # Data processing
     numpy pandas xarray polars numba
-    dask-core scipy scikit-image
+    dask-core scipy scikit-image dask-expr
 
     # Data loading
     lxml openpyxl fastparquet pooch pyarrow
@@ -32,12 +32,10 @@ ALL_PACKAGES=(
     pytest-randomly detect-test-pollution nbval microsoft::pytest-playwright microsoft::playwright
 
     # Geo
-    geopandas rioxarray rasterio spatialpandas dask-geopandas
-    cartopy pyogrio iris esmpy xesmf geodatasets metpy
+    geopandas rioxarray rasterio spatialpandas cartopy geodatasets
 
     # Dev Tools
-    nodejs python-build debugpy
-    black ruff
+    nodejs python-build debugpy ruff
     pyinstrument snakeviz psutil py-spy tuna asv
     pyviz::nbsite
 
