@@ -5,6 +5,7 @@ from pathlib import Path
 from subprocess import CalledProcessError, run
 
 from packaging.version import InvalidVersion, Version
+from pandas.io.clipboard import clipboard_set
 from rich.console import Console
 from rich_menu import live_menu
 from utilities import GREEN, RED, RESET, clean_exit, git
@@ -128,6 +129,7 @@ def main():
         new_version = console.input(rf"[green]\[{package}][/green] Enter a version: ")
     new_version = validate_version(package, new_version)
     print(f"{GREEN}[{package}]{RESET} New version: {new_version}")
+    clipboard_set(f"git push origin {new_version} --no-verify")
 
     js_update(package, new_version)
 
