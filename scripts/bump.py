@@ -129,7 +129,7 @@ def main():
         new_version = console.input(rf"[green]\[{package}][/green] Enter a version: ")
     new_version = validate_version(package, new_version)
     print(f"{GREEN}[{package}]{RESET} New version: {new_version}")
-    clipboard_set(f"git push origin {new_version} --no-verify")
+    clipboard_set(f" git push origin {new_version} --no-verify")
 
     js_update(package, new_version)
 
