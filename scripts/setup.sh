@@ -3,7 +3,7 @@
 set -euo pipefail
 
 CONDA_ENV=holoviz
-DEV_BOKEH="3.5"
+DEV_BOKEH=""
 PACKAGES=(panel holoviews hvplot param datashader geoviews lumen holonote)
 NVIDIA_PACKAGES=(cupy)
 UNIX_PACKAGES=(memray tsdownsample)
@@ -54,7 +54,7 @@ create_environment() {
     conda activate $CONDA_ENV
 
     # Insert custom install
-    if [ -n $DEV_BOKEH ]; then
+    if [ -n "$DEV_BOKEH" ]; then
         export DEV_BOKEH
         BOKEH_VERSION=$(
             mamba repoquery search bokeh -c bokeh/label/dev --offline --json |
@@ -91,7 +91,7 @@ install_package() {
 
         # Update main
         git fetch origin
-        git pull origin --tags
+        git pull origin --tags --force
         git reset --hard origin/main
         git fetch --all --prune
 
