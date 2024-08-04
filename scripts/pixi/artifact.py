@@ -13,7 +13,7 @@ from rich.table import Table
 from rich_menu import argument_menu
 from utilities import clean_exit
 
-REPOS = ["holoviews", "panel"]  #  "hvplot", "datashader", "geoviews", "lumen"]
+REPOS = ["holoviews", "panel", "datashader", "geoviews", "lumen", "spatialpandas"]
 
 
 def get_files(repo, good_run, bad_run, workflow, force) -> tuple[Path | None, Path | None]:
@@ -70,7 +70,7 @@ def table_output(repo, good_run, bad_run, env, arch, good_env, bad_env):
     good_only = good_list - bad_list
     bad_only = bad_list - good_list
 
-    packages = {p.split("-")[:-2][0] for p in good_only | bad_only if p != "."}
+    packages = {"-".join(p.split("-")[:-2]) for p in good_only | bad_only if p != "."}
     if not packages:
         return False
 

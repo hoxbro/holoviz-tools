@@ -7,13 +7,14 @@ from itertools import zip_longest
 
 import rich_click as click
 import zstandard as zstd
-from _artifact import console, download_files
 from pandas.io.clipboard import clipboard_set
 from rich.table import Table
+
+from _artifact import console, download_files
 from rich_menu import argument_menu
 from utilities import clean_exit
 
-REPOS = ["holoviews", "panel", "datashader", "geoviews"]
+REPOS = ["holoviews", "panel", "datashader", "geoviews", "lumen", "spatialpandas"]
 
 
 def _get_version_re(repo_version):
