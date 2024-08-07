@@ -40,6 +40,11 @@ ALL_PACKAGES=(
     pyinstrument snakeviz psutil py-spy tuna asv
     pyviz::nbsite
 
+    # Typing
+    mypy typing-extensions pandas-stubs
+    types-bleach types-croniter types-Markdown types-psutil
+    types-requests types-tqdm
+
     # Misc
     diskcache streamz aiohttp rich-click setuptools_scm watchfiles
     pyviz_comms tqdm pyct httpx colorcet
