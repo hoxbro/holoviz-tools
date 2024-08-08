@@ -4,7 +4,7 @@ set -euo pipefail
 
 CONDA_ENV=holoviz
 DEV_BOKEH=""
-PACKAGES=(panel holoviews hvplot param datashader geoviews lumen holonote)
+PACKAGES=(panel holoviews hvplot param datashader geoviews lumen holonote spatialpandas)
 NVIDIA_PACKAGES=(cupy)
 UNIX_PACKAGES=(memray tsdownsample)
 ALL_PACKAGES=(
