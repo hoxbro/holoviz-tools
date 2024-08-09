@@ -82,6 +82,7 @@ create_environment() {
     if [[ $OS == "windows" ]]; then
         rm "$HOME/miniconda3/envs/$CONDA_ENV/Library/usr/bin/cygpath.exe" || true
     fi
+    rm -f ~/.config/dask/dask.yaml
 }
 
 install_package() {
