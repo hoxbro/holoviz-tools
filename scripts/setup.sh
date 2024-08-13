@@ -29,7 +29,7 @@ ALL_PACKAGES=(
     ipywidgets_bokeh jupyter_bokeh
 
     # Testing
-    pytest pytest-xdist pytest-rerunfailures parameterized pytest-asyncio
+    pytest pytest-xdist pytest-rerunfailures parameterized pytest-asyncio hypothesis
     pytest-randomly detect-test-pollution nbval microsoft::pytest-playwright microsoft::playwright
 
     # Geo
