@@ -84,7 +84,7 @@ def get_artifact_urls(repo, workflow, good_run, bad_run) -> tuple[str, str] | No
             return good_url, bad_url
 
 
-def get_artifact_data_url(download_path, url, artifact_names) -> None:
+def get_artifact_data_url(download_path, url, artifact_names) -> list[tuple[str, str]]:
     if download_path.exists():
         return []
 
@@ -139,8 +139,8 @@ def download_files(repo, good_run, bad_run, workflow, *, force=False, artifact_n
             f"Selected: [green]Good run {good_run}[/green] and [red]bad run {bad_run}[/red]"
         )
 
-    good_path = ARTIFACT_PATH / f"{repo}_{workflow.split(".")[0]}_{good_run}"
-    bad_path = ARTIFACT_PATH / f"{repo}_{workflow.split(".")[0]}_{bad_run}"
+    good_path = ARTIFACT_PATH / f"{repo}_{workflow.split('.')[0]}_{good_run}"
+    bad_path = ARTIFACT_PATH / f"{repo}_{workflow.split('.')[0]}_{bad_run}"
 
     if force:
         rmtree(good_path, ignore_errors=True)
