@@ -11,7 +11,7 @@ ALL_PACKAGES=(
     python=3.12
 
     # Visualization
-    bokeh plotly matplotlib seaborn altair
+    bokeh plotly matplotlib-base seaborn-base altair
 
     # Data processing
     numpy pandas xarray polars numba

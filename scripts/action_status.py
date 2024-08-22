@@ -6,6 +6,7 @@ import httpx
 import pandas as pd
 from rich.console import Console
 from rich.table import Table
+
 from utilities import clean_exit, trackpool
 
 COLUMNS = {
@@ -53,6 +54,7 @@ def get_info(repo) -> pd.DataFrame | None:
     df = df[list(COLUMNS)].rename(COLUMNS, axis=1)
     df["Repo"] = repo
     return df
+
 
 @clean_exit
 def main() -> None:
