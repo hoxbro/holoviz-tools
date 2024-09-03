@@ -113,7 +113,9 @@ install_package() {
     fi
 
     # pre-commit initialize
-    pre-commit install-hooks || echo no pre-commit
+    if command -v pre-commit &>/dev/null; then
+        pre-commit install-hooks
+    fi
     cp -a "$(cd -- "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)/pre-push" .git/hooks/pre-push
 
     # Install the package
