@@ -87,7 +87,7 @@ def js_update(package: str, version: str):
         sys.exit(1)
 
     git("add", f"{package}/package.json", f"{package}/package-lock.json")
-    git("commit", "-m", f"Update {package}.js to {js_ver}", "--no-verify")
+    git("commit", "-m", f"Update {package}.js to {js_ver}", "--no-verify", "--allow-empty")
 
 
 def validate_version(package: str, version: str):
