@@ -13,6 +13,7 @@ import rich_click as click
 from pandas.io.clipboard import clipboard_set
 from rich.console import Console
 from rich.markdown import Markdown
+
 from rich_menu import argument_menu, live_menu
 from utilities import clean_exit
 
@@ -27,7 +28,7 @@ console = Console()
 
 def get_session_id() -> str:
     # https://github.com/yt-dlp/yt-dlp/blob/c39358a54bc6675ae0c50b81024e5a086e41656a/yt_dlp/cookies.py#l117
-    firefox_dir = Path("~/.mozilla/firefox").expanduser()
+    firefox_dir = Path("~/.librewolf").expanduser()
     profile = next(firefox_dir.rglob("cookies.sqlite"))
 
     with tempfile.TemporaryDirectory() as tmpdir:
