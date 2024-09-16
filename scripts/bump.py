@@ -7,6 +7,7 @@ from subprocess import CalledProcessError, run
 from packaging.version import InvalidVersion, Version
 from pandas.io.clipboard import clipboard_set
 from rich.console import Console
+
 from rich_menu import live_menu
 from utilities import GREEN, RED, RESET, clean_exit, git
 
@@ -66,10 +67,10 @@ def get_possible_versions(current_version: str) -> list[str]:
         ]
 
 
-def js_update(package: str, version: str):
+def js_update(package: str, version: str) -> bool:
     package_file = Path(f"{package}/package.json")
     if not package_file.exists():
-        return
+        return False
 
     print(f"{GREEN}[{package}]{RESET} Updating package.json")
     js_ver = version.removeprefix("v")
@@ -88,6 +89,7 @@ def js_update(package: str, version: str):
 
     git("add", f"{package}/package.json", f"{package}/package-lock.json")
     git("commit", "-m", f"Update {package}.js to {js_ver}", "--no-verify", "--allow-empty")
+    return True
 
 
 def validate_version(package: str, version: str):
@@ -129,9 +131,13 @@ def main():
         new_version = console.input(rf"[green]\[{package}][/green] Enter a version: ")
     new_version = validate_version(package, new_version)
     print(f"{GREEN}[{package}]{RESET} New version: {new_version}")
-    clipboard_set(f" git push origin {new_version} --no-verify")
 
-    js_update(package, new_version)
+    js_commit = js_update(package, new_version)
+    if js_commit:
+        copy_cmd = f" git push origin --no-verify && git push origin {new_version} --no-verify"
+    else:
+        copy_cmd = f" git push origin {new_version} --no-verify"
+    clipboard_set(copy_cmd)
 
     commit = git("rev-parse", "HEAD")
     git("tag", new_version, commit, "-m", new_version.replace("v", "Version "))
