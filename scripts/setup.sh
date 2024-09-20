@@ -65,7 +65,7 @@ create_environment() {
             mamba repoquery search bokeh -c bokeh/label/dev --offline --json |
                 jq -r '.result.pkgs | map(select(.version | startswith(env.DEV_BOKEH))) | max_by(.timestamp) | .version'
         )
-        mamba install bokeh==$BOKEH_VERSION -c bokeh/label/dev -y
+        mamba install bokeh=="$BOKEH_VERSION" -c bokeh/label/dev -y
     fi
 
     # Environment variables
@@ -88,7 +88,7 @@ create_environment() {
 install_package() {
 
     if [ -d "$1" ]; then
-        cd $1
+        cd "$1"
 
         # Save current branch and stash files
         BRANCH=$(git branch --show-current)
@@ -103,12 +103,12 @@ install_package() {
         git fetch --all --prune
 
         # Go back branch and unstash files
-        git checkout $BRANCH
+        git checkout "$BRANCH"
         if (($DIRTY > 0)); then git stash pop; fi
 
     else
-        git clone git@github.com:holoviz/$1.git
-        cd $1
+        git clone git@github.com:holoviz/"$1".git
+        cd "$1"
         pre-commit install --allow-missing-config || echo no pre-commit
     fi
 
@@ -119,7 +119,7 @@ install_package() {
     cp -a "$(cd -- "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)/pre-push" .git/hooks/pre-push
 
     # Install the package
-    conda uninstall --force --offline --yes $1 || true
+    conda uninstall --force --offline --yes "$1" || true
     # conda develop .  # adding to environments .pth file
     # pwd >> $(python -c "import site; print(site.getsitepackages()[0])")/holoviz.pth
 
@@ -131,15 +131,14 @@ install_package() {
     fi
     if [[ "$1" == "holoviews" ]]; then
         # Don't want the holoviews command
-        rm $(which holoviews) || echo "already uninstalled"
+        rm "$(which holoviews)" || echo "already uninstalled"
     fi
-    # rm -rf build/
     cd ..
 }
 
 run() {
     set +euo pipefail
-    (set -euxo pipefail && $1 $2) >"/tmp/holoviz_$2_$(date +%Y-%m-%d_%H.%M).log" 2>&1
+    (set -euxo pipefail && "$1" "$2") >"/tmp/holoviz_$2_$(date +%Y-%m-%d_%H.%M).log" 2>&1
     if (($? > 0)); then
         echo "!!! Failed installing $2 !!!"
     else
@@ -151,8 +150,8 @@ run() {
 SECONDS=0
 
 # Note need to have drive installed
-mkdir -p $HOLOVIZ_REP
-cd $HOLOVIZ_REP
+mkdir -p "$HOLOVIZ_REP"
+cd "$HOLOVIZ_REP"
 
 # Activate conda
 source $(conda info | grep -i 'base environment' | awk '{print $4}')/etc/profile.d/conda.sh
@@ -163,8 +162,8 @@ OS=$(python -c 'import platform; print(platform.system())')
 NVIDIA=$(conda info | (grep cuda || echo -n) | wc -l)
 
 # Add custom packages
-if [ $NVIDIA == "1" ]; then ALL_PACKAGES+=(${NVIDIA_PACKAGES[@]}); fi
-if [[ $OS == "Linux" || $OS == "Darwin" ]]; then ALL_PACKAGES+=(${UNIX_PACKAGES[@]}); fi
+if [ "$NVIDIA" == "1" ]; then ALL_PACKAGES+=(${NVIDIA_PACKAGES[@]}); fi
+if [[ "$OS" == "Linux" || $OS == "Darwin" ]]; then ALL_PACKAGES+=(${UNIX_PACKAGES[@]}); fi
 
 # Starting up the machine
 create_environment
@@ -172,7 +171,7 @@ create_environment
 # Install packages
 conda activate $CONDA_ENV
 for p in ${PACKAGES[@]}; do
-    run install_package $p &
+    run install_package "$p" &
 done
 
 # Download data
