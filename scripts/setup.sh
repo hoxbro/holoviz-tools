@@ -123,12 +123,7 @@ install_package() {
     # conda develop .  # adding to environments .pth file
     # pwd >> $(python -c "import site; print(site.getsitepackages()[0])")/holoviz.pth
 
-    # This should be removed when packages uses pyproject.toml
-    if [[ -f setup.py ]]; then
-        SETUPTOOLS_ENABLE_FEATURES=legacy-editable python -m pip install --no-deps -e .
-    else
-        SETUPTOOLS_ENABLE_FEATURES= python -m pip install --no-deps -e .
-    fi
+    python -m pip install --no-deps -e .
     if [[ "$1" == "holoviews" ]]; then
         # Don't want the holoviews command
         rm "$(which holoviews)" || echo "already uninstalled"
