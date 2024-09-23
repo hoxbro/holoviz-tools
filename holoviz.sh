@@ -58,6 +58,8 @@ elif [[ $1 == "workspace" ]]; then
     bash $TOOLS/workspace/$1.sh $@
 elif [[ $1 == "bump" ]]; then
     PYTHONPATH=$TOOLS python $TOOLS/bump.py $@
+elif [[ $1 == "python-3.13" ]]; then
+    PYTHONPATH=$TOOLS python "$TOOLS"/python-313.py
 elif [[ $1 ]]; then
     (exit 1)
 else
