@@ -1,6 +1,7 @@
 import httpx
 
 # https://conda-forge.org/status/migration/?name=python313
+GREEN, RED, RESET = "\033[0;32m", "\033[0;31m", "\033[0m"
 
 deps = [
     "fastparquet",
@@ -21,8 +22,11 @@ for dep in sorted(deps):
     matched = False
     for opt in opts:
         if dep in data[opt]:
-            print(f"{dep:<15}{opt}")
+            if opt == "done":
+                print(f"{GREEN}{dep:<15}{opt}{RESET}")
+            else:
+                print(f"{RED}{dep:<15}{opt}{RESET}")
             matched = True
             break
     if not matched:
-        print(f"{dep:<15}no-match")
+        print(f"{RED}{dep:<15}no-match{RESET}")
