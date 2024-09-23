@@ -175,4 +175,4 @@ python -m bokeh sampledata &>/dev/null &
 
 wait
 
-echo -e "\nRun time: $((($SECONDS / 60) % 60)) min and $(($SECONDS % 60)) sec"
+echo -e "\nRun time: $(((SECONDS / 60) % 60)) min and $((SECONDS % 60)) sec"
