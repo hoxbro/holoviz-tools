@@ -116,7 +116,6 @@ install_package() {
     if command -v pre-commit &>/dev/null; then
         pre-commit install-hooks
     fi
-    cp -a "$(cd -- "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)/pre-push" .git/hooks/pre-push
 
     # Install the package
     conda uninstall --force --offline --yes "$1" || true
