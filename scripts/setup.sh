@@ -54,7 +54,7 @@ ALL_PACKAGES=(
 create_environment() {
     # Create environment
     conda env list | grep $CONDA_ENV | awk '{print $1}' | xargs -r -L1 conda env remove -y -n || echo "No environment to remove"
-    mamba create -n $CONDA_ENV ${ALL_PACKAGES[@]} -y -c microsoft -c bokeh/label/rc
+    mamba create -n $CONDA_ENV "${ALL_PACKAGES[@]}" -y -c microsoft -c bokeh/label/rc
     conda activate $CONDA_ENV
 
     # Environment variables
@@ -93,7 +93,7 @@ install_package() {
 
         # Go back branch and unstash files
         git checkout "$BRANCH"
-        if (($DIRTY > 0)); then git stash pop; fi
+        if ((DIRTY > 0)); then git stash pop; fi
 
     else
         git clone git@github.com:holoviz/"$1".git
@@ -137,7 +137,7 @@ mkdir -p "$HOLOVIZ_REP"
 cd "$HOLOVIZ_REP"
 
 # Activate conda
-source $(conda info | grep -i 'base environment' | awk '{print $4}')/etc/profile.d/conda.sh
+source "$(conda info | grep -i 'base environment' | awk '{print $4}')/etc/profile.d/conda.sh"
 conda activate base
 
 # OS and NVIDIA detection
@@ -145,15 +145,15 @@ OS=$(python -c 'import platform; print(platform.system())')
 NVIDIA=$(conda info | (grep cuda || echo -n) | wc -l)
 
 # Add custom packages
-if [ "$NVIDIA" == "1" ]; then ALL_PACKAGES+=(${NVIDIA_PACKAGES[@]}); fi
-if [[ "$OS" == "Linux" || $OS == "Darwin" ]]; then ALL_PACKAGES+=(${UNIX_PACKAGES[@]}); fi
+if [ "$NVIDIA" == "1" ]; then ALL_PACKAGES+=("${NVIDIA_PACKAGES[@]}"); fi
+if [[ "$OS" == "Linux" || $OS == "Darwin" ]]; then ALL_PACKAGES+=("${UNIX_PACKAGES[@]}"); fi
 
 # Starting up the machine
 create_environment
 
 # Install packages
 conda activate $CONDA_ENV
-for p in ${PACKAGES[@]}; do
+for p in "${PACKAGES[@]}"; do
     run install_package "$p" &
 done
 
