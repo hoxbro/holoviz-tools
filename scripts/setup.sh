@@ -3,7 +3,6 @@
 set -euo pipefail
 
 CONDA_ENV=holoviz
-DEV_BOKEH=""
 PACKAGES=(panel holoviews hvplot param datashader geoviews lumen holonote spatialpandas)
 NVIDIA_PACKAGES=(cupy)
 UNIX_PACKAGES=(memray tsdownsample)
@@ -55,18 +54,8 @@ ALL_PACKAGES=(
 create_environment() {
     # Create environment
     conda env list | grep $CONDA_ENV | awk '{print $1}' | xargs -r -L1 conda env remove -y -n || echo "No environment to remove"
-    mamba create -n $CONDA_ENV ${ALL_PACKAGES[@]} -y -c microsoft
+    mamba create -n $CONDA_ENV ${ALL_PACKAGES[@]} -y -c microsoft -c bokeh/label/rc
     conda activate $CONDA_ENV
-
-    # Insert custom install
-    if [ -n "$DEV_BOKEH" ]; then
-        export DEV_BOKEH
-        BOKEH_VERSION=$(
-            mamba repoquery search bokeh -c bokeh/label/dev --offline --json |
-                jq -r '.result.pkgs | map(select(.version | startswith(env.DEV_BOKEH))) | max_by(.timestamp) | .version'
-        )
-        mamba install bokeh=="$BOKEH_VERSION" -c bokeh/label/dev -y
-    fi
 
     # Environment variables
     # https://docs.bokeh.org/en/latest/docs/dev_guide/setup.html
