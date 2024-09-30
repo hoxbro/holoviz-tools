@@ -65,6 +65,7 @@ create_environment() {
     conda env config vars set BOKEH_PRETTY=true -n $CONDA_ENV
     conda env config vars set USE_PYGEOS=0 -n $CONDA_ENV
     conda env config vars set HYPOTHESIS_MAX_EXAMPLES=1 -n $CONDA_ENV
+    conda env config vars set DASK_DISTRIBUTED__LOGGING_BOKEH=debug -n $CONDA_ENV
 
     # conda env config vars set PYTHONWARNINGS=default
 
