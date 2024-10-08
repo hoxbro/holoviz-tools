@@ -47,6 +47,7 @@ py_releases = {
     "3.10": datetime(2021, 10, 4),
     "3.11": datetime(2022, 10, 24),
     "3.12": datetime(2023, 10, 2),
+    "3.13": datetime(2024, 10, 7),
 }
 conda_mapping = {
     "conda-build": None,
