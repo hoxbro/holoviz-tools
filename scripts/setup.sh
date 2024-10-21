@@ -35,7 +35,7 @@ ALL_PACKAGES=(
     geopandas rioxarray rasterio spatialpandas cartopy geodatasets
 
     # Dev Tools
-    nodejs python-build debugpy ruff
+    nodejs python-build "debugpy==1.8.5" ruff
     pyinstrument snakeviz psutil py-spy tuna asv
     pyviz::nbsite
 
@@ -65,7 +65,7 @@ create_environment() {
     conda env config vars set BOKEH_PRETTY=true -n $CONDA_ENV
     conda env config vars set USE_PYGEOS=0 -n $CONDA_ENV
     conda env config vars set HYPOTHESIS_MAX_EXAMPLES=1 -n $CONDA_ENV
-    conda env config vars set DASK_DISTRIBUTED__LOGGING_BOKEH=debug -n $CONDA_ENV
+    conda env config vars set DASK_DISTRIBUTED__LOGGING__BOKEH=info -n $CONDA_ENV
 
     # conda env config vars set PYTHONWARNINGS=default
 
