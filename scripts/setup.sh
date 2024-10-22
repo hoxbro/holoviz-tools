@@ -53,7 +53,7 @@ ALL_PACKAGES=(
 
 create_environment() {
     # Create environment
-    conda env list | grep $CONDA_ENV | awk '{print $1}' | xargs -r -L1 conda env remove -y -n || echo "No environment to remove"
+    conda env list | grep $CONDA_ENV | awk '{print $1}' | xargs -r -L1 conda env remove -y -q -n || echo "No environment to remove"
     mamba create -n $CONDA_ENV "${ALL_PACKAGES[@]}" -y -c microsoft -c bokeh/label/rc
     conda activate $CONDA_ENV
 
@@ -65,7 +65,6 @@ create_environment() {
     conda env config vars set BOKEH_PRETTY=true -n $CONDA_ENV
     conda env config vars set USE_PYGEOS=0 -n $CONDA_ENV
     conda env config vars set HYPOTHESIS_MAX_EXAMPLES=1 -n $CONDA_ENV
-    conda env config vars set DASK_DISTRIBUTED__LOGGING__BOKEH=info -n $CONDA_ENV
 
     # conda env config vars set PYTHONWARNINGS=default
 
