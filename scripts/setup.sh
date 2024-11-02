@@ -18,7 +18,7 @@ ALL_PACKAGES=(
 
     # Data loading
     lxml openpyxl fastparquet pooch pyarrow
-    "intake<2" intake-sql intake-parquet intake-xarray
+    # "intake<2" intake-sql intake-parquet intake-xarray
     s3fs h5netcdf zarr hdf5
     ibis-sqlite sqlalchemy python-duckdb
     bokeh_sampledata
@@ -37,7 +37,6 @@ ALL_PACKAGES=(
     # Dev Tools
     nodejs python-build "debugpy==1.8.5" ruff
     pyinstrument snakeviz psutil py-spy tuna asv
-    pyviz::nbsite
 
     # Typing
     mypy typing-extensions pandas-stubs
