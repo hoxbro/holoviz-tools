@@ -4,7 +4,7 @@ set -euo pipefail
 
 CONDA_ENV=holoviz
 PACKAGES=(panel holoviews hvplot param datashader geoviews lumen holonote spatialpandas)
-NVIDIA_PACKAGES=(cupy)
+CUDA_PACKAGES=(cupy)
 UNIX_PACKAGES=(memray tsdownsample)
 ALL_PACKAGES=(
     python=3.12
@@ -44,8 +44,8 @@ ALL_PACKAGES=(
     types-requests types-tqdm
 
     # Misc
-    diskcache streamz aiohttp rich-click setuptools_scm watchfiles
-    pyviz_comms tqdm pyct httpx colorcet
+    diskcache rich-click setuptools_scm watchfiles
+    pyviz_comms tqdm httpx colorcet
     markdown markdown-it-py mdit-py-plugins linkify-it-py
     cachecontrol lockfile platformdirs zstandard
 )
@@ -98,7 +98,7 @@ _install_package() (
 
     # Install the package
     conda uninstall --force --offline --yes "$1" || true
-    python -m pip install --no-deps --disable-pip-version-check -e .
+    python -m pip install --no-deps --disable-pip-version-check -ve .
 )
 
 install_package() (
@@ -123,12 +123,12 @@ cd "$HOLOVIZ_REP"
 CONDA_INFO=$(conda info --json)
 CONDA_DIR=$(echo "$CONDA_INFO" | jq -r .conda_prefix)
 PLATFORM=$(echo "$CONDA_INFO" | jq -r .platform)
-NVIDIA=$(echo "$CONDA_INFO" | jq -r 'any(.virtual_pkgs[]; .[0] == "__cuda")')
+CUDA=$(echo "$CONDA_INFO" | jq -r 'any(.virtual_pkgs[]; .[0] == "__cuda")')
 source "$CONDA_DIR/etc/profile.d/conda.sh"
 conda activate base
 
 # Add custom packages
-if [ "$NVIDIA" == "true" ]; then ALL_PACKAGES+=("${NVIDIA_PACKAGES[@]}"); fi
+if [ "$CUDA" == "true" ]; then ALL_PACKAGES+=("${CUDA_PACKAGES[@]}"); fi
 if [[ "$PLATFORM" =~ ^(linux-64|osx-arm64|osx-64)$ ]]; then ALL_PACKAGES+=("${UNIX_PACKAGES[@]}"); fi
 
 # Starting up the machine
