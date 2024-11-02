@@ -107,8 +107,8 @@ def cli(repo, use_latest, branch) -> None:
     ):
         text = get_changelog(owner, repo, release, branch)
 
-    console.print(Markdown(text))
     clipboard_set(text)
+    console.print(Markdown(text))
     console.print("\nChangelog copied to clipboard", style="italic white")
 
 
