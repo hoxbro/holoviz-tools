@@ -25,7 +25,7 @@ ALL_PACKAGES=(
 
     # Notebook
     jupyterlab ipywidgets jupyterlab_code_formatter jupyterlab-myst
-    ipywidgets_bokeh jupyter_bokeh
+    pyviz_comms ipywidgets_bokeh jupyter_bokeh
 
     # Testing
     pytest pytest-xdist pytest-rerunfailures parameterized pytest-asyncio hypothesis
@@ -35,19 +35,20 @@ ALL_PACKAGES=(
     geopandas rioxarray rasterio cartopy geodatasets
 
     # Dev Tools
-    nodejs python-build "debugpy==1.8.5" ruff
-    pyinstrument snakeviz psutil py-spy tuna asv
+    nodejs "debugpy==1.8.5"
+    pyinstrument snakeviz psutil py-spy tuna
 
     # Typing
     mypy typing-extensions pandas-stubs
     types-bleach types-croniter types-Markdown types-psutil
     types-requests types-tqdm
 
+    # Tooling
+    rich-click httpx platformdirs zstandard
+
     # Misc
-    diskcache rich-click setuptools_scm watchfiles
-    pyviz_comms tqdm httpx colorcet
+    setuptools_scm watchfiles cachecontrol lockfile tqdm colorcet
     markdown markdown-it-py mdit-py-plugins linkify-it-py
-    cachecontrol lockfile platformdirs zstandard
 )
 
 create_environment() {
@@ -66,7 +67,7 @@ create_environment() {
     conda env config vars set HYPOTHESIS_MAX_EXAMPLES=1 -n $CONDA_ENV
 }
 
-_install_package() (
+_install() (
     set -euxo pipefail
 
     if [ -d "$1" ]; then
@@ -101,9 +102,9 @@ _install_package() (
     python -m pip install --no-deps --disable-pip-version-check -ve .
 )
 
-install_package() (
+install() (
     set +e
-    _install_package "$1" &>"/tmp/holoviz_$1_$(date +%Y-%m-%d_%H.%M).log"
+    _install "$1" &>"/tmp/holoviz_$1_$(date +%Y-%m-%d_%H.%M).log"
     if (($? > 0)); then
         echo "!!! Failed installing $1 !!!"
     else
@@ -137,10 +138,10 @@ create_environment
 # Install packages
 conda activate "$CONDA_ENV"
 for p in "${PACKAGES[@]}"; do
-    install_package "$p" &
+    install "$p" &
 done
 
-# Other installs
+# Other
 python -m playwright install &>/dev/null &
 
 wait
