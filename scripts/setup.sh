@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Required commands: conda, mamba, git, jq, pre-commit
 
 set -euo pipefail
 
@@ -53,6 +54,14 @@ ALL_PACKAGES=(
 )
 
 create_environment() {
+    echo "Creating environment: $CONDA_ENV"
+
+    source "$CONDA_DIR/etc/profile.d/conda.sh"
+    conda activate base
+
+    if [ "$CUDA" == "true" ]; then ALL_PACKAGES+=("${CUDA_PACKAGES[@]}"); fi
+    if [[ "$PLATFORM" =~ ^(linux-64|osx-arm64|osx-64)$ ]]; then ALL_PACKAGES+=("${UNIX_PACKAGES[@]}"); fi
+
     conda env remove -n $CONDA_ENV -y >/dev/null || true
     mamba create -n $CONDA_ENV "${ALL_PACKAGES[@]}" -y -c microsoft -c bokeh/label/rc
 
@@ -63,6 +72,8 @@ create_environment() {
     conda env config vars set BOKEH_PRETTY=true -n $CONDA_ENV
     conda env config vars set USE_PYGEOS=0 -n $CONDA_ENV
     conda env config vars set HYPOTHESIS_MAX_EXAMPLES=1 -n $CONDA_ENV
+
+    conda activate $CONDA_ENV
 }
 
 _install() (
@@ -114,26 +125,17 @@ install() (
 
 SECONDS=0
 
-# Create the repo directory
-mkdir -p "$HOLOVIZ_REP"
-cd "$HOLOVIZ_REP"
-
-# Conda info and activate
 CONDA_INFO=$(conda info --json)
 CONDA_DIR=$(echo "$CONDA_INFO" | jq -r .conda_prefix)
 PLATFORM=$(echo "$CONDA_INFO" | jq -r .platform)
 CUDA=$(echo "$CONDA_INFO" | jq -r 'any(.virtual_pkgs[]; .[0] == "__cuda")')
-source "$CONDA_DIR/etc/profile.d/conda.sh"
-conda activate base
 
-# Add custom packages
-if [ "$CUDA" == "true" ]; then ALL_PACKAGES+=("${CUDA_PACKAGES[@]}"); fi
-if [[ "$PLATFORM" =~ ^(linux-64|osx-arm64|osx-64)$ ]]; then ALL_PACKAGES+=("${UNIX_PACKAGES[@]}"); fi
+# Create the repo directory
+mkdir -p "$HOLOVIZ_REP"
+cd "$HOLOVIZ_REP"
 
 # Starting up the machine
-echo "Creating environment $CONDA_ENV"
 create_environment
-conda activate "$CONDA_ENV"
 for p in "${PACKAGES[@]}"; do install "$p" & done
 python -m playwright install &>/dev/null &
 wait
