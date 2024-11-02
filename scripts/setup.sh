@@ -53,7 +53,7 @@ ALL_PACKAGES=(
 
 create_environment() {
     # Create environment
-    conda env list | grep $CONDA_ENV | awk '{print $1}' | xargs -r -L1 conda env remove -y -q -n || echo "No environment to remove"
+    conda env remove -n $CONDA_ENV -y -q || echo "No environment to remove"
     mamba create -n $CONDA_ENV "${ALL_PACKAGES[@]}" -y -c microsoft -c bokeh/label/rc
     conda activate $CONDA_ENV
 
@@ -65,16 +65,10 @@ create_environment() {
     conda env config vars set BOKEH_PRETTY=true -n $CONDA_ENV
     conda env config vars set USE_PYGEOS=0 -n $CONDA_ENV
     conda env config vars set HYPOTHESIS_MAX_EXAMPLES=1 -n $CONDA_ENV
-
-    # conda env config vars set PYTHONWARNINGS=default
-
-    if [[ $OS == "windows" ]]; then
-        rm "$HOME/miniconda3/envs/$CONDA_ENV/Library/usr/bin/cygpath.exe" || true
-    fi
-    rm -f ~/.config/dask/dask.yaml
 }
 
-install_package() {
+_install_package() (
+    set -euxo pipefail
 
     if [ -d "$1" ]; then
         cd "$1"
@@ -94,11 +88,12 @@ install_package() {
         # Go back branch and unstash files
         git checkout "$BRANCH"
         if ((DIRTY > 0)); then git stash pop; fi
-
     else
         git clone git@github.com:holoviz/"$1".git
         cd "$1"
-        pre-commit install --allow-missing-config || echo no pre-commit
+        if command -v pre-commit &>/dev/null; then
+            pre-commit install -t=pre-commit
+        fi
     fi
 
     # pre-commit initialize
@@ -108,27 +103,19 @@ install_package() {
 
     # Install the package
     conda uninstall --force --offline --yes "$1" || true
-    # conda develop .  # adding to environments .pth file
-    # pwd >> $(python -c "import site; print(site.getsitepackages()[0])")/holoviz.pth
-
     python -m pip install --no-deps -e .
-    if [[ "$1" == "holoviews" ]]; then
-        # Don't want the holoviews command
-        rm "$(which holoviews)" || echo "already uninstalled"
-    fi
-    cd ..
-}
+)
 
-run() {
-    set +euo pipefail
-    (set -euxo pipefail && "$1" "$2") >"/tmp/holoviz_$2_$(date +%Y-%m-%d_%H.%M).log" 2>&1
+install_package() (
+    set +e
+    _install_package "$1" &>"/tmp/holoviz_$1_$(date +%Y-%m-%d_%H.%M).log"
     if (($? > 0)); then
-        echo "!!! Failed installing $2 !!!"
+        echo "!!! Failed installing $1 !!!"
     else
-        echo "Finished installing $2"
+        echo "Finished installing $1"
     fi
     echo -ne "\r" # Clean new line
-}
+)
 
 SECONDS=0
 
@@ -136,31 +123,35 @@ SECONDS=0
 mkdir -p "$HOLOVIZ_REP"
 cd "$HOLOVIZ_REP"
 
-# Activate conda
-source "$(conda info | grep -i 'base environment' | awk '{print $4}')/etc/profile.d/conda.sh"
+# Conda info and activate
+CONDA_INFO=$(conda info --json)
+CONDA_HOME=$(echo "$CONDA_INFO" | jq -r .conda_prefix)
+PLATFORM=$(echo "$CONDA_INFO" | jq -r .platform)
+NVIDIA=$(echo "$CONDA_INFO" | jq -r 'any(.virtual_pkgs[]; .[0] == "__cuda")')
+source "$CONDA_HOME/etc/profile.d/conda.sh"
 conda activate base
 
-# OS and NVIDIA detection
-OS=$(python -c 'import platform; print(platform.system())')
-NVIDIA=$(conda info | (grep cuda || echo -n) | wc -l)
-
 # Add custom packages
-if [ "$NVIDIA" == "1" ]; then ALL_PACKAGES+=("${NVIDIA_PACKAGES[@]}"); fi
-if [[ "$OS" == "Linux" || $OS == "Darwin" ]]; then ALL_PACKAGES+=("${UNIX_PACKAGES[@]}"); fi
+if [ "$NVIDIA" == "true" ]; then ALL_PACKAGES+=("${NVIDIA_PACKAGES[@]}"); fi
+if [[ "$PLATFORM" =~ ^(linux-64|osx-arm64|osx-64)$ ]]; then ALL_PACKAGES+=("${UNIX_PACKAGES[@]}"); fi
 
 # Starting up the machine
 create_environment
 
 # Install packages
-conda activate $CONDA_ENV
+conda activate "$CONDA_ENV"
 for p in "${PACKAGES[@]}"; do
-    run install_package "$p" &
+    install_package "$p" &
 done
 
-# Download data
+# Other installs
 python -m playwright install &>/dev/null &
-python -m bokeh sampledata &>/dev/null &
 
 wait
+
+# Clean up
+rm -f "$CONDA_HOME"/envs/"$CONDA_ENV"/Library/usr/bin/cygpath.exe
+rm -f ~/.config/dask/dask.yaml
+rm -f "$(which holoviews)"
 
 echo -e "\nRun time: $(((SECONDS / 60) % 60)) min and $((SECONDS % 60)) sec"
