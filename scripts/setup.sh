@@ -37,6 +37,7 @@ ALL_PACKAGES=(
     # Dev Tools
     nodejs "debugpy==1.8.5"
     pyinstrument snakeviz psutil py-spy tuna
+    setuptools_scm watchfiles cachecontrol lockfile
 
     # Typing
     mypy typing-extensions pandas-stubs
@@ -47,17 +48,14 @@ ALL_PACKAGES=(
     rich-click httpx platformdirs zstandard
 
     # Misc
-    setuptools_scm watchfiles cachecontrol lockfile tqdm colorcet
+    tqdm colorcet
     markdown markdown-it-py mdit-py-plugins linkify-it-py
 )
 
 create_environment() {
-    # Create environment
-    conda env remove -n $CONDA_ENV -y -q || echo "No environment to remove"
+    conda env remove -n $CONDA_ENV -y >/dev/null || true
     mamba create -n $CONDA_ENV "${ALL_PACKAGES[@]}" -y -c microsoft -c bokeh/label/rc
-    conda activate $CONDA_ENV
 
-    # Environment variables
     # https://docs.bokeh.org/en/latest/docs/dev_guide/setup.html
     conda env config vars set BOKEH_RESOURCES=server -n $CONDA_ENV
     conda env config vars set BOKEH_BROWSER=none -n $CONDA_ENV
@@ -133,17 +131,11 @@ if [ "$CUDA" == "true" ]; then ALL_PACKAGES+=("${CUDA_PACKAGES[@]}"); fi
 if [[ "$PLATFORM" =~ ^(linux-64|osx-arm64|osx-64)$ ]]; then ALL_PACKAGES+=("${UNIX_PACKAGES[@]}"); fi
 
 # Starting up the machine
+echo "Creating environment $CONDA_ENV"
 create_environment
-
-# Install packages
 conda activate "$CONDA_ENV"
-for p in "${PACKAGES[@]}"; do
-    install "$p" &
-done
-
-# Other
+for p in "${PACKAGES[@]}"; do install "$p" & done
 python -m playwright install &>/dev/null &
-
 wait
 
 # Clean up
