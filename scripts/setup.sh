@@ -32,7 +32,7 @@ ALL_PACKAGES=(
     pytest-randomly detect-test-pollution nbval microsoft::pytest-playwright microsoft::playwright
 
     # Geo
-    geopandas rioxarray rasterio spatialpandas cartopy geodatasets
+    geopandas rioxarray rasterio cartopy geodatasets
 
     # Dev Tools
     nodejs python-build "debugpy==1.8.5" ruff
@@ -90,19 +90,15 @@ _install_package() (
     else
         git clone git@github.com:holoviz/"$1".git
         cd "$1"
-        if command -v pre-commit &>/dev/null; then
-            pre-commit install -t=pre-commit
-        fi
     fi
 
-    # pre-commit initialize
-    if command -v pre-commit &>/dev/null; then
-        pre-commit install-hooks
+    if [ -f .pre-commit-config.yaml ]; then
+        pre-commit install -t=pre-commit --install-hooks
     fi
 
     # Install the package
     conda uninstall --force --offline --yes "$1" || true
-    python -m pip install --no-deps -e .
+    python -m pip install --no-deps --disable-pip-version-check -e .
 )
 
 install_package() (
@@ -114,20 +110,21 @@ install_package() (
         echo "Finished installing $1"
     fi
     echo -ne "\r" # Clean new line
+    set -e
 )
 
 SECONDS=0
 
-# Note need to have drive installed
+# Create the repo directory
 mkdir -p "$HOLOVIZ_REP"
 cd "$HOLOVIZ_REP"
 
 # Conda info and activate
 CONDA_INFO=$(conda info --json)
-CONDA_HOME=$(echo "$CONDA_INFO" | jq -r .conda_prefix)
+CONDA_DIR=$(echo "$CONDA_INFO" | jq -r .conda_prefix)
 PLATFORM=$(echo "$CONDA_INFO" | jq -r .platform)
 NVIDIA=$(echo "$CONDA_INFO" | jq -r 'any(.virtual_pkgs[]; .[0] == "__cuda")')
-source "$CONDA_HOME/etc/profile.d/conda.sh"
+source "$CONDA_DIR/etc/profile.d/conda.sh"
 conda activate base
 
 # Add custom packages
@@ -149,7 +146,7 @@ python -m playwright install &>/dev/null &
 wait
 
 # Clean up
-rm -f "$CONDA_HOME"/envs/"$CONDA_ENV"/Library/usr/bin/cygpath.exe
+rm -f "$CONDA_DIR"/envs/"$CONDA_ENV"/Library/usr/bin/cygpath.exe
 rm -f ~/.config/dask/dask.yaml
 rm -f "$(which holoviews)"
 
