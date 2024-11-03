@@ -5,7 +5,7 @@ import warnings
 from importlib.util import find_spec
 
 from packaging.version import Version
-from utilities import GREEN, RED, RESET, clean_exit, git
+from utilities import GREEN, RED, RESET, git
 
 
 class StackLevelChecker(ast.NodeVisitor):
@@ -62,7 +62,6 @@ def check_file(file, path, base_version) -> int:
     return stacklevel_checker.deprecations
 
 
-@clean_exit
 def main(module) -> None:
     version, base_version, path = get_info(module)
     files = git("ls-files", ".", cwd=path)

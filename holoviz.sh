@@ -22,7 +22,7 @@ elif [[ $1 == "lab" ]]; then
     shift
     bash $TOOLS/lab.sh $@
 elif [[ $1 == "save" ]]; then
-    RESULT=$(PYTHONPATH=$TOOLS python $TOOLS/save.py)
+    RESULT=$($TOOLS/cli.py save.py)
     export PANEL_SERVE_FILE=$(echo $RESULT | grep -E '^/home/')
 elif [[ $1 == "fetch" ]]; then
     bash $TOOLS/fetch.sh
@@ -30,36 +30,36 @@ elif [[ $1 == "setup" ]]; then
     bash $TOOLS/setup.sh
 elif [[ $1 == "clean" ]]; then
     ccd
-    PYTHONPATH=$TOOLS python $TOOLS/cleanup.py
+    $TOOLS/cli.py cleanup.py
 elif [[ $1 == "action-status" ]]; then
-    PYTHONPATH=$TOOLS python $TOOLS/action_status.py
+    $TOOLS/cli.py action_status.py
 elif [[ $1 == "version-finder" ]]; then
-    PYTHONPATH=$TOOLS python $TOOLS/version_finder.py
+    $TOOLS/cli.py version_finder.py
 elif [[ $1 == "artifact-test" ]]; then
     shift
-    PYTHONPATH=$TOOLS python $TOOLS/pixi/artifact.py $@
+    $TOOLS/cli.py pixi/artifact.py $@
 elif [[ $1 == "artifact-build" ]]; then
     shift
-    PYTHONPATH=$TOOLS python $TOOLS/build.py $@
+    $TOOLS/cli.py build.py $@
 elif [[ $1 == "changelog" ]]; then
     shift
-    PYTHONPATH=$TOOLS python $TOOLS/changelog.py $@
+    $TOOLS/cli.py changelog.py $@
 elif [[ $1 == "deprecate" ]]; then
     shift
-    PYTHONPATH=$TOOLS python $TOOLS/deprecate.py $@
+    $TOOLS/cli.py deprecate.py $@
 elif [[ $1 == "serve" ]]; then
     shift
     source $TOOLS/serve.sh $@
 elif [[ $1 == "pixi-lock" ]]; then
     shift
-    PYTHONPATH=$TOOLS python $TOOLS/pixi/lock.py $@
+    $TOOLS/cli.py pixi/lock.py $@
 elif [[ $1 == "workspace" ]]; then
     shift
     bash $TOOLS/workspace/$1.sh $@
 elif [[ $1 == "bump" ]]; then
-    PYTHONPATH=$TOOLS python $TOOLS/bump.py $@
+    $TOOLS/cli.py bump.py $@
 elif [[ $1 == "python-3.13" ]]; then
-    PYTHONPATH=$TOOLS python "$TOOLS"/python-313.py
+    "$TOOLS"/cli.py python-313.py
 elif [[ $1 ]]; then
     (exit 1)
 else

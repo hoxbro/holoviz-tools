@@ -6,7 +6,6 @@ from subprocess import check_output
 import rich_click as click
 from _artifact import console, download_files
 from rich_menu import argument_menu
-from utilities import clean_exit
 
 # Needs diff-so-fancy in path
 
@@ -35,7 +34,6 @@ def get_files(
     return good_file, bad_file
 
 
-@clean_exit
 @click.command(context_settings={"show_default": True})
 @argument_menu("repo", choices=REPOS, console=console, title="Select a repo")
 @click.argument("good_run", type=int, required=False)

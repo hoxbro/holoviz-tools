@@ -11,7 +11,6 @@ from _artifact import console, download_files
 from pandas.io.clipboard import clipboard_set
 from rich.table import Table
 from rich_menu import argument_menu
-from utilities import clean_exit
 
 REPOS = ["holoviews", "panel", "datashader", "geoviews", "lumen", "spatialpandas"]
 
@@ -94,7 +93,6 @@ def table_output(repo, good_run, bad_run, env, arch, good_env, bad_env):
     return True
 
 
-@clean_exit
 @click.command(context_settings={"show_default": True})
 @argument_menu("repo", choices=REPOS, console=console, title="Select a repo")
 @click.argument("good_run", type=int, required=False)

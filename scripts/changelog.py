@@ -15,7 +15,6 @@ from rich.console import Console
 from rich.markdown import Markdown
 
 from rich_menu import argument_menu, live_menu
-from utilities import clean_exit
 
 HEADERS = {
     "Accept": "application/vnd.github+json",
@@ -81,7 +80,6 @@ def get_releases(owner, repo):
     return tags
 
 
-@clean_exit
 @click.command(context_settings={"show_default": True})
 @argument_menu(
     "repo",

@@ -16,17 +16,6 @@ def git(*args, **kwargs) -> str:
     return run(["git", *args], check=True, capture_output=True, **kwargs).stdout.strip().decode()
 
 
-def clean_exit(f):
-    def wrapper(*args, **kwargs):
-        try:
-            return f(*args, **kwargs)
-        except KeyboardInterrupt:
-            print(f"\n{RED}Aborted.{RESET}")
-            sys.exit(1)
-
-    return wrapper
-
-
 def trackpool(func, iterable, description) -> list:
     with ThreadPoolExecutor() as executor:
         futures = list(

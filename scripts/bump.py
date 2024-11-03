@@ -7,9 +7,8 @@ from subprocess import CalledProcessError, run
 from packaging.version import InvalidVersion, Version
 from pandas.io.clipboard import clipboard_set
 from rich.console import Console
-
 from rich_menu import live_menu
-from utilities import GREEN, RED, RESET, clean_exit, git
+from utilities import GREEN, RED, RESET, git
 
 console = Console()
 
@@ -111,7 +110,6 @@ def validate_version(package: str, version: str):
     return version
 
 
-@clean_exit
 def main():
     try:
         directory = git("rev-parse", "--show-toplevel")

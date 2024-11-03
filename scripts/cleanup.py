@@ -13,7 +13,7 @@ from subprocess import check_output
 import httpx
 from bs4 import BeautifulSoup
 from rich.console import Console
-from utilities import clean_exit, trackpool
+from utilities import trackpool
 
 console = Console()
 PATH = Path(os.environ["HOLOVIZ_DEV"]).resolve() / "development"
@@ -128,7 +128,6 @@ def title(msg) -> None:
     console.print(msg, style="green")
 
 
-@clean_exit
 def main():
     title("Removing temporary files and directories")
     remove_temp()

@@ -7,7 +7,7 @@ import pandas as pd
 from rich.console import Console
 from rich.table import Table
 
-from utilities import clean_exit, trackpool
+from utilities import trackpool
 
 COLUMNS = {
     "name": "Workflow",
@@ -56,7 +56,6 @@ def get_info(repo) -> pd.DataFrame | None:
     return df
 
 
-@clean_exit
 def main() -> None:
     console = Console()
     futures = trackpool(get_info, REPOS, "Getting status of Github Actions")
