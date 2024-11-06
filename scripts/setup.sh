@@ -49,7 +49,7 @@ ALL_PACKAGES=(
     rich-click httpx platformdirs zstandard
 
     # Misc
-    tqdm colorcet
+    tqdm colorcet retrying
     markdown markdown-it-py mdit-py-plugins linkify-it-py
 )
 
