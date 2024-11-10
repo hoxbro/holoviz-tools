@@ -111,7 +111,7 @@ install() (
 
 SECONDS=0
 
-CONDA_INFO=$(conda info --json)
+CONDA_INFO=$(cat /tmp/conda_info.json 2>/dev/null || conda info --json | tee /tmp/conda_info.json)
 CONDA_DIR=$(echo "$CONDA_INFO" | jq -r .conda_prefix)
 PLATFORM=$(echo "$CONDA_INFO" | jq -r .platform)
 CUDA=$(echo "$CONDA_INFO" | jq -r 'any(.virtual_pkgs[]; .[0] == "__cuda")')
