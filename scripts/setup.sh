@@ -18,7 +18,8 @@ ALL_PACKAGES=(
     dask-core scipy scikit-image dask-expr
 
     # Data loading
-    lxml openpyxl fastparquet pooch pyarrow
+    pooch pyarrow
+    # openpyxl fastparquet
     # "intake<2" intake-sql intake-parquet intake-xarray
     s3fs h5netcdf zarr hdf5
     ibis-sqlite sqlalchemy python-duckdb
@@ -46,7 +47,7 @@ ALL_PACKAGES=(
     types-requests types-tqdm
 
     # Tooling
-    rich-click httpx platformdirs zstandard
+    rich-click httpx platformdirs zstandard lxml
 
     # Misc
     tqdm colorcet retrying
