@@ -57,7 +57,7 @@ ALL_PACKAGES=(
 create_environment() {
     echo "Creating environment: $CONDA_ENV"
 
-    source "$CONDA_DIR/etc/profile.d/conda.sh"
+    source "$CONDA_HOME/etc/profile.d/conda.sh"
     conda activate base
 
     if [ "$CUDA" == "true" ]; then ALL_PACKAGES+=("${CUDA_PACKAGES[@]}"); fi
@@ -113,7 +113,7 @@ install() (
 SECONDS=0
 
 CONDA_INFO=$(cat /tmp/conda_info.json 2>/dev/null || conda info --json | tee /tmp/conda_info.json)
-CONDA_DIR=$(echo "$CONDA_INFO" | jq -r .conda_prefix)
+CONDA_HOME=$(echo "$CONDA_INFO" | jq -r .conda_prefix)
 PLATFORM=$(echo "$CONDA_INFO" | jq -r .platform)
 CUDA=$(echo "$CONDA_INFO" | jq -r 'any(.virtual_pkgs[]; .[0] == "__cuda")')
 
@@ -128,7 +128,7 @@ python -m playwright install &>/dev/null &
 wait
 
 # Clean up
-rm -f "$CONDA_DIR"/envs/"$CONDA_ENV"/Library/usr/bin/cygpath.exe
+rm -f "$CONDA_HOME/envs/$CONDA_ENV/Library/usr/bin/cygpath.exe"
 rm -f ~/.config/dask/dask.yaml
 rm -f "$(which holoviews)"
 
