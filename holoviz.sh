@@ -25,7 +25,7 @@ elif [[ $1 == "save" ]]; then
     PANEL_SERVE_FILE=$(echo "$RESULT" | grep -E '^/home/')
     export PANEL_SERVE_FILE
 elif [[ $1 == "setup" ]]; then
-    bash "$TOOLS"/setup.sh
+    bash "$TOOLS/setup.sh"
 elif [[ $1 == "clean" ]]; then
     ccd
     cli-py cleanup.py
@@ -47,20 +47,20 @@ elif [[ $1 == "deprecate" ]]; then
     cli-py deprecate.py "$@"
 elif [[ $1 == "serve" ]]; then
     shift
-    source "$TOOLS"/serve.sh "$@"
+    source "$TOOLS/serve.sh" "$@"
 elif [[ $1 == "pixi-lock" ]]; then
     shift
     cli-py pixi/lock.py "$@"
 elif [[ $1 == "workspace" ]]; then
     shift
-    bash "$TOOLS"/workspace/"$1".sh "$@"
+    bash "$TOOLS/workspace/$1.sh" "$@"
 elif [[ $1 == "bump" ]]; then
     cli-py bump.py "$@"
 elif [[ $1 == "python-3.13" ]]; then
     cli-py python-313.py
 elif [[ $1 ]]; then
     printf "\033[0;31mholoviz %s is an invalid command\033[0m\n" "$1"
-    (exit 1)
+    return 1
 else
     ccd
 fi
