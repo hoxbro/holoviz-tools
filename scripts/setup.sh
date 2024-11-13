@@ -82,8 +82,19 @@ _install() (
 
     if [ -d "$1" ]; then
         cd "$1"
+        # Save current branch and stash files
+        BRANCH=$(git branch --show-current)
+        DIRTY=$(git status -s -uno | wc -l)
+        git stash -m "setup script $(date +%Y-%m-%d_%H.%M)"
+        git checkout main
+
+        # Update main
         git fetch origin --prune --tags --force
-        git update-ref refs/heads/main origin/main
+        git reset --hard origin/main
+
+        # Go back branch and unstash files
+        git checkout "$BRANCH"
+        if ((DIRTY > 0)); then git stash pop; fi
     else
         git clone git@github.com:holoviz/"$1".git
         cd "$1"
