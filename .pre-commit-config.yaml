@@ -20,13 +20,13 @@ repos:
       - id: shellcheck
         args: ["--exclude=SC1091,SC2181"]
         exclude: (zshrc|zsh)$
-  # - repo: https://github.com/hoxbro/prettier-pre-commit
-  #   rev: v3.3.3
-  #   hooks:
-  #     - id: prettier
-  #       types_or:
-  #         - markdown
-  #         - yaml
+  - repo: https://github.com/hoxbro/prettier-pre-commit
+    rev: v3.3.3
+    hooks:
+      - id: prettier
+        types_or:
+          - markdown
+          - yaml
   # - repo: https://github.com/hoxbro/taplo-pre-commit
   #   rev: v0.9.3
   #   hooks:
