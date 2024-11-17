@@ -45,3 +45,7 @@ repos:
     hooks:
       - id: ruff
       - id: ruff-format
+  - repo: https://github.com/DetachHead/basedpyright-pre-commit-mirror
+    rev: 1.21.0
+    hooks:
+      - id: basedpyright

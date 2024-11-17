@@ -23,6 +23,7 @@ from contextlib import suppress
 from datetime import datetime, timedelta
 from functools import cache
 from runpy import run_path
+from tomllib import load
 from typing import Any
 
 import httpx
@@ -38,9 +39,8 @@ from packaging.version import Version
 from rich.console import Console
 from rich.prompt import Prompt
 from rich.table import Table
-from tomllib import load
 
-from utilities import trackpool
+from utilities import exit_print, trackpool
 
 py_releases = {
     "3.8": datetime(2019, 10, 14),
@@ -165,6 +165,8 @@ def get_packages_from_file(main_package: str) -> tuple[set[str], str]:
 def get_packages_from_pypi(main_package) -> tuple[set[str], str]:
     url = f"https://pypi.org/pypi/{main_package}/json"
     resp = get_resp(url)
+    if resp is None:
+        exit_print(f"Package '{main_package}' not found.")
 
     python_requires = resp["info"]["requires_python"].replace(">=", "")
 

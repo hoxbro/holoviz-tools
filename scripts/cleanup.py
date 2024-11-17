@@ -76,7 +76,7 @@ def check_pr_closed(repo, no) -> bool:
     resp = httpx.get(url, follow_redirects=True).raise_for_status()
 
     soup = BeautifulSoup(resp.text, features="html.parser")
-    tag = soup.find(class_="State").text.strip().lower()
+    tag = soup.find(class_="State").text.strip().lower()  # pyright: ignore[reportOptionalMemberAccess]
     return tag in ["closed", "merged"]
 
 

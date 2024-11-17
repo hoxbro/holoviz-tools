@@ -1,8 +1,22 @@
+[project]
+name = "holoviz-tools"
+requires-python = ">=3.11"
+
+[tool.pyright]
+include = ["**/*.py"]
+
+typeCheckingMode = "standard"
+
+reportMissingImports = false
+# reportMissingTypeStubs = false
+# reportMissingModuleSource = false
+
+[tool.ruff]
 line-length = 99
 fix = true
 exclude = ["*.ipynb"]
 
-[lint]
+[tool.ruff.lint]
 select = [
     "B",
     "C4",
@@ -41,7 +55,7 @@ extend-unsafe-fixes = [
     "F841", # Unused variables
 ]
 
-[lint.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["utilities", "rich_menu", "_artifact"]
 required-imports = ["from __future__ import annotations"]
 combine-as-imports = true

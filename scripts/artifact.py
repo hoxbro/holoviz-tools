@@ -20,19 +20,12 @@ def get_files(
         repo, good_run, bad_run, workflow, force=force
     )
 
-    found = False
     for file in good_path.iterdir():
         name = file.name.lower()
         if os in name and python in name and f"_{test}" in name:
-            found = True
-            break
+            return good_path / file.name, bad_path / file.name
 
-    if not found:
-        return None, None
-
-    good_file = good_path / file.name
-    bad_file = bad_path / file.name
-    return good_file, bad_file
+    return None, None
 
 
 @click.command(context_settings={"show_default": True})
@@ -94,4 +87,4 @@ def cli(good_run, bad_run, repo, test, os, python, workflow, force) -> None:
 
 
 if __name__ == "__main__":
-    cli()
+    cli()  # pyright: ignore[reportCallIssue]

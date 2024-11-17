@@ -5,10 +5,11 @@ import os
 import sys
 import warnings
 from importlib.util import find_spec
+from typing import cast
 
 from packaging.version import Version
 
-from utilities import GREEN, RED, RESET, git
+from utilities import GREEN, RED, RESET, exit_print, git
 
 
 class StackLevelChecker(ast.NodeVisitor):
@@ -18,9 +19,11 @@ class StackLevelChecker(ast.NodeVisitor):
         self.deprecations = 0
 
     def _check_version(self, node: ast.Call) -> None:
-        if node.func.id != "deprecated":
+        func = cast(ast.Name, node.func)
+        if func.id != "deprecated":
             return
-        deprecated_version = Version(node.args[0].value)
+        args = cast(list[ast.Constant], node.args)
+        deprecated_version = Version(args[0].value)
         if self.base_version >= deprecated_version:
             msg = (
                 f"{RED}{self.file}:{node.lineno}:{node.col_offset}: "
@@ -34,7 +37,7 @@ class StackLevelChecker(ast.NodeVisitor):
             )
         print(msg)
 
-    def visit_Call(self, node: ast.Expr) -> None:
+    def visit_Call(self, node: ast.Call) -> None:
         if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
             self._check_version(node)
 
@@ -42,7 +45,12 @@ class StackLevelChecker(ast.NodeVisitor):
 
 
 def get_info(module):
-    path = find_spec(module).submodule_search_locations[0]
+    spec = find_spec(module)
+    if spec is None:
+        exit_print(f"Module '{module}' not found.")
+    if spec.submodule_search_locations is None:
+        exit_print(f"Module '{module}' is not a package.")
+    path = spec.submodule_search_locations[0]
     tag = git("describe", "--abbrev=0", "main", cwd=path)
     version = Version(tag)
     base_version = Version(version.base_version)

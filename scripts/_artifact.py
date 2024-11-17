@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from functools import cache
 from io import BytesIO
+from pathlib import Path
 from shutil import rmtree
 from zipfile import ZipFile
 
@@ -14,6 +15,7 @@ from rich.console import Console
 from rich.live import Live
 
 from rich_menu import live_menu, menu
+from utilities import exit_print
 
 ARTIFACT_PATH = platformdirs.user_cache_path() / "holoviz-cli" / "artifact"
 ARTIFACT_PATH.mkdir(parents=True, exist_ok=True)
@@ -113,7 +115,9 @@ def download_url(download_path, download_url) -> None:
         zip_ref.extractall(download_path)
 
 
-def download_file(repo, run, workflow, *, force=False, artifact_names=None) -> None:
+def download_file(
+    repo, run, workflow, *, force=False, artifact_names=None
+) -> tuple[tuple[int, int], Path]:
     if run is None:
         run = select_run(repo, workflow)
         console.print(f"Selected: [green]Run {run}[/green]")
@@ -125,7 +129,10 @@ def download_file(repo, run, workflow, *, force=False, artifact_names=None) -> N
 
     if not path.exists():
         with console.status("Downloading artifacts..."):
-            good_url, _ = get_artifact_urls(repo, workflow, run, run)
+            runs = get_artifact_urls(repo, workflow, run, run)
+            if runs is None:
+                exit_print("No artifacts found")
+            good_url, _ = runs
             artifact_urls = get_artifact_data_url(path, good_url, artifact_names)
             with ThreadPoolExecutor() as executor:
                 executor.map(lambda x: download_url(*x), artifact_urls)
@@ -133,7 +140,9 @@ def download_file(repo, run, workflow, *, force=False, artifact_names=None) -> N
     return run, path
 
 
-def download_files(repo, good_run, bad_run, workflow, *, force=False, artifact_names=None) -> None:
+def download_files(
+    repo, good_run, bad_run, workflow, *, force=False, artifact_names=None
+) -> tuple[int, int, Path, Path]:
     if good_run is None or bad_run is None:
         good_run, bad_run = select_runs(repo, workflow)
         console.print(
@@ -149,7 +158,10 @@ def download_files(repo, good_run, bad_run, workflow, *, force=False, artifact_n
 
     if not good_path.exists() or not bad_path.exists():
         with console.status("Downloading artifacts..."):
-            good_url, bad_url = get_artifact_urls(repo, workflow, good_run, bad_run)
+            runs = get_artifact_urls(repo, workflow, good_run, bad_run)
+            if runs is None:
+                exit_print("No artifacts found")
+            good_url, bad_url = runs
             artifact_urls = [
                 *get_artifact_data_url(good_path, good_url, artifact_names),
                 *get_artifact_data_url(bad_path, bad_url, artifact_names),

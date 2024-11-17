@@ -68,9 +68,9 @@ def main() -> None:
 
     df = df.sort_values("Duration", ascending=False)
     df["Duration"] = (
-        (pd.Timestamp.now(tz="UTC") - pd.to_datetime(df["Duration"]))
+        (pd.to_datetime(df["Duration"]) - pd.Timestamp.now(tz="UTC"))
         .dt.total_seconds()
-        .apply(lambda x: f"{x / 60:0.0f} min")
+        .apply(lambda x: f"{-x / 60:0.0f} min")
     )
     print_table(df, console)
 

@@ -5,7 +5,8 @@ import termios
 import threading
 import time
 import tty
-from typing import TYPE_CHECKING, Any, Iterator
+from collections.abc import Iterator
+from typing import TYPE_CHECKING, Any
 
 import click
 from rich.live import Live

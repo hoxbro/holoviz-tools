@@ -13,7 +13,7 @@ from pathlib import Path
 
 import httpx
 from bs4 import BeautifulSoup
-from pandas.io.clipboard import clipboard_get, clipboard_set
+from pandas.io.clipboard import clipboard_get, clipboard_set  # type: ignore
 
 PATH = Path(os.environ["HOLOVIZ_DEV"]).resolve() / "development"
 
@@ -64,8 +64,7 @@ def _get_github(url):
 
     soup = BeautifulSoup(resp.text, features="html.parser")
     codeblocks = soup.find_all("div", class_={"highlight", "notranslate"})
-
-    info = soup.find("title").text.split(" · ")
+    info = soup.find("title").text.split(" · ")  # pyright: ignore[reportOptionalMemberAccess]
     number = info[1].split("#")[1]
     title = sanitize_string(info[0])
     repo = "dev_" + info[2].split("/")[1]

@@ -7,7 +7,7 @@ from pathlib import Path
 from subprocess import CalledProcessError, run
 
 from packaging.version import InvalidVersion, Version
-from pandas.io.clipboard import clipboard_set
+from pandas.io.clipboard import clipboard_set  # type: ignore
 from rich.console import Console
 
 from rich_menu import live_menu
@@ -36,7 +36,7 @@ def bump_version(version: Version, part: str | None) -> str:
             micro += 1
             pre = None
         case "a" | "b" | "rc":
-            if pre_letter == part:
+            if pre_letter == part and isinstance(pre_num, int):
                 pre_num += 1
             else:
                 pre_letter = part
@@ -56,8 +56,8 @@ def bump_version(version: Version, part: str | None) -> str:
     return new_version
 
 
-def get_possible_versions(current_version: str) -> list[str]:
-    current_version = Version(current_version)
+def get_possible_versions(current_version_raw: str) -> list[str]:
+    current_version = Version(current_version_raw)
     if current_version.pre:
         parts = ["a", "b", "rc", None]
         parts = parts[parts.index(current_version.pre[0]) :]

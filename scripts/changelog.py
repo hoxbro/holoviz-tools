@@ -10,7 +10,7 @@ from pathlib import Path
 
 import httpx
 import rich_click as click
-from pandas.io.clipboard import clipboard_set
+from pandas.io.clipboard import clipboard_set  # type: ignore
 from rich.console import Console
 from rich.markdown import Markdown
 
@@ -111,4 +111,4 @@ def cli(repo, use_latest, branch) -> None:
 
 
 if __name__ == "__main__":
-    cli()
+    cli()  # pyright: ignore[reportCallIssue]

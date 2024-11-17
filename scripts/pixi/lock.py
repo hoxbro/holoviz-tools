@@ -6,15 +6,15 @@ from pathlib import Path
 from shutil import copy2
 
 import rich_click as click
-from pandas.io.clipboard import clipboard_set
+from pandas.io.clipboard import clipboard_set  # type: ignore
 
 from _artifact import console, download_file
 from rich_menu import argument_menu
 
-REPOS = ["holoviews", "panel"]  # , "hvplot", "datashader", "geoviews", "lumen"]
+REPOS = ["holoviews", "panel", "param", "datashader", "geoviews", "lumen", "spatialpandas"]
 
 
-def get_file(repo, run, workflow, force) -> tuple[Path | None, Path | None]:
+def get_file(repo, run, workflow, force) -> tuple[tuple[int, int], Path]:
     run, path = download_file(repo, run, workflow, force=force, artifact_names=["pixi-lock"])
     file = path / "pixi.lock"
 
@@ -57,4 +57,4 @@ def cli(repo, run, workflow, force) -> None:
 
 
 if __name__ == "__main__":
-    cli()
+    cli()  # pyright: ignore[reportCallIssue]

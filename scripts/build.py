@@ -9,7 +9,7 @@ from itertools import zip_longest
 
 import rich_click as click
 import zstandard as zstd
-from pandas.io.clipboard import clipboard_set
+from pandas.io.clipboard import clipboard_set  # type: ignore
 from rich.table import Table
 
 from _artifact import console, download_files
@@ -188,4 +188,4 @@ def cli(repo, good_run, bad_run, workflow, force) -> None:
 
 
 if __name__ == "__main__":
-    cli()
+    cli()  # pyright: ignore[reportCallIssue]
