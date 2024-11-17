@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import httpx
 
 # https://conda-forge.org/status/migration/?name=python313

@@ -29,7 +29,13 @@ def get_key_press() -> str:
 
 class Menu:
     def __init__(
-        self, items, *, title=None, select_style=None, non_style=None, lock=None
+        self,
+        items,
+        *,
+        title=None,
+        select_style=None,
+        non_style=None,
+        lock=None,
     ) -> None:
         self.items = items
         self.title = title
@@ -89,9 +95,7 @@ class Menu:
 
             time.sleep(0.1)
 
-    def __rich_console__(
-        self, console: Console, options: ConsoleOptions
-    ) -> RenderResult:
+    def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
         if self.title:
             yield self.title
 
@@ -115,7 +119,7 @@ def menu(menu_items, live, **menu_kwargs) -> Any:
         live.update(menu)
         time.sleep(0.05)
 
-    if menu.stopsignal == KeyboardInterrupt:
+    if menu.stopsignal is KeyboardInterrupt:
         raise KeyboardInterrupt
 
     return menu_keys[menu.selected_item]

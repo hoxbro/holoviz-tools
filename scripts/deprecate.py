@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import ast
 import os
 import sys
@@ -5,6 +7,7 @@ import warnings
 from importlib.util import find_spec
 
 from packaging.version import Version
+
 from utilities import GREEN, RED, RESET, git
 
 

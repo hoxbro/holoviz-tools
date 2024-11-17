@@ -1,0 +1,47 @@
+line-length = 99
+fix = true
+exclude = ["*.ipynb"]
+
+[lint]
+select = [
+    "B",
+    "C4",
+    "E",
+    "EM",
+    "F",
+    "FLY",
+    "I",
+    "ICN",
+    "ISC",
+    "NPY",
+    "PIE",
+    "PLC",
+    "PLE",
+    "PLR",
+    "PLW",
+    "PT",
+    "RUF",
+    "SIM",
+    "UP",
+    "W",
+]
+
+ignore = [
+    "E501", # Line too long
+    "E712", # Comparison to true should be is
+    "E731", # Do not assign a lambda expression, use a def
+    "E741", # Ambiguous variable name
+    "PLR091", # Too many arguments/branches/statements
+    "PLW2901", # `for` loop variable is overwritten
+    "ISC001", # Do not mix great with ruff-format
+]
+
+extend-unsafe-fixes = [
+    "F401", # Unused imports
+    "F841", # Unused variables
+]
+
+[lint.isort]
+known-first-party = ["utilities", "rich_menu", "_artifact"]
+required-imports = ["from __future__ import annotations"]
+combine-as-imports = true

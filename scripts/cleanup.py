@@ -13,6 +13,7 @@ from subprocess import check_output
 import httpx
 from bs4 import BeautifulSoup
 from rich.console import Console
+
 from utilities import trackpool
 
 console = Console()

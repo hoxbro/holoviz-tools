@@ -101,7 +101,7 @@ def cli(repo, use_latest, branch) -> None:
             title="Select a previous release to generate changelog from",
         )
     with console.status(
-        f"Generating changelog for {repo} for latest relase {release} to {branch}..."
+        f"Generating changelog for {repo} for latest release {release} to {branch}..."
     ):
         text = get_changelog(owner, repo, release, branch)
 

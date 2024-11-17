@@ -4,6 +4,7 @@ from pathlib import Path
 from subprocess import check_output
 
 import rich_click as click
+
 from _artifact import console, download_files
 from rich_menu import argument_menu
 

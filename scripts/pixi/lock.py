@@ -6,8 +6,9 @@ from pathlib import Path
 from shutil import copy2
 
 import rich_click as click
-from _artifact import console, download_file
 from pandas.io.clipboard import clipboard_set
+
+from _artifact import console, download_file
 from rich_menu import argument_menu
 
 REPOS = ["holoviews", "panel"]  # , "hvplot", "datashader", "geoviews", "lumen"]

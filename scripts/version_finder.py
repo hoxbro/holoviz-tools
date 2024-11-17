@@ -39,6 +39,7 @@ from rich.console import Console
 from rich.prompt import Prompt
 from rich.table import Table
 from tomllib import load
+
 from utilities import trackpool
 
 py_releases = {
@@ -93,7 +94,9 @@ def pypi_info(package: str, python_version: str = "3.9") -> tuple[str, ...]:
     for f in resp["files"]:
         name = f["filename"]
         try:
-            parse_filename = parse_wheel_filename if name.endswith(".whl") else parse_sdist_filename
+            parse_filename = (
+                parse_wheel_filename if name.endswith(".whl") else parse_sdist_filename
+            )
             _, version, *_ = parse_filename(name)
         except (InvalidWheelFilename, InvalidSdistFilename):
             continue

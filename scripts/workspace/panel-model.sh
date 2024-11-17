@@ -1,9 +1,9 @@
 #!/usr/bin/bash
 set -euo pipefail
 
-PORT_USED=$(lsof -t -i :5006) || true
+PORT_USED=$(lsof -t -c panel -i :5006) || true
 if [ -n "$PORT_USED" ]; then
-    kill $PORT_USED
+    kill "$PORT_USED"
     echo "$(date +'%Y-%m-%d %H.%M.%S.%3N') Killed running panel serve on port 5006"
 fi
 
