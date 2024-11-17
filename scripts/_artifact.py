@@ -12,6 +12,7 @@ import httpx
 import platformdirs
 from rich.console import Console
 from rich.live import Live
+
 from rich_menu import live_menu, menu
 
 ARTIFACT_PATH = platformdirs.user_cache_path() / "holoviz-cli" / "artifact"

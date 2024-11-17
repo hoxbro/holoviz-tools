@@ -40,3 +40,8 @@ repos:
             --option,
             "indent_string=    ",
           ]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.7.3
+    hooks:
+      - id: ruff
+      - id: ruff-format

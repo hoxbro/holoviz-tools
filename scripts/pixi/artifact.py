@@ -7,9 +7,10 @@ from pathlib import Path
 
 import rich_click as click
 import yaml
-from _artifact import console, download_files
 from pandas.io.clipboard import clipboard_set
 from rich.table import Table
+
+from _artifact import console, download_files
 from rich_menu import argument_menu
 
 REPOS = ["holoviews", "panel", "datashader", "geoviews", "lumen", "spatialpandas"]

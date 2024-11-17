@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import os
 import sys
@@ -7,6 +9,7 @@ from subprocess import CalledProcessError, run
 from packaging.version import InvalidVersion, Version
 from pandas.io.clipboard import clipboard_set
 from rich.console import Console
+
 from rich_menu import live_menu
 from utilities import GREEN, RED, RESET, git
 
@@ -42,7 +45,8 @@ def bump_version(version: Version, part: str | None) -> str:
         case None:
             pre = None
         case _:
-            raise ValueError("Invalid part")
+            msg = "Invalid part"
+            raise ValueError(msg)
 
     # Construct the new version string
     new_version = f"v{major}.{minor}.{micro}"

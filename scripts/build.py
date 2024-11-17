@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import contextlib
 import io
 import re
@@ -177,8 +179,8 @@ def cli(repo, good_run, bad_run, workflow, force) -> None:
     with contextlib.suppress(IndexError):  # NPM
         before_path = sorted(good_path.glob("*.tgz"))[0]
         after_path = sorted(bad_path.glob("*.tgz"))[0]
-        version1 = before_path.name.split(".tgz")[0].replace("-", " ").strip("holoviz ")
-        version2 = after_path.name.split(".tgz")[0].replace("-", " ").strip("holoviz ")
+        version1 = before_path.name.split(".tgz")[0].replace("-", " ").removeprefix("holoviz-")
+        version2 = after_path.name.split(".tgz")[0].replace("-", " ").removeprefix("holoviz-")
         missing_conda1, missing_conda2 = compare_tar_files(before_path, after_path)
         generate_table(
             f"{repo.title()} - npmjs", version1, version2, missing_conda1, missing_conda2
