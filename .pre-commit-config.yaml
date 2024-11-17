@@ -14,12 +14,12 @@ repos:
     hooks:
       - id: codespell
         args: ["--write-changes", "-L", "commitish"]
-  # - repo: https://github.com/shellcheck-py/shellcheck-py
-  #   rev: v0.10.0.1
-  #   hooks:
-  #     - id: shellcheck
-  #       args: ["--exclude=SC1091,SC2181"]
-  #       exclude: (zshrc|zsh)$
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+        args: ["--exclude=SC1091,SC2181"]
+        exclude: (zshrc|zsh)$
   # - repo: https://github.com/hoxbro/prettier-pre-commit
   #   rev: v3.3.3
   #   hooks:
