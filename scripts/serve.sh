@@ -15,7 +15,7 @@ if [ -z "$PANEL_SERVE_FILE" ]; then
     export PANEL_SERVE_FILE=$DIR$FILE
 fi
 
-PORT_USED=$(lsof -t -i :5006)
+PORT_USED=$(lsof -t -i :5006 -a -c panel)
 if [ -n "$PORT_USED" ]; then
     kill "$PORT_USED"
     echo "$(date +'%Y-%m-%d %H.%M.%S.%3N') Killed running panel serve on port 5006"
