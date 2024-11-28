@@ -128,14 +128,14 @@ def pypi_info(package: str, python_version: str = "3.9") -> tuple[str, ...]:
 
 
 def get_packages_from_file(main_package: str) -> tuple[set[str], str]:
-    pixi_toml = f"{os.environ['HOLOVIZ_REP']}/{main_package}/pixi.toml"
-    setup_py = f"{os.environ['HOLOVIZ_REP']}/{main_package}/setup.py"
+    pixi_toml = os.path.join(os.environ["HOLOVIZ_REP"], main_package, "pixi.toml")
+    setup_py = os.path.join(os.environ["HOLOVIZ_REP"], main_package, "setup.py")
 
     if os.path.exists(pixi_toml):
         with open(pixi_toml, "rb") as f:
             data = load(f)
         features = [list(d.get("dependencies", [])) for d in data["feature"].values()]
-        deps = {*data["dependencies"], *sum(features, [])}  # noqa: RUF017
+        deps = {*data.get("dependencies", []), *sum(features, [])}  # noqa: RUF017
         packages = {md for d in deps if (md := conda_mapping.get(d, d))}
         python_requires = min(
             [f.replace("py3", "3.") for f in data["feature"] if f.startswith("py3")], key=Version
