@@ -70,14 +70,15 @@ def table_output(repo, good_run, bad_run, env, arch, good_env, bad_env):
     good_only = good_list - bad_list
     bad_only = bad_list - good_list
 
-    packages = {"-".join(p.split("-")[:-2]) for p in good_only | bad_only if p != "."}
+    extract_name = lambda x: "-".join(x.split("-")[:-2])
+    packages = {extract_name(p) for p in good_only | bad_only if p != "."}
     if not packages:
         return False
 
     info = []
     for p in sorted(packages):
-        good = [g for g in good_only if g.startswith(p)]
-        bad = [g for g in bad_only if g.startswith(p)]
+        good = [g for g in good_only if extract_name(g) == p]
+        bad = [g for g in bad_only if extract_name(g) == p]
         info.append((p, good[0] if good else "-", bad[0] if bad else "-"))
 
     table = Table(
@@ -101,7 +102,18 @@ def table_output(repo, good_run, bad_run, env, arch, good_env, bad_env):
 @click.option(
     "--env",
     default=None,
-    type=click.Choice(["test-39", "test-310", "test-311", "test-312", "test-ui", "test-core"]),
+    type=click.Choice(
+        [
+            "test-39",
+            "test-310",
+            "test-311",
+            "test-312",
+            "test-313",
+            "test-ui",
+            "test-core",
+            "test-gpu",
+        ]
+    ),
     help="Test type",
 )
 @click.option(
