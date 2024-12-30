@@ -5,6 +5,7 @@ from io import BytesIO
 from pathlib import Path
 
 import httpx
+import rich
 from rich.progress import Progress
 
 CHROME_VERSION = 118
@@ -31,7 +32,7 @@ def download_zip(url) -> BytesIO:
         downloaded = BytesIO()
 
         with Progress() as progress:
-            task = progress.add_task(f"Downloading Chrome ({CHROME_VERSION})", total=total)
+            task = progress.add_task("Downloading Chrome", total=total)
 
             for chunk in response.iter_bytes(chunk_size=1024):
                 downloaded.write(chunk)
@@ -47,7 +48,7 @@ def unzip(downloaded: BytesIO):
         total_files = len(zip_ref.infolist())
 
         with Progress() as progress:
-            task = progress.add_task(f"Extracting Chrome ({CHROME_VERSION})", total=total_files)
+            task = progress.add_task("Extracting Chrome ", total=total_files)
 
             for file_info in zip_ref.infolist():
                 parts = Path(file_info.filename).parts
@@ -70,11 +71,14 @@ def unzip(downloaded: BytesIO):
 
 def main():
     if not CHROME_DIR.exists():
+        rich.print(f"[red]Did not find Chrome ({CHROME_VERSION}), downloading it now.")
         url = get_url()
         downloaded = download_zip(url)
         unzip(downloaded)
+    else:
+        rich.print(f"[green]Found Chrome ({CHROME_VERSION})")
 
-    CHROME_SYMLINK.unlink()
+    CHROME_SYMLINK.unlink(missing_ok=True)
     CHROME_SYMLINK.symlink_to(CHROME_DIR / "chrome")
 
 

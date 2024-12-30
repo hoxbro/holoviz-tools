@@ -1,5 +1,5 @@
 #compdef holoviz
-local -a subcmds state workspace_opts
+local -a subcmds workspace_opts bokeh_opts state
 
 subcmds=(
     'setup:Setup a Holoviz environment'
@@ -15,6 +15,7 @@ subcmds=(
     'pixi-lock:Download pixi-lock to a repo'
     'workspace:Open custom workspace'
     'bump:Bump current directory version'
+    'bokeh:Bokeh scripts'
 )
 
 workspace_opts=(
@@ -22,9 +23,19 @@ workspace_opts=(
     'panel-model:Open Panel-Model workspace'
 )
 
-_arguments '1: :->subcmds' '2: :->workspace' && return
+bokeh_opts=(
+    'chrome:Download Chrome'
+)
+
+_arguments -s \
+    '1: :{_describe "command" subcmds}' \
+    '*::options:->opts' && return
 
 case "$state" in
-subcmds) _describe 'command' subcmds ;;
-workspace) _describe 'workspace option' workspace_opts ;;
+opts)
+    case "$words[1]" in
+    workspace) _describe 'workspace option' workspace_opts ;;
+    bokeh) _describe 'bokeh option' bokeh_opts ;;
+    esac
+    ;;
 esac
