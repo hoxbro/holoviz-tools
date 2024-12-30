@@ -58,6 +58,9 @@ elif [[ $1 == "bump" ]]; then
     cli-py bump.py "$@"
 elif [[ $1 == "python-3.13" ]]; then
     cli-py python-313.py
+elif [[ $1 == "bokeh" ]]; then
+    shift
+    cli-py "$TOOLS/bokeh/$1.py" "$@"
 elif [[ $1 ]]; then
     printf "\033[0;31mholoviz %s is an invalid command\033[0m\n" "$1"
     return 1
