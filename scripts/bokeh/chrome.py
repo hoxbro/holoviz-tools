@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import zipfile
 from io import BytesIO
 from pathlib import Path
@@ -65,6 +66,8 @@ def unzip(downloaded: BytesIO):
                             open(extracted_path, "wb") as target,
                         ):
                             target.write(source.read())
+
+                        os.chmod(extracted_path, file_info.external_attr >> 16)
 
                     progress.update(task, advance=1)
 
