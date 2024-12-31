@@ -60,9 +60,16 @@ elif [[ $1 == "python-3.13" ]]; then
     cli-py python-313.py
 elif [[ $1 == "bokeh" ]]; then
     shift
-    cli-py "$TOOLS/bokeh/$1.py" "$@"
+    if [[ $1 == "chrome" ]]; then
+        cli-py "$TOOLS/bokeh/$1.py" "$@"
+    elif [[ $1 == "setup" ]]; then
+        bash "$TOOLS/bokeh/$1.sh" "$@"
+    else
+        printf "\033[0;31m'holoviz bokeh %s' is an invalid command\033[0m\n" "$1"
+        return 1
+    fi
 elif [[ $1 ]]; then
-    printf "\033[0;31mholoviz %s is an invalid command\033[0m\n" "$1"
+    printf "\033[0;31m'holoviz %s' is an invalid command\033[0m\n" "$1"
     return 1
 else
     ccd

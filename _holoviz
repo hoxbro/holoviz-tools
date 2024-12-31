@@ -25,6 +25,7 @@ workspace_opts=(
 
 bokeh_opts=(
     'chrome:Download Chrome'
+    'setup:Setup bkdev environment'
 )
 
 _arguments -s \
