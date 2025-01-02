@@ -11,9 +11,9 @@ from rich.progress import Progress
 
 CHROME_VERSION = 118
 PLATFORM = "linux64"
-CACHE_DIR = Path.home() / ".cache/bokeh"
+CACHE_DIR = Path.home() / ".cache" / "chrome-dev"
 CHROME_DIR = CACHE_DIR / f"chrome-{CHROME_VERSION}"
-CHROME_SYMLINK = CACHE_DIR / "chrome"
+CHROME_SYMLINK = Path.home() / ".local" / "bin" / "chrome-dev"
 
 
 def get_url() -> str:
