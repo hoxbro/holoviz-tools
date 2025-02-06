@@ -56,7 +56,7 @@ def get_changelog(owner, repo, previous_release, branch="main"):
     body = response.json()["body"]
     users = set()
     body = re.sub(r"\*(.+?) by (@.+?) in (.+?)\n", partial(update_message, users=users), body)
-    body += f'\n\n Contributors: {", ".join(sorted(users, key=lambda x: x.lower()))}'
+    body += f"\n\n Contributors: {', '.join(sorted(users, key=lambda x: x.lower()))}"
     return body
 
 

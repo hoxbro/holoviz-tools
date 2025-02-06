@@ -130,7 +130,7 @@ def create_python(codeblocks, url):
             code = "import panel as pn\n" + code
         # if '.servable(' not in code:
         #     n
-        python_file.extend([f"# %% Codeblock {i+1}\n", code, "\n\n"])
+        python_file.extend([f"# %% Codeblock {i + 1}\n", code, "\n\n"])
 
     return python_file
 
