@@ -15,12 +15,10 @@ ALL_PACKAGES=(
 
     # Data processing
     numpy pandas xarray polars numba
-    dask-core scipy scikit-image dask-expr
+    dask-core scipy scikit-image
 
     # Data loading
     pooch pyarrow
-    # openpyxl fastparquet
-    # "intake<2" intake-sql intake-parquet intake-xarray
     s3fs h5netcdf zarr hdf5
     ibis-sqlite sqlalchemy python-duckdb
     bokeh_sampledata
