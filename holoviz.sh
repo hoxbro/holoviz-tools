@@ -1,18 +1,14 @@
 #!/usr/bin/env bash
 
 TOOLS="$(cd -- "$(dirname "$0")" &>/dev/null && pwd -P)/scripts"
-alias cli-py="\$TOOLS/cli.py"
+cli-py() { "$TOOLS/cli.py" "$@"; }
 
 ccd() {
     if [[ $PWD != $HOLOVIZ_DEV* && $PWD != $HOLOVIZ_REP* ]]; then
         cd "$HOLOVIZ_DEV" || exit 1
     fi
     if [[ $CONDA_DEFAULT_ENV != "holoviz" ]]; then
-        # For activating conda environment
-        CONDA_INFO=$(cat /tmp/conda_info.json 2>/dev/null || conda info --json | tee /tmp/conda_info.json)
-        CONDA_HOME=$(echo "$CONDA_INFO" | jq -r .conda_prefix)
-        source "$CONDA_HOME/etc/profile.d/conda.sh"
-        conda activate holoviz
+        mamba activate holoviz
     fi
 }
 
