@@ -35,7 +35,7 @@ ALL_PACKAGES=(
     geopandas rioxarray rasterio cartopy geodatasets
 
     # Dev Tools
-    nodejs "debugpy==1.8.5"
+    nodejs debugpy
     pyinstrument snakeviz psutil py-spy tuna
     setuptools_scm watchfiles cachecontrol lockfile
 
@@ -48,7 +48,7 @@ ALL_PACKAGES=(
     rich-click httpx platformdirs zstandard lxml
 
     # Misc
-    tqdm colorcet retrying
+    tqdm colorcet retrying multipledispatch
     markdown markdown-it-py mdit-py-plugins linkify-it-py
 )
 
