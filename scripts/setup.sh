@@ -8,7 +8,7 @@ PACKAGES=(panel holoviews hvplot param datashader geoviews lumen holonote spatia
 CUDA_PACKAGES=(cupy)
 UNIX_PACKAGES=(memray tsdownsample)
 ALL_PACKAGES=(
-    python=3.12
+    python=3.13
 
     # Visualization
     bokeh plotly matplotlib-base seaborn-base altair
