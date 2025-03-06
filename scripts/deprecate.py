@@ -7,9 +7,14 @@ import warnings
 from importlib.util import find_spec
 from typing import cast
 
+import rich_click as click
 from packaging.version import Version
 
+from _artifact import console
+from rich_menu import argument_menu
 from utilities import GREEN, RED, RESET, exit_print, git
+
+REPOS = ["panel", "holoviews"]
 
 
 class StackLevelChecker(ast.NodeVisitor):
@@ -73,11 +78,13 @@ def check_file(file, path, base_version) -> int:
     return stacklevel_checker.deprecations
 
 
-def main(module) -> None:
-    version, base_version, path = get_info(module)
+@click.command(context_settings={"show_default": True})
+@argument_menu("repo", choices=REPOS, console=console, title="Select a repo")
+def main(repo) -> None:
+    version, base_version, path = get_info(repo)
     files = git("ls-files", ".", cwd=path)
     deprecations = 0
-    print(f"Latest tag of {module} on main is '{version}'.")
+    print(f"Latest tag of {repo} on main is '{version}'.")
     for file in files.split("\n"):
         if file.endswith(".py"):
             deprecations += check_file(file, path, base_version)
@@ -85,5 +92,4 @@ def main(module) -> None:
 
 
 if __name__ == "__main__":
-    module = sys.argv[1] if len(sys.argv) > 1 else "panel"
-    main(module)
+    main()  # pyright: ignore[reportCallIssue]
