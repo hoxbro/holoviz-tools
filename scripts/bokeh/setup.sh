@@ -6,7 +6,8 @@ cd ~/projects/bokeh/
 
 echo "Creating environment: bkdev"
 
-mamba activate base
+source "$CONDA_HOME/etc/profile.d/conda.sh"
+conda activate base
 
 conda env remove -n bkdev -y >/dev/null || true
 mamba env create -n bkdev -f conda/environment-test-3.11.yml -y
