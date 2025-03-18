@@ -58,17 +58,19 @@ conda_mapping = {
     "dask-core": "dask",
     "dask-cudf": None,
     "ffmpeg": None,
+    "geopandas-core": "geopandas",
+    "geoviews-core": "geoviews",
     "graphviz": None,
     "ibis-sqlite": "ibis-framework",
     "matplotlib-base": "matplotlib",
     "nodejs": None,
     "python": None,
     "python-build": "build",
-    "python-kaleido": "kaleido",
     "python-graphviz": None,
+    "python-kaleido": "kaleido",
     "rmm": None,
 }
-spec_drop_date = datetime.now() - timedelta(days=int(365 * 2))
+spec_drop_date = datetime.now() - timedelta(days=365 * 2)
 HEADERS = {"Accept": "application/vnd.pypi.simple.v1+json"}
 console = Console()
 
