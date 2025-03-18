@@ -8,7 +8,11 @@ ccd() {
         cd "$HOLOVIZ_DEV" || exit 1
     fi
     if [[ $CONDA_DEFAULT_ENV != "holoviz" ]]; then
-        mamba activate holoviz
+        # For activating conda environment
+        CONDA_INFO=$(cat /tmp/conda_info.json 2>/dev/null || conda info --json | tee /tmp/conda_info.json)
+        CONDA_HOME=$(echo "$CONDA_INFO" | jq -r .conda_prefix)
+        source "$CONDA_HOME/etc/profile.d/conda.sh"
+        conda activate holoviz
     fi
 }
 
