@@ -21,7 +21,7 @@ repos:
         args: ["--exclude=SC1091,SC2181"]
         exclude: (zshrc|zsh)$
   - repo: https://github.com/hoxbro/prettier-pre-commit
-    rev: v3.5.2
+    rev: v3.5.3
     hooks:
       - id: prettier
         types_or:
@@ -41,7 +41,7 @@ repos:
             "indent_string=    ",
           ]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.9
+    rev: v0.11.0
     hooks:
       - id: ruff
       - id: ruff-format
