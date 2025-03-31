@@ -123,7 +123,7 @@ def main():
         sys.exit(1)
     package = os.path.basename(directory)
     os.chdir(directory)
-    print(f"{GREEN}[{package}]{RESET} Current version: {current_version}")
+    print(f"{GREEN}[{package}]{RESET} Current version on this branch: {current_version}")
 
     version_options = get_possible_versions(current_version)
     title = rf"[green]\[{package}][/green] Select a version:"
