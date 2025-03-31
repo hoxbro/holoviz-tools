@@ -35,7 +35,7 @@ ALL_PACKAGES=(
     geopandas rioxarray rasterio cartopy geodatasets
 
     # Dev Tools
-    nodejs debugpy
+    nodejs debugpy esbuild
     pyinstrument snakeviz psutil py-spy tuna
     setuptools_scm watchfiles cachecontrol lockfile
 
