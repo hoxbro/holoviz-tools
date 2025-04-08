@@ -15,7 +15,7 @@ from rich.table import Table
 from _artifact import console, download_files
 from rich_menu import argument_menu
 
-REPOS = ["holoviews", "panel", "datashader", "geoviews", "lumen", "spatialpandas"]
+REPOS = ["holoviews", "panel", "datashader", "geoviews", "lumen", "spatialpandas", "nbsite"]
 
 
 def _get_version_re(repo_version):

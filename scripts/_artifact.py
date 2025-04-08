@@ -19,6 +19,7 @@ from utilities import exit_print
 
 ARTIFACT_PATH = platformdirs.user_cache_path() / "holoviz-cli" / "artifact"
 ARTIFACT_PATH.mkdir(parents=True, exist_ok=True)
+DEV_REPOS = ("nbsite",)
 
 HEADERS = {
     "Accept": "application/vnd.github+json",
@@ -30,7 +31,11 @@ console = Console()
 
 @cache
 def download_runs(repo, workflow, page=1) -> tuple[dict, dict]:
-    url = f"https://api.github.com/repos/holoviz/{repo}/actions/workflows/{workflow}/runs"
+    if repo in DEV_REPOS:
+        url = f"https://api.github.com/repos/holoviz-dev/{repo}/actions/workflows/{workflow}/runs"
+    else:
+        url = f"https://api.github.com/repos/holoviz/{repo}/actions/workflows/{workflow}/runs"
+
     resp = httpx.get(
         url, params={"page": page, "per_page": 30}, headers=HEADERS, timeout=20
     ).raise_for_status()
