@@ -41,11 +41,11 @@ repos:
             "indent_string=    ",
           ]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.4
+    rev: v0.11.7
     hooks:
       - id: ruff
       - id: ruff-format
   - repo: https://github.com/DetachHead/basedpyright-pre-commit-mirror
-    rev: 1.28.4
+    rev: 1.29.1
     hooks:
       - id: basedpyright
