@@ -15,7 +15,7 @@ ALL_PACKAGES=(
 
     # Data processing
     numpy pandas xarray polars numba
-    dask-core scipy scikit-image
+    dask-core scipy scikit-image narwhals
 
     # Data loading
     pooch pyarrow
