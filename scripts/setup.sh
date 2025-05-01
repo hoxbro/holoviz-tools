@@ -14,14 +14,16 @@ ALL_PACKAGES=(
     bokeh plotly matplotlib-base seaborn-base altair
 
     # Data processing
-    numpy pandas xarray polars numba
-    dask-core scipy scikit-image narwhals
+    numpy xarray numba scipy scikit-image
+
+    # DataFrame
+    pandas polars narwhals
+    pyarrow python-duckdb ibis-sqlite
+    dask-core distributed
 
     # Data loading
-    pooch pyarrow
+    pooch sqlalchemy bokeh_sampledata
     s3fs h5netcdf zarr hdf5
-    ibis-sqlite sqlalchemy python-duckdb
-    bokeh_sampledata
 
     # Notebook
     jupyterlab ipywidgets jupyterlab_code_formatter jupyterlab-myst
