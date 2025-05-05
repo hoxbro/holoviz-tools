@@ -68,6 +68,9 @@ elif [[ $1 == "bokeh" ]]; then
         printf "\033[0;31m'holoviz bokeh %s' is an invalid command\033[0m\n" "$1"
         return 1
     fi
+elif [[ $1 == "cmp" ]]; then
+    shift
+    bash "$TOOLS/cmp.sh" "$@"
 elif [[ $1 ]]; then
     printf "\033[0;31m'holoviz %s' is an invalid command\033[0m\n" "$1"
     return 1

@@ -16,6 +16,7 @@ subcmds=(
     'workspace:Open custom workspace'
     'bump:Bump current directory version'
     'bokeh:Bokeh scripts'
+    'cmp:Find version which caused error'
 )
 
 workspace_opts=(
