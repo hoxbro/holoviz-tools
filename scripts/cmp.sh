@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# TODO:
+# - Allow script files instead of code
+# - Allow to specify other dependencies
+
 # ----------------------------------------
 # Colors
 # ----------------------------------------
@@ -27,7 +31,7 @@ TEST_CMD="$*"
 # Setup
 # ----------------------------------------
 ts=$(date +%s)
-LOG="/tmp/conda_cmp_${ts}.txt"
+LOG="/tmp/conda_cmp_${PKG}_${ts}.txt"
 
 CONDA_INFO=$(cat /tmp/conda_info.json 2>/dev/null || conda info --json | tee /tmp/conda_info.json)
 CONDA_HOME=$(echo "$CONDA_INFO" | jq -r .conda_prefix)
@@ -38,15 +42,18 @@ source "$CONDA_HOME/etc/profile.d/conda.sh"
 # ----------------------------------------
 test_version() {
     local version="$1"
-    local ev="$(echo $version | tr . _)"
+    # shellcheck disable=SC2155
+    local ev="$(echo "$version" | tr . _)"
     local env="tmp_${ts}_${ev}"
 
-    echo "  Creating environment: ${env}" >>"$LOG"
-    mamba create -y -n "${env}" "${PKG}=${version}" --offline >>"$LOG" 2>&1
-    conda activate "${env}" >>"$LOG" 2>&1
-    python -c "${TEST_CMD}" >>"$LOG" 2>&1
-    local rc=$?
-    conda deactivate >>"$LOG" 2>&1
+    {
+        echo "  Creating environment: ${env}"
+        mamba create -y -n "${env}" "${PKG}=${version}" --offline
+        conda activate "${env}"
+        python -c "${TEST_CMD}"
+        local rc=$?
+        conda deactivate
+    } >>"$LOG" 2>&1
     return $rc
 }
 
@@ -54,7 +61,8 @@ test_version() {
 # Step 1: List versions
 # ----------------------------------------
 echo -e "${YELLOW}[+] Getting all versions of '${PKG}'${NC}"
-all_versions=($(conda search "${PKG}" --json | jq -r '."'"$PKG"'"[].version' | sort -V | uniq))
+# shellcheck disable=SC2207
+all_versions=($(mamba search "${PKG}" --json --offline | jq -r ".result.pkgs.[].version" | sort -V | uniq))
 
 g_idx=-1
 b_idx=-1
@@ -74,6 +82,7 @@ if ((g_idx < b_idx)); then
     direction="forward"
 else
     versions=("${all_versions[@]:b_idx:g_idx-b_idx+1}")
+    # shellcheck disable=SC2207
     versions=($(printf "%s\n" "${versions[@]}" | tac)) # reverse
     direction="backward"
 fi
