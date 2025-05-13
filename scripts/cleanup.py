@@ -65,7 +65,8 @@ def remove_temp() -> None:
 @cache
 def check_pr_closed(repo, no) -> bool:
     # Use API
-    url = f"https://api.github.com/repos/holoviz/{repo}/issues/{no}"
+    org = "bokeh" if repo == "bokeh" else "holoviz"
+    url = f"https://api.github.com/repos/{org}/{repo}/issues/{no}"
     resp = httpx.get(url, headers=HEADERS)
     with suppress(httpx.HTTPError):
         tag = resp.raise_for_status().json()["state"]
