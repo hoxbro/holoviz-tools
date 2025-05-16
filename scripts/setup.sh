@@ -22,7 +22,7 @@ ALL_PACKAGES=(
     dask-core distributed
 
     # Data loading
-    pooch sqlalchemy bokeh_sampledata
+    pooch sqlalchemy bokeh_sampledata hvsampledata
     s3fs h5netcdf zarr hdf5
 
     # Notebook
