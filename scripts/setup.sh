@@ -50,7 +50,7 @@ ALL_PACKAGES=(
     rich-click httpx platformdirs zstandard lxml
 
     # Misc
-    tqdm colorcet retrying multipledispatch
+    tqdm colorcet retrying multipledispatch nomkl
     markdown markdown-it-py mdit-py-plugins linkify-it-py
 )
 
