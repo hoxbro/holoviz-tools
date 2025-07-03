@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import time
+from functools import cache
+from hashlib import sha256
 from pathlib import Path
 
 import rich_click as click
@@ -13,7 +16,6 @@ console = Console()
 ts = str(int(time.time()))
 
 # TODO
-# - Allow script files instead of code
 # - Allow to specify other dependencies
 
 
@@ -32,35 +34,60 @@ def load_conda_info():
     return info
 
 
+@cache
+def conda_envs():
+    result = subprocess.run(["mamba", "env", "list", "--json"], capture_output=True, check=True)
+    info = json.loads(result.stdout)
+    return [os.path.basename(e) for e in info["envs"]]
+
+
 def run_in_shell(script: str, log_file: Path) -> bool:
     with open(log_file, "a") as log:
         result = subprocess.run(["bash", "-c", script], stdout=log, stderr=log, check=False)
     return result.returncode == 0
 
 
-def test_version(pkg: str, version: str, test_cmd: str, conda_sh: Path, log_file: Path) -> bool:
+def test_version(
+    pkg: str, version: str, test_command: str, conda_sh: Path, log_file: Path
+) -> bool:
     ev = version.replace(".", "_")
-    env_name = f"tmp_{ts}_{ev}"
-    with open(log_file, "a") as log:
-        log.write(f"  Creating environment: {env_name}\n")
-        result = subprocess.run(
-            ["mamba", "create", "-y", "-n", env_name, f"{pkg}={version}", "--offline"],
-            stdout=log,
-            stderr=log,
-            check=False,
-        )
-        if result.returncode != 0:
-            return False
+    constraints = f"{pkg}={version}"
+    ev = sha256(constraints.encode()).hexdigest()
+    env_name = f"tmp_{ev}"
+    if env_name not in conda_envs():
+        with open(log_file, "a") as log:
+            log.write(f"  Creating environment: {env_name}\n")
+            result = subprocess.run(
+                ["mamba", "create", "-y", "-n", env_name, constraints, "--offline"],
+                stdout=log,
+                stderr=log,
+                check=False,
+            )
+            if result.returncode != 0:
+                return False
 
+    c = "" if os.path.exists(test_command) else "-c"
     script = f"""
         source "{conda_sh}"
         conda activate {env_name}
-        python -c "{test_cmd}"
+        python {c} "{test_command}"
         rc=$?
         conda deactivate
-        exit $rc
-    """
+        exit $rc"""
     return run_in_shell(script, log_file)
+
+
+def get_all_package_versions(package):
+    console.print(f"[yellow][+] Getting all versions of '{package}'[/yellow]")
+    search = subprocess.run(
+        ["mamba", "search", package, "--json", "--offline"], capture_output=True, check=True
+    )
+    search_json = json.loads(search.stdout)
+    all_versions = sorted(
+        {pkg["version"] for pkg in search_json["result"]["pkgs"]},
+        key=lambda s: list(map(int, s.split("."))),
+    )
+    return all_versions
 
 
 @click.command()
@@ -81,23 +108,17 @@ def cli(package: str, good_version: str, bad_version: str, test_command: str):
     conda_info = load_conda_info()
     conda_sh = Path(conda_info["conda_prefix"]) / "etc" / "profile.d" / "conda.sh"
 
-    console.print(f"[yellow][+] Getting all versions of '{package}'[/yellow]")
-    search = subprocess.run(
-        ["mamba", "search", package, "--json", "--offline"], capture_output=True, check=True
-    )
-    search_json = json.loads(search.stdout)
-    all_versions = sorted(
-        {pkg["version"] for pkg in search_json["result"]["pkgs"]},
-        key=lambda s: list(map(int, s.split("."))),
-    )
+    all_versions = get_all_package_versions(package)
 
     try:
         g_idx = all_versions.index(good_version)
+    except ValueError:
+        console.print(f"[red]Error:[/red] {good_version} not found in available versions.")
+        sys.exit(1)
+    try:
         b_idx = all_versions.index(bad_version)
     except ValueError:
-        console.print(
-            f"[red]Error:[/red] Either {good_version} or {bad_version} not found in available versions."
-        )
+        console.print(f"[red]Error:[/red] {bad_version} not found in available versions.")
         sys.exit(1)
 
     if g_idx < b_idx:
@@ -139,8 +160,10 @@ def cli(package: str, good_version: str, bad_version: str, test_command: str):
             right = mid
 
     problem = versions[right]
+    no_problem = versions[right - 1]
     console.print("[yellow][+] Done[/yellow]")
-    console.print(f"[green]    First failing version is: {problem}[/green]")
+    console.print(f"[red]    First failing version is: {problem}[/red]")
+    console.print(f"[green]    First passing version is: {no_problem}[/green]")
 
 
 if __name__ == "__main__":
