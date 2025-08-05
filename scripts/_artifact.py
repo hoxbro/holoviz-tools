@@ -140,7 +140,7 @@ def download_file(
             good_url, _ = runs
             artifact_urls = get_artifact_data_url(path, good_url, artifact_names)
             with ThreadPoolExecutor() as executor:
-                executor.map(lambda x: download_url(*x), artifact_urls)
+                list(executor.map(lambda x: download_url(*x), artifact_urls))
 
     return run, path
 

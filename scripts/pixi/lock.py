@@ -18,7 +18,7 @@ def get_file(repo, run, workflow, force) -> tuple[tuple[int, int], Path]:
     run, path = download_file(repo, run, workflow, force=force, artifact_names=["pixi-lock"])
     file = path / "pixi.lock"
 
-    if not file or not file.exists():
+    if not file.exists():
         console.print(
             "Good artifact does not exists. Please check the options.",
             style="bright_red",
