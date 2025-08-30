@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import os
+import re
+from collections import defaultdict
 
 import httpx
 import rich_click as click
@@ -17,6 +19,17 @@ HEADERS = {
 }
 REPOS = ["holoviews", "panel", "hvplot", "datashader", "geoviews", "lumen", "spatialpandas"]
 console = Console()
+ME = "hoxbro"
+
+
+def get_releases(owner, repo):
+    url = f"https://api.github.com/repos/{owner}/{repo}/releases"
+
+    with httpx.Client() as client:
+        response = client.get(url, headers=HEADERS)
+        response.raise_for_status()
+    tags = [r["tag_name"] for r in response.json() if not r["prerelease"]]
+    return tags
 
 
 def run_query(query, variables):
@@ -76,13 +89,16 @@ def get_prs_between_tags(repo, from_commit_date, to_commit_date):
     }
     """
 
+    pr_format = "- {title} ([#{number}](https://github.com/{owner}/{repo}/pull/{number}))"
     while True:
         data = run_query(query_gql, {"query": query_str, "cursor": cursor})
         nodes = data["search"]["nodes"]
         for pr in nodes:
             username = pr["author"]["login"] if pr["author"] else "unknown"
             contributors.add(username)
-            commit_lines.append(f"- {pr['title']} (#{pr['number']})")
+            commit_lines.append(
+                pr_format.format(title=pr["title"], number=pr["number"], owner=owner, repo=name)
+            )
 
         page_info = data["search"]["pageInfo"]
         if not page_info["hasNextPage"]:
@@ -90,6 +106,105 @@ def get_prs_between_tags(repo, from_commit_date, to_commit_date):
         cursor = page_info["endCursor"]
 
     return commit_lines, contributors
+
+
+def categorize_commits(commit_lines):
+    """
+    Categorize commit lines based on conventional commit prefixes.
+
+    Returns:
+        dict: Dictionary with categories as keys and lists of commits as values
+    """
+
+    # Define section order and display names
+    section_names = {
+        "feat": "Features",
+        "enh": "Enhancements",
+        "fix": "Bug Fixes",
+        "perf": "Performance",
+        "compat": "Compatibility",
+        "refactor": "Refactoring",
+        "build": "Build System",
+        "ci": "CI/CD",
+        "docs": "Documentation",
+        "test": "Tests",
+        "type": "Type Annotations",
+        "chore": "Maintenance",
+        "misc": "Miscellaneous",
+    }
+
+    regex = re.compile(r"^- ([a-zA-Z]+)(?:\([^)]*\))?:\s*(.+)$")
+    categories = defaultdict(list)
+    for line in commit_lines:
+        match = regex.match(line)
+        if match:
+            categories[match.group(1).lower()].append(line)
+        else:
+            categories["misc"].append(line)
+
+    # Return ordered dictionary
+    ordered_categories = {}
+    for section, name in section_names.items():
+        if section in categories:
+            ordered_categories[name] = categories[section]
+
+    return ordered_categories
+
+
+def sort_contributors(contributors_set, new_contributors_set):
+    # Separate new and existing contributors
+    new_users = [user for user in contributors_set if user in new_contributors_set and user != ME]
+    existing_users = [
+        user for user in contributors_set if user not in new_contributors_set and user != ME
+    ]
+
+    new_users_sorted = sorted(new_users, key=lambda x: x.lower())
+    existing_users_sorted = sorted(existing_users, key=lambda x: x.lower())
+
+    result = new_users_sorted + existing_users_sorted
+    if ME in contributors_set:
+        result.append(ME)
+
+    return result
+
+
+def format_contributors(contributors, new_contributors):
+    """
+    Format contributors section with proper sorting and first contribution notes.
+
+    Args:
+        contributors: set of all contributor usernames
+        new_contributors: set of new contributor usernames
+        repo_name: repository name (e.g., "panel", "holoviews")
+
+    Returns:
+        str: Formatted contributor text
+    """
+
+    sorted_contributors = sort_contributors(contributors, new_contributors)
+
+    # Build contributors text
+    contributor_text = "Many thanks to "
+    contributor_mentions = []
+    for user in sorted_contributors:
+        if user in new_contributors:
+            contributor_mentions.append(
+                f"[@{user}](https://github.com/{user}) (first contribution)"
+            )
+        else:
+            contributor_mentions.append(f"[@{user}](https://github.com/{user})")
+
+    if len(contributor_mentions) > 1:
+        contributor_text += (
+            ", ".join(contributor_mentions[:-1])
+            + f", and {contributor_mentions[-1]} for their contributions."
+        )
+    elif len(contributor_mentions) == 1:
+        contributor_text += f"{contributor_mentions[0]} for their contributions."
+    else:
+        contributor_text = "No contributors found."
+
+    return contributor_text
 
 
 def is_new_contributor(repo, username, from_commit_date):
@@ -149,31 +264,24 @@ def generate_changelog(repo, from_tag, to_tag):
         if is_new_contributor(repo, username, from_commit_date):
             new_contributors.add(username)
 
+    # Categorize commits
+    categorized_commits = categorize_commits(commit_lines)
+
+    # Format contributors section
+    contributor_text = format_contributors(contributors, new_contributors)
+
     # Build changelog
     changelog = [f"## Changelog ({from_tag}..{to_tag})", ""]
-    changelog.extend(commit_lines)
+    changelog.append(contributor_text)
     changelog.append("")
-    changelog.append("### Contributors")
-    for user in sorted(contributors, key=lambda x: x.lower()):
-        changelog.append(f"- @{user}")
 
-    if new_contributors:
+    # Add categorized sections
+    for section_name, commits in categorized_commits.items():
+        changelog.append(f"### {section_name}")
+        changelog.extend(commits)
         changelog.append("")
-        changelog.append("### New Contributors")
-        for user in sorted(new_contributors, key=lambda x: x.lower()):
-            changelog.append(f"- @{user}")
 
     return "\n".join(changelog)
-
-
-def get_releases(owner, repo):
-    url = f"https://api.github.com/repos/{owner}/{repo}/releases"
-
-    with httpx.Client() as client:
-        response = client.get(url, headers=HEADERS)
-        response.raise_for_status()
-    tags = [r["tag_name"] for r in response.json()]
-    return tags
 
 
 @click.command(context_settings={"show_default": True})
