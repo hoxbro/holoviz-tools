@@ -38,7 +38,7 @@ ALL_PACKAGES=(
 
     # Dev Tools
     nodejs debugpy esbuild
-    pyinstrument snakeviz psutil py-spy tuna
+    pyinstrument snakeviz psutil py-spy tuna viztracer
     setuptools_scm watchfiles cachecontrol lockfile
 
     # Typing
