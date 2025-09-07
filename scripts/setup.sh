@@ -100,9 +100,7 @@ _install() (
         cd "$1"
     fi
 
-    if [ -f .pre-commit-config.yaml ]; then
-        pre-commit install -t=pre-commit --install-hooks
-    fi
+    (prek install && prek) || true
 
     # Install the package
     conda uninstall --force --offline --yes "$1" || true
