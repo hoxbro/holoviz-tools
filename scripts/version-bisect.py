@@ -16,7 +16,7 @@ console = Console()
 ts = str(int(time.time()))
 
 # TODO
-# - Allow to specify other dependencies
+# - Allow to ignore a version
 
 
 def log_path(pkg: str) -> Path:
@@ -47,18 +47,24 @@ def run_in_shell(script: str, log_file: Path) -> bool:
     return result.returncode == 0
 
 
-def test_version(
-    pkg: str, version: str, test_command: str, conda_sh: Path, log_file: Path
+def version_check(
+    pkg: str,
+    version: str,
+    test_command: str,
+    conda_sh: Path,
+    log_file: Path,
+    deps: tuple[str, ...] = (),
 ) -> bool:
-    ev = version.replace(".", "_")
-    constraints = f"{pkg}={version}"
-    ev = sha256(constraints.encode()).hexdigest()
+    constraints = [f"{pkg}={version}"]
+    constraints.extend(deps)
+    constraints_str = " ".join(constraints)
+    ev = sha256(constraints_str.encode()).hexdigest()
     env_name = f"tmp_{ev}"
     if env_name not in conda_envs():
         with open(log_file, "a") as log:
             log.write(f"  Creating environment: {env_name}\n")
             result = subprocess.run(
-                ["mamba", "create", "-y", "-n", env_name, constraints, "--offline"],
+                ["mamba", "create", "-y", "-n", env_name, *constraints, "--offline"],
                 stdout=log,
                 stderr=log,
                 check=False,
@@ -95,7 +101,14 @@ def get_all_package_versions(package):
 @click.argument("good_version")
 @click.argument("bad_version")
 @click.argument("test_command")
-def cli(package: str, good_version: str, bad_version: str, test_command: str):
+@click.option(
+    "--deps",
+    multiple=True,
+    help="Additional dependencies to install (format: package=version or package)",
+)
+def cli(
+    package: str, good_version: str, bad_version: str, test_command: str, deps: tuple[str, ...]
+):
     """
     Bisect a conda package version range to find the first failing version.
 
@@ -103,6 +116,9 @@ def cli(package: str, good_version: str, bad_version: str, test_command: str):
     GOOD_VERSION: Known good version
     BAD_VERSION: Known bad version
     TEST_COMMAND: Python command to run (quoted)
+
+    Use --deps to specify additional dependencies:
+      --deps numpy=1.24 --deps scipy
     """
     log_file = log_path(package)
     conda_info = load_conda_info()
@@ -132,13 +148,13 @@ def cli(package: str, good_version: str, bad_version: str, test_command: str):
 
     # Step 2: Verify known good
     console.print("[yellow][+] Verifying baseline versions[/yellow]")
-    if test_version(package, good_version, test_command, conda_sh, log_file):
+    if version_check(package, good_version, test_command, conda_sh, log_file, deps):
         console.print(f"[green]    {good_version} passed[/green]")
     else:
         console.print(f"[red]    {good_version} failed. It must pass. Exiting.[/red]")
         sys.exit(1)
 
-    if test_version(package, bad_version, test_command, conda_sh, log_file):
+    if version_check(package, bad_version, test_command, conda_sh, log_file, deps):
         console.print(f"[red]    {bad_version} passed. It must fail. Exiting.[/red]")
         sys.exit(1)
     else:
@@ -152,7 +168,7 @@ def cli(package: str, good_version: str, bad_version: str, test_command: str):
         mid = (left + right) // 2
         ver = versions[mid]
         console.print(f"    Testing {ver}...", end="")
-        if test_version(package, ver, test_command, conda_sh, log_file):
+        if version_check(package, ver, test_command, conda_sh, log_file, deps):
             console.print("[green] passed[/green]")
             left = mid
         else:
