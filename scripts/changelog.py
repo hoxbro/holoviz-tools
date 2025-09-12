@@ -133,12 +133,16 @@ def categorize_commits(commit_lines):
         "misc": "Miscellaneous",
     }
 
-    regex = re.compile(r"^- ([a-zA-Z]+)(?:\([^)]*\))?:\s*(.+)$")
+    regex = re.compile(r"^- ([a-zA-Z]+)(?:\([^)]*\))?(!?):\s*(.+)$")
     categories = defaultdict(list)
     for line in commit_lines:
         match = regex.match(line)
         if match:
-            categories[match.group(1).lower()].append(line)
+            prefix = match.group(1).lower()
+            is_breaking = match.group(2) == "!"
+            if is_breaking:
+                line = f"- BREAKING CHANGE: {line[2:]}"
+            categories[prefix].append(line)
         else:
             categories["misc"].append(line)
 
