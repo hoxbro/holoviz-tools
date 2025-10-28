@@ -172,25 +172,6 @@ def sort_contributors(contributors_set, new_contributors_set):
     return result
 
 
-def get_user_real_name(username):
-    """Get the real name of a GitHub user, skipping middle names."""
-    url = f"https://api.github.com/users/{username}"
-    try:
-        with httpx.Client() as client:
-            response = client.get(url, headers=HEADERS)
-            response.raise_for_status()
-            user_data = response.json()
-            full_name = user_data.get("name")
-            if full_name:
-                name_parts = full_name.split()
-                if len(name_parts) >= 2:  # noqa: PLR2004
-                    return f"{name_parts[0]} {name_parts[-1]}"
-                return full_name
-            return username
-    except Exception:
-        return username
-
-
 def format_contributors(contributors, new_contributors):
     """
     Format contributors section with proper sorting and first contribution notes.
@@ -210,15 +191,12 @@ def format_contributors(contributors, new_contributors):
     contributor_text = "Many thanks to "
     contributor_mentions = []
     for user in sorted_contributors:
-        real_name = get_user_real_name(user)
-        display_name = real_name if real_name != user else f"@{user}"
-
         if user in new_contributors:
             contributor_mentions.append(
-                f"[{display_name}](https://github.com/{user}) (first contribution)"
+                f"[@{user}](https://github.com/{user}) (first contribution)"
             )
         else:
-            contributor_mentions.append(f"[{display_name}](https://github.com/{user})")
+            contributor_mentions.append(f"[@{user}](https://github.com/{user})")
 
     if len(contributor_mentions) > 1:
         contributor_text += (
