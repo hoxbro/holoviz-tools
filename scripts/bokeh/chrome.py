@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import platform
 import zipfile
 from io import BytesIO
 from pathlib import Path
@@ -9,11 +10,21 @@ import httpx
 import rich
 from rich.progress import Progress
 
-CHROME_VERSION = 118
-PLATFORM = "linux64"
+CHROME_VERSION = 141
 CACHE_DIR = Path.home() / ".cache" / "chrome-dev"
 CHROME_DIR = CACHE_DIR / f"chrome-{CHROME_VERSION}"
 CHROME_SYMLINK = Path.home() / ".local" / "bin" / "chrome-dev"
+
+match platform.system():
+    case "Windows":
+        PLATFORM = "win64"
+    case "Darwin":
+        PLATFORM = "mac-arm64"
+    case "Linux":
+        PLATFORM = "linux64"
+    case other:
+        msg = f"Unsupported OS: {other}"
+        raise RuntimeError(msg)
 
 
 def get_url() -> str:
