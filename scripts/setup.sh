@@ -31,7 +31,7 @@ ALL_PACKAGES=(
 
     # Testing
     pytest pytest-xdist pytest-rerunfailures parameterized pytest-asyncio hypothesis
-    pytest-randomly detect-test-pollution nbval microsoft::pytest-playwright microsoft::playwright
+    pytest-randomly detect-test-pollution nbval pytest-playwright playwright
 
     # Geo
     geopandas rioxarray rasterio cartopy geodatasets
@@ -64,7 +64,7 @@ create_environment() {
     if [[ "$PLATFORM" =~ ^(linux-64|osx-arm64|osx-64)$ ]]; then ALL_PACKAGES+=("${UNIX_PACKAGES[@]}"); fi
 
     conda env remove -n $CONDA_ENV -y >/dev/null || true
-    mamba create -n $CONDA_ENV "${ALL_PACKAGES[@]}" -y -c microsoft -c bokeh/label/rc
+    mamba create -n $CONDA_ENV "${ALL_PACKAGES[@]}" -y -c bokeh/label/rc
 
     # https://docs.bokeh.org/en/latest/docs/dev_guide/setup.html
     conda env config vars set BOKEH_RESOURCES=server -n $CONDA_ENV
