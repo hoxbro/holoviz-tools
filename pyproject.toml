@@ -59,3 +59,15 @@ extend-unsafe-fixes = [
 known-first-party = ["utilities", "rich_menu", "_artifact"]
 required-imports = ["from __future__ import annotations"]
 combine-as-imports = true
+
+[tool.typos.default]
+extend-ignore-re = [
+    ".*(?:#|--|//|/*).*(?:typos):\\s?ignore[^\\n]*\\n",
+    ".*(?:typos):\\s?ignore-next-line[^\\n]*\\n[^\\n]*",
+]
+
+[tool.typos.default.extend-words]
+arange = "arange"
+lod = "lod"
+nd = "nd"
+pn = "pn"
