@@ -133,7 +133,7 @@ cd "$HOLOVIZ_REP"
 # Starting up the machine
 create_environment
 for p in "${PACKAGES[@]}"; do install "$p" & done
-python -m playwright install &>/dev/null &
+python -m playwright install chromium &>/dev/null &
 wait
 
 # Clean up
