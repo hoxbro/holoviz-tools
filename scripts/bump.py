@@ -91,7 +91,7 @@ def js_update(package: str, version: str) -> bool:
         sys.exit(1)
 
     git("add", f"{package}/package.json", f"{package}/package-lock.json")
-    git("commit", "-m", f"Update {package}.js to {js_ver}", "--no-verify", "--allow-empty")
+    git("commit", "-m", f"build: Update {package}.js to {js_ver}", "--no-verify", "--allow-empty")
     return True
 
 
