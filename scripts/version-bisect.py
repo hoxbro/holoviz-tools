@@ -178,7 +178,7 @@ def cli(
     problem = versions[right]
     no_problem = versions[right - 1]
     console.print("[yellow][+] Done[/yellow]")
-    console.print(f"[red]    First failing version is: {problem}[/red]")
+    console.print(f"[red]    Last failing version is:  {problem}[/red]")
     console.print(f"[green]    First passing version is: {no_problem}[/green]")
 
 
