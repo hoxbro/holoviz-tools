@@ -9,6 +9,7 @@ from subprocess import CalledProcessError, run
 from packaging.version import InvalidVersion, Version
 from pandas.io.clipboard import clipboard_set  # type: ignore
 from rich.console import Console
+from rich.prompt import Confirm
 
 from rich_menu import live_menu
 from utilities import GREEN, RED, RESET, git
@@ -135,15 +136,24 @@ def main():
     print(f"{GREEN}[{package}]{RESET} New version: {new_version}")
 
     js_commit = js_update(package, new_version)
-    if js_commit:
-        copy_cmd = f" git push origin --no-verify && git push origin {new_version} --no-verify"
-    else:
-        copy_cmd = f" git push origin {new_version} --no-verify"
-    clipboard_set(copy_cmd)
-
     commit = git("rev-parse", "HEAD")
     git("tag", new_version, commit, "-m", new_version.replace("v", "Version "))
     print(f"{GREEN}[{package}]{RESET} Tagged {new_version}")
+
+    direct_push = Confirm.ask("Push to main?", default=True)
+    print("\033[F\033[K", end="")
+    if direct_push:
+        if js_commit:
+            git("push", "origin", "--no-verify")
+        git("push", "origin", new_version, "--no-verify")
+        print(f"{GREEN}[{package}]{RESET} Pushed to main")
+    else:
+        if js_commit:
+            copy_cmd = f" git push origin --no-verify && git push origin {new_version} --no-verify"
+        else:
+            copy_cmd = f" git push origin {new_version} --no-verify"
+        clipboard_set(copy_cmd)
+        print(f"{GREEN}[{package}]{RESET} Saved to clipboard")
 
 
 if __name__ == "__main__":

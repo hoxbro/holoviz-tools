@@ -19,7 +19,11 @@ def exit_print(x) -> Never:
 
 
 def git(*args, **kwargs) -> str:
-    return run(["git", *args], check=True, capture_output=True, **kwargs).stdout.strip().decode()
+    return (
+        run(["git", *map(str, args)], check=True, capture_output=True, **kwargs)
+        .stdout.strip()
+        .decode()
+    )
 
 
 def trackpool(func, iterable, description) -> list:
