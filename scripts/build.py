@@ -8,7 +8,7 @@ import zipfile
 from itertools import zip_longest
 
 import rich_click as click
-import zstandard as zstd
+from backports import zstd
 from pandas.io.clipboard import clipboard_set  # type: ignore
 from rich.table import Table
 

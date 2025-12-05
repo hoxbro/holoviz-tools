@@ -47,7 +47,7 @@ ALL_PACKAGES=(
     types-requests types-tqdm
 
     # Tooling
-    rich-click httpx platformdirs zstandard lxml
+    rich-click httpx platformdirs backports.zstd lxml
 
     # Misc
     tqdm colorcet retrying multipledispatch nomkl
