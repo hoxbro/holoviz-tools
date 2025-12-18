@@ -12,7 +12,7 @@ from rich.console import Console
 from rich.prompt import Confirm
 
 from rich_menu import live_menu
-from utilities import GREEN, RED, RESET, git
+from utilities import CLEAR, GREEN, RED, RESET, git
 
 console = Console()
 
@@ -141,8 +141,9 @@ def main():
     print(f"{GREEN}[{package}]{RESET} Tagged {new_version}")
 
     direct_push = Confirm.ask("Push to main?", default=True)
-    print("\033[F\033[K", end="")
+    print(CLEAR + " " * 12, end="")
     if direct_push:
+        print(f"{GREEN}[{package}]{RESET} Pushing to main")
         if js_commit:
             git("push", "origin", "--no-verify")
         git("push", "origin", new_version, "--no-verify")

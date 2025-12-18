@@ -8,9 +8,9 @@ from typing import Never
 from rich.progress import track
 
 if sys.stdout.isatty():
-    GREEN, RED, RESET = "\033[0;32m", "\033[0;31m", "\033[0m"
+    GREEN, RED, RESET, CLEAR = "\033[0;32m", "\033[0;31m", "\033[0m", "\033[F\033[K"
 else:
-    GREEN = RED = RESET = ""
+    GREEN = RED = RESET = CLEAR = ""
 
 
 def exit_print(x) -> Never:
