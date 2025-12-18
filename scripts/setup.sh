@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Required commands: conda, mamba, git, jq, pre-commit
+# Required commands: conda, mamba, git, jq, prek
 
 set -euo pipefail
 
@@ -27,7 +27,7 @@ ALL_PACKAGES=(
 
     # Notebook
     jupyterlab ipywidgets jupyterlab_code_formatter jupyterlab-myst
-    pyviz_comms ipywidgets_bokeh jupyter_bokeh
+    pyviz_comms jupyter_bokeh # ipywidgets_bokeh
 
     # Testing
     pytest pytest-xdist pytest-rerunfailures parameterized pytest-asyncio hypothesis
@@ -42,7 +42,7 @@ ALL_PACKAGES=(
     setuptools_scm watchfiles cachecontrol lockfile
 
     # Typing
-    mypy typing-extensions pandas-stubs
+    ty typing-extensions pandas-stubs
     types-bleach types-croniter types-Markdown types-psutil
     types-requests types-tqdm
 
