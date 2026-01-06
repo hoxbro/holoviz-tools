@@ -8,7 +8,7 @@ PACKAGES=(panel holoviews hvplot param datashader geoviews)
 CUDA_PACKAGES=(cupy)
 UNIX_PACKAGES=(memray tsdownsample)
 ALL_PACKAGES=(
-    python=3.13
+    python=3.13 nomkl python-gil
 
     # Visualization
     bokeh plotly matplotlib-base seaborn-base altair
@@ -47,10 +47,10 @@ ALL_PACKAGES=(
     types-requests types-tqdm
 
     # Tooling
-    rich-click httpx platformdirs backports.zstd lxml
+    rich-click httpx platformdirs zstandard lxml
 
     # Misc
-    tqdm colorcet retrying multipledispatch nomkl
+    tqdm colorcet retrying multipledispatch
     markdown markdown-it-py mdit-py-plugins linkify-it-py
 )
 

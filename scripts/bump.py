@@ -141,7 +141,7 @@ def main():
     print(f"{GREEN}[{package}]{RESET} Tagged {new_version}")
 
     direct_push = Confirm.ask("Push to main?", default=True)
-    print(CLEAR + " " * 12, end="")
+    print(CLEAR + " " * 12, end="\r")
     if direct_push:
         print(f"{GREEN}[{package}]{RESET} Pushing to main")
         if js_commit:
