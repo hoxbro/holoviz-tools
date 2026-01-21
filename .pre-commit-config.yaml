@@ -20,7 +20,7 @@ repos:
         args: ["--exclude=SC1091,SC2181"]
         exclude: (zshrc|zsh)$
   - repo: https://github.com/hoxbro/prettier-pre-commit
-    rev: bae77de89db2ee6b2052f9647b14246e9ee19cd1 # frozen: v3.7.4
+    rev: 34a3842ba17da12322d68aecc6d8c5acfdf9ab6f # frozen: v3.8.0
     hooks:
       - id: prettier
         types_or:
@@ -40,11 +40,11 @@ repos:
             "indent_string=    ",
           ]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 1a1f58ba4c35362efe8fed2279715a905baee93d # frozen: v0.14.8
+    rev: 9b1e9a33f1b33f6ecc2fdbb8d7cc894e951106e4 # frozen: v0.14.13
     hooks:
       - id: ruff-check
       - id: ruff-format
   - repo: https://github.com/DetachHead/basedpyright-pre-commit-mirror
-    rev: 1873f9dd1b8aa430de6aec095069ac819079279c # frozen: 1.35.0
+    rev: afea75d07514dec0c64177659a8e82827769dc99 # frozen: 1.37.1
     hooks:
       - id: basedpyright
