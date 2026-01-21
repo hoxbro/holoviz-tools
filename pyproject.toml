@@ -1,6 +1,7 @@
 [project]
 name = "holoviz-tools"
 requires-python = ">=3.11"
+version = "0"
 
 [tool.pyright]
 include = ["**/*.py"]
@@ -10,6 +11,9 @@ typeCheckingMode = "standard"
 reportMissingImports = false
 # reportMissingTypeStubs = false
 # reportMissingModuleSource = false
+
+[tool.ty.rules]
+unresolved-import = "ignore"
 
 [tool.ruff]
 line-length = 99

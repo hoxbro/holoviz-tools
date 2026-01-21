@@ -22,3 +22,5 @@ python -m pip uninstall ruff -y || true
 (cd bokehjs && node make dev)
 
 pip install -ve .
+
+git remote set-head origin --auto # sync remote head

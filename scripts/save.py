@@ -10,10 +10,44 @@ import uuid
 from contextlib import suppress
 from datetime import date
 from pathlib import Path
+from typing import TypedDict
 
 import httpx
 from bs4 import BeautifulSoup
-from pandas.io.clipboard import clipboard_get, clipboard_set  # type: ignore
+from pandas.io.clipboard import clipboard_get, clipboard_set
+
+
+class LanguageInfo(TypedDict):
+    name: str
+    pygments_lexer: str
+
+
+class NotebookMetadata(TypedDict):
+    language_info: LanguageInfo
+
+
+class MarkdownCell(TypedDict):
+    cell_type: str
+    metadata: dict
+    source: list[str]
+    id: str
+
+
+class CodeCell(TypedDict):
+    cell_type: str
+    metadata: dict
+    outputs: list
+    source: list[str]
+    execution_count: None
+    id: str
+
+
+class Notebook(TypedDict):
+    cells: list[MarkdownCell | CodeCell]
+    metadata: NotebookMetadata
+    nbformat: int
+    nbformat_minor: int
+
 
 PATH = Path(os.environ["HOLOVIZ_DEV"]).resolve() / "development"
 
@@ -92,8 +126,8 @@ def _get_discourse(url):
     return codeblocks, repo, filename
 
 
-def create_notebook(codeblocks, url):
-    notebook = {
+def create_notebook(codeblocks, url) -> Notebook:
+    notebook: Notebook = {
         "cells": [],
         "metadata": {"language_info": {"name": "python", "pygments_lexer": "ipython3"}},
         "nbformat": 4,
@@ -101,15 +135,21 @@ def create_notebook(codeblocks, url):
     }
 
     info = f"Downloaded from {url} at {date.today()}."
-    header = {"cell_type": "markdown", "metadata": {}, "source": [info], "id": get_id()}
+    header: MarkdownCell = {
+        "cell_type": "markdown",
+        "metadata": {},
+        "source": [info],
+        "id": get_id(),
+    }
     notebook["cells"].append(header)
 
-    empty_code_cell = {
+    empty_code_cell: CodeCell = {
         "cell_type": "code",
         "metadata": {},
         "outputs": [],
         "source": [],
         "execution_count": None,
+        "id": "",
     }
     for code in codeblocks:
         cell = empty_code_cell.copy()

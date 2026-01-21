@@ -14,7 +14,7 @@ ALL_PACKAGES=(
     bokeh plotly matplotlib-base seaborn-base altair
 
     # Data processing
-    numpy xarray numba scipy scikit-image
+    numpy xarray numba scipy scikit-image networkx
 
     # DataFrame
     pandas polars narwhals

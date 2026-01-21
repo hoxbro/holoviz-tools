@@ -28,7 +28,7 @@ class StackLevelChecker(ast.NodeVisitor):
         if func.id != "deprecated":
             return
         args = cast(list[ast.Constant], node.args)
-        deprecated_version = Version(args[0].value)
+        deprecated_version = Version(str(args[0].value))
         if self.base_version >= deprecated_version:
             msg = (
                 f"{RED}{self.file}:{node.lineno}:{node.col_offset}: "
@@ -55,7 +55,7 @@ def get_info(module):
         exit_print(f"Module '{module}' not found.")
     if spec.submodule_search_locations is None:
         exit_print(f"Module '{module}' is not a package.")
-    path = spec.submodule_search_locations[0]
+    path = os.path.dirname(spec.submodule_search_locations[0])
     tag = git("describe", "--abbrev=0", "main", cwd=path)
     version = Version(tag)
     base_version = Version(version.base_version)
