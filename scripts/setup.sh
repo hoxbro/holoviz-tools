@@ -121,10 +121,10 @@ install() (
 
 SECONDS=0
 
-CONDA_INFO=$(cat /tmp/conda_info.json 2>/dev/null || conda info --json | tee /tmp/conda_info.json)
-CONDA_HOME=$(echo "$CONDA_INFO" | jq -r .conda_prefix)
+CONDA_INFO=$(mamba info --json)
+CONDA_HOME=$(echo "$CONDA_INFO" | jq -r '."base environment"')
 PLATFORM=$(echo "$CONDA_INFO" | jq -r .platform)
-CUDA=$(echo "$CONDA_INFO" | jq -r 'any(.virtual_pkgs[]; .[0] == "__cuda")')
+CUDA=$(echo "$CONDA_INFO" | jq -r '.["virtual packages"] | any(startswith("__cuda"))')
 
 # Create the repo directory
 mkdir -p "$HOLOVIZ_REP"

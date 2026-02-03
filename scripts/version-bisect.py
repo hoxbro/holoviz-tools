@@ -24,14 +24,8 @@ def log_path(pkg: str) -> Path:
 
 
 def load_conda_info():
-    cache = Path("/tmp/conda_info.json")
-    if cache.exists():
-        return json.loads(cache.read_text())
-
-    result = subprocess.run(["conda", "info", "--json"], capture_output=True, check=True)
-    info = json.loads(result.stdout)
-    cache.write_text(json.dumps(info))
-    return info
+    result = subprocess.run(["mamba", "info", "--json"], capture_output=True, check=True)
+    return json.loads(result.stdout)
 
 
 @cache
@@ -122,7 +116,7 @@ def cli(
     """
     log_file = log_path(package)
     conda_info = load_conda_info()
-    conda_sh = Path(conda_info["conda_prefix"]) / "etc" / "profile.d" / "conda.sh"
+    conda_sh = Path(conda_info["base environment"]) / "etc" / "profile.d" / "conda.sh"
 
     all_versions = get_all_package_versions(package)
 
