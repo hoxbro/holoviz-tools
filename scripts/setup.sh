@@ -6,9 +6,10 @@ set -euo pipefail
 CONDA_ENV=holoviz
 PACKAGES=(panel holoviews hvplot param datashader geoviews)
 CUDA_PACKAGES=(cupy)
-UNIX_PACKAGES=(memray tsdownsample)
+# UNIX_PACKAGES=(memray tsdownsample)
+UNIX_PACKAGES=(memray)
 ALL_PACKAGES=(
-    python=3.13 nomkl python-gil
+    python=3.14 nomkl python-gil
 
     # Visualization
     bokeh plotly matplotlib-base seaborn-base altair
@@ -18,7 +19,7 @@ ALL_PACKAGES=(
 
     # DataFrame
     pandas polars narwhals
-    pyarrow python-duckdb ibis-sqlite
+    pyarrow python-duckdb # ibis-sqlite
     dask-core distributed
 
     # Data loading

@@ -113,6 +113,7 @@ def table_output(repo, good_run, bad_run, env, arch, good_env, bad_env):
             "test-core",
             "test-gpu",
             "test-type",
+            "docs",
         ]
     ),
     help="Test type",
