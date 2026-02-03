@@ -10,7 +10,7 @@ repos:
       - id: check-json
       - id: detect-private-key
   - repo: https://github.com/crate-ci/typos
-    rev: 24c5854966d17070a3b25e2c2dfc63ec5bc94cf4 # frozen: v1.40.0
+    rev: 93cbdb2d23269548cf0db0f74d0bc6a09a3f0d5c # frozen: v1.43.0
     hooks:
       - id: typos
   - repo: https://github.com/shellcheck-py/shellcheck-py
@@ -20,7 +20,7 @@ repos:
         args: ["--exclude=SC1091,SC2181"]
         exclude: (zshrc|zsh)$
   - repo: https://github.com/hoxbro/prettier-pre-commit
-    rev: 34a3842ba17da12322d68aecc6d8c5acfdf9ab6f # frozen: v3.8.0
+    rev: 86ff8f664c20f581d71c90a6ea0073c1bcafe1e5 # frozen: v3.8.1
     hooks:
       - id: prettier
         types_or:
@@ -40,11 +40,11 @@ repos:
             "indent_string=    ",
           ]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 9b1e9a33f1b33f6ecc2fdbb8d7cc894e951106e4 # frozen: v0.14.13
+    rev: 45ef068da5f21267bb2a7ec4a623092959f09ce5 # frozen: v0.14.14
     hooks:
       - id: ruff-check
       - id: ruff-format
   - repo: https://github.com/DetachHead/basedpyright-pre-commit-mirror
-    rev: afea75d07514dec0c64177659a8e82827769dc99 # frozen: 1.37.1
+    rev: 5c95b305c8627366ba1333522ccbb6be49e1068c # frozen: 1.37.3
     hooks:
       - id: basedpyright
