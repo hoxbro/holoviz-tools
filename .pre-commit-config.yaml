@@ -40,11 +40,11 @@ repos:
             "indent_string=    ",
           ]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 45ef068da5f21267bb2a7ec4a623092959f09ce5 # frozen: v0.14.14
+    rev: fa93bc3224c614a0e9786d3e2d3d48edcca246eb # frozen: v0.15.1
     hooks:
       - id: ruff-check
       - id: ruff-format
-  - repo: https://github.com/DetachHead/basedpyright-pre-commit-mirror
-    rev: 5c95b305c8627366ba1333522ccbb6be49e1068c # frozen: 1.37.3
+  - repo: https://github.com/hoxbro/ty-pre-commit
+    rev: 5f2a1bb9c4874f9b0b26d01d3bce392134f33c18 # frozen: v0.0.17
     hooks:
-      - id: basedpyright
+      - id: ty-check

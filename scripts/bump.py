@@ -7,7 +7,7 @@ from pathlib import Path
 from subprocess import CalledProcessError, run
 
 from packaging.version import InvalidVersion, Version
-from pandas.io.clipboard import clipboard_set  # type: ignore
+from pandas.io.clipboard import clipboard_set
 from rich.console import Console
 from rich.prompt import Confirm
 

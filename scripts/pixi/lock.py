@@ -6,7 +6,7 @@ from pathlib import Path
 from shutil import copy2
 
 import rich_click as click
-from pandas.io.clipboard import clipboard_set  # type: ignore
+from pandas.io.clipboard import clipboard_set
 
 from _artifact import console, download_file
 from rich_menu import argument_menu
@@ -57,4 +57,4 @@ def cli(repo, run, workflow, force) -> None:
 
 
 if __name__ == "__main__":
-    cli()  # pyright: ignore[reportCallIssue]
+    cli()

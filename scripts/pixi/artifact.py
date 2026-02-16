@@ -7,7 +7,7 @@ from pathlib import Path
 
 import rich_click as click
 import yaml
-from pandas.io.clipboard import clipboard_set  # type: ignore
+from pandas.io.clipboard import clipboard_set
 from rich.table import Table
 
 from _artifact import console, download_files
@@ -41,7 +41,8 @@ def get_env(file):
     with open(file) as f:
         data = f.read()
     data = data.split("\npackages:")[0]
-    return yaml.load(data, Loader=yaml.CLoader)["environments"]
+    loader = getattr(yaml, "CLoader", yaml.Loader)
+    return yaml.load(data, Loader=loader)["environments"]
 
 
 def compare_envs(repo, good_run, bad_run, env, arch, good_file, bad_file):
@@ -154,4 +155,4 @@ def cli(repo, good_run, bad_run, env, arch, workflow, force) -> None:
 
 
 if __name__ == "__main__":
-    cli()  # pyright: ignore[reportCallIssue]
+    cli()

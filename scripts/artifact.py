@@ -87,4 +87,4 @@ def cli(good_run, bad_run, repo, test, os, python, workflow, force) -> None:
 
 
 if __name__ == "__main__":
-    cli()  # pyright: ignore[reportCallIssue]
+    cli()

@@ -92,4 +92,4 @@ def main(repo) -> None:
 
 
 if __name__ == "__main__":
-    main()  # pyright: ignore[reportCallIssue]
+    main()

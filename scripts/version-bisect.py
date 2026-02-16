@@ -177,4 +177,4 @@ def cli(
 
 
 if __name__ == "__main__":
-    cli()  # pyright: ignore[reportCallIssue]
+    cli()

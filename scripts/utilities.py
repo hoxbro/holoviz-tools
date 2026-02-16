@@ -13,7 +13,7 @@ else:
     GREEN = RED = RESET = CLEAR = ""
 
 
-def exit_print(x) -> Never:
+def exit_print(x: str) -> Never:
     print(f"{RED}{x}{RESET}")
     sys.exit(1)
 
