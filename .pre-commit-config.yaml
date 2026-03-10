@@ -10,7 +10,7 @@ repos:
       - id: check-json
       - id: detect-private-key
   - repo: https://github.com/crate-ci/typos
-    rev: 93cbdb2d23269548cf0db0f74d0bc6a09a3f0d5c # frozen: v1.43.0
+    rev: 631208b7aac2daa8b707f55e7331f9112b0e062d # frozen: v1.44.0
     hooks:
       - id: typos
   - repo: https://github.com/shellcheck-py/shellcheck-py
@@ -40,11 +40,11 @@ repos:
             "indent_string=    ",
           ]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: fa93bc3224c614a0e9786d3e2d3d48edcca246eb # frozen: v0.15.1
+    rev: b969e2851312ca2b24bbec879ba4954341d1bd12 # frozen: v0.15.5
     hooks:
       - id: ruff-check
       - id: ruff-format
   - repo: https://github.com/hoxbro/ty-pre-commit
-    rev: 5f2a1bb9c4874f9b0b26d01d3bce392134f33c18 # frozen: v0.0.17
+    rev: 6c8a95c65721ecbc7ef0179b5593ea770ffc3452 # frozen: v0.0.21
     hooks:
       - id: ty-check
