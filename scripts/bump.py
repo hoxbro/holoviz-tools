@@ -143,10 +143,10 @@ def main():
     direct_push = Confirm.ask("Push to main?", default=True)
     print(CLEAR + " " * 12, end="\r")
     if direct_push:
-        print(f"{GREEN}[{package}]{RESET} Pushing to main")
-        if js_commit:
-            git("push", "origin", "--no-verify")
-        git("push", "origin", new_version, "--no-verify")
+        with console.status(f" [green]\\[{package}][/green] Pushing to main..."):
+            if js_commit:
+                git("push", "origin", "--no-verify")
+            git("push", "origin", new_version, "--no-verify")
         print(f"{GREEN}[{package}]{RESET} Pushed to main")
     else:
         if js_commit:
