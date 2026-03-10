@@ -8,8 +8,8 @@ else
     if [[ $# -gt 0 ]]; then
         options=$(fd ".ipynb" "$HOLOVIZ_DEV" -L | sed "s|$HOLOVIZ_DEV||")
         file=$(echo "$options" | fzf --tmux --select-1 --query "'${*// / \'}")
-        librewolf "http://localhost:8888/lab/workspaces/auto-W/tree/$file"
+        xdg-open "http://localhost:8888/lab/workspaces/auto-W/tree/$file"
     else
-        librewolf "http://localhost:8888/lab/workspaces/auto-W/"
+        xdg-open "http://localhost:8888/lab/workspaces/auto-W/"
     fi
 fi

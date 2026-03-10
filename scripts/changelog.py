@@ -46,17 +46,26 @@ def run_query(query, variables):
 
 
 def get_commit_date(repo, oid):
-    """Return committedDate of a commit."""
+    """Return mergedAt of a commit's associated PR, or committedDate as fallback."""
     owner, name = repo.split("/")
     query_gql = """
     query($owner:String!, $name:String!, $oid:GitObjectID!) {
       repository(owner:$owner, name:$name) {
-        object(oid:$oid) { ... on Commit { committedDate } }
+        object(oid:$oid) {
+          ... on Commit {
+            committedDate
+            associatedPullRequests(first: 1) {
+              nodes { mergedAt }
+            }
+          }
+        }
       }
     }
     """
     data = run_query(query_gql, {"owner": owner, "name": name, "oid": oid})
-    return data["repository"]["object"]["committedDate"]
+    commit = data["repository"]["object"]
+    nodes = commit["associatedPullRequests"]["nodes"]
+    return nodes[0]["mergedAt"] if nodes else commit["committedDate"]
 
 
 def get_prs_between_tags(repo, from_commit_date, to_commit_date):
