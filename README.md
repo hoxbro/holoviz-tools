@@ -25,24 +25,7 @@ useful to others, but no support is provided.
    compinit
    ```
 
-### Oh My Zsh
-
-1. Clone this repository into `$ZSH_CUSTOM/plugins` (by default `~/.oh-my-zsh/custom/plugins`)
-
-   ```sh
-   git clone https://github.com/Hoxbro/holoviz-tools ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/holoviz
-   ```
-
-2. Add the plugin to the list of plugins for Oh My Zsh to load (inside `~/.zshrc`):
-
-   ```sh
-   plugins=(
-       # other plugins...
-       holoviz
-   )
-   ```
-
-### Environment variables
+### Environment Variables
 
 `$HOLOVIZ_DEV` is the path to the directory where you have development files. Could be a synchronized folder
 like Dropbox or Google Drive.
