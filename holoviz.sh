@@ -52,8 +52,6 @@ elif [[ $1 == "workspace" ]]; then
     bash "$TOOLS/workspace/$1.sh" "$@"
 elif [[ $1 == "bump" ]]; then
     cli-py bump.py "$@"
-elif [[ $1 == "python-3.13" ]]; then
-    cli-py python-313.py
 elif [[ $1 == "bokeh" ]]; then
     shift
     if [[ $1 == "chrome" ]]; then
