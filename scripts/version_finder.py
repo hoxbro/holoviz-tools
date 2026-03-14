@@ -43,8 +43,8 @@ from rich.table import Table
 from utilities import exit_print, trackpool
 
 py_releases = {
-    "3.8": datetime(2019, 10, 14),
-    "3.9": datetime(2020, 10, 5),
+    # "3.8": datetime(2019, 10, 14),
+    # "3.9": datetime(2020, 10, 5),
     "3.10": datetime(2021, 10, 4),
     "3.11": datetime(2022, 10, 24),
     "3.12": datetime(2023, 10, 2),
@@ -53,6 +53,7 @@ py_releases = {
 }
 conda_mapping = {
     "conda-build": None,
+    "conda-libmamba-solver": None,
     "cuda-version": None,
     "cudf": None,
     "cuspatial": None,
@@ -63,15 +64,21 @@ conda_mapping = {
     "geoviews-core": "geoviews",
     "graphviz": None,
     "ibis-sqlite": "ibis-framework",
+    "librmm": None,
     "matplotlib-base": "matplotlib",
+    "nbconvert-core": "nbconvert",
     "nodejs": None,
+    "nomkl": None,
     "python": None,
     "python-build": "build",
+    "python-duckdb": "duckdb",
+    "python-freethreading": None,
+    "python-gil": None,
     "python-graphviz": None,
     "python-kaleido": "kaleido",
     "rmm": None,
 }
-spec_drop_date = datetime.now() - timedelta(days=365 * 2)
+spec_drop_date = datetime.today() - timedelta(days=365 * 2)
 HEADERS = {"Accept": "application/vnd.pypi.simple.v1+json"}
 console = Console()
 
@@ -85,7 +92,7 @@ def get_resp(url, with_headers=True) -> dict[str, Any] | None:
 
 
 @cache
-def pypi_info(package: str, python_version: str = "3.9") -> tuple[str, ...]:
+def pypi_info(package: str, python_version: str = "3.10") -> tuple[str, ...]:
     url = f"https://pypi.org/simple/{package}"
     resp = get_resp(url, with_headers=True)
 
@@ -215,9 +222,8 @@ def main() -> None:
         if not main_package:
             break
 
-        python_requires = Prompt.ask(
-            "Python version", console=console, choices=list(py_releases), default="3.9"
-        )
+        py = list(py_releases)
+        python_requires = Prompt.ask("Python version", console=console, choices=py, default=py[0])
         query(main_package, python_requires)
 
 
