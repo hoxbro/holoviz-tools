@@ -5,7 +5,7 @@ cli-py() { "$TOOLS/cli.py" "$@"; }
 
 ccd() {
     if [[ $PWD != $HOLOVIZ_DEV* && $PWD != $HOLOVIZ_REP* ]]; then
-        cd "$HOLOVIZ_DEV" || exit 1
+        cd "$HOLOVIZ_DEV" || return 1
     fi
     if [[ $CONDA_DEFAULT_ENV != "holoviz" ]]; then
         mamba activate holoviz
