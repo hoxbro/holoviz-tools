@@ -6,6 +6,7 @@ subcmds=(
     'lab:Open JupyterLab with Holoviz environment'
     'version-finder:Find versions of packages'
     'action-status:Check status of Holoviz Github Actions'
+    'action-update:Update the version of Github Actions'
     'changelog:Generate changelog for Holoviz repos'
     'clean:Clean up Holoviz dev files'
     'artifact-test:Compare test artifact (environments) for different runs'
