@@ -13,6 +13,9 @@ def custom_excepthook(exctype, value, traceback):
     if exctype is KeyboardInterrupt:
         print(f"\n{RED}Aborted.{RESET}")
         sys.exit(1)
+    elif exctype is KeyError and value.args[0] == "GITHUB_TOKEN":
+        print(f"{RED}No `GITHUB_TOKEN` environment variable set.{RESET}")
+        sys.exit(1)
     else:
         sys.__excepthook__(exctype, value, traceback)
 

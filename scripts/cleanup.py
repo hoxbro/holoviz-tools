@@ -41,12 +41,10 @@ def remove_temp() -> None:
         "untitled*.txt",
         ".benchmarks",
         ".hypothesis",
-        ".pytest_cache",
+        ".*_cache",
         "__pycache__",
-        ".mypy_cache",
         "log*.txt",
         "cache",
-        ".ruff_cache",
     ]
 
     for tmp in tmps:

@@ -67,7 +67,7 @@ def get_possible_versions(current_version_raw: str) -> list[str]:
         return [
             bump_version(Version(bump_version(current_version, part=p1)), part=p2)
             for p1 in ["patch", "minor", "major"]
-            for p2 in ["a", "b", "rc"]
+            for p2 in ["a", "b", "rc", None]
         ]
 
 
