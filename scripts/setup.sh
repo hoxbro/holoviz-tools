@@ -101,7 +101,7 @@ _install() (
         cd "$1"
     fi
 
-    (prek install && prek) || true
+    (prek install --overwrite && prek) || true
 
     # Install the package
     conda uninstall --force --offline --yes "$1" || true

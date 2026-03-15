@@ -16,7 +16,7 @@ useful to others, but no support is provided.
 2. Add the following to the end of your `~/.zshrc`:
 
    ```sh
-   source ~/.holoviz-tools/holoviz-tools.zsh
+   source ~/.holoviz-tools/holoviz.zsh
    ```
 
 3. Optional: Run the following lines after the previous line to enable autocompletion for the `holoviz` command:
