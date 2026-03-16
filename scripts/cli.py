@@ -14,7 +14,7 @@ def custom_excepthook(exctype, value, traceback):
         print(f"\n{RED}Aborted.{RESET}")
         sys.exit(1)
     elif exctype is KeyError and value.args[0] == "GITHUB_TOKEN":
-        print(f"{RED}No `GITHUB_TOKEN` environment variable set.{RESET}")
+        print(f"{RED}`GITHUB_TOKEN` environment variable not set.{RESET}")
         sys.exit(1)
     else:
         sys.__excepthook__(exctype, value, traceback)
