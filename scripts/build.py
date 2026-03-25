@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import contextlib
-import io
 import re
 import tarfile
 import zipfile
+from compression.zstd import ZstdFile
 from itertools import zip_longest
 
 import rich_click as click
-import zstandard as zstd
 from pandas.io.clipboard import clipboard_set
 from rich.table import Table
 
@@ -56,14 +55,14 @@ def conda_filelist(conda_path):
         conda_filelist.extend([name for name in conda_contents if not name.endswith(".tar.zst")])
         tar_zst_files = [name for name in conda_contents if name.endswith(".tar.zst")]
         for tar_zst_file in tar_zst_files:
-            with conda_zip.open(tar_zst_file) as tar_zst_stream:
-                dctx = zstd.ZstdDecompressor()
-                decompressed = dctx.stream_reader(tar_zst_stream)
-
-                with tarfile.open(fileobj=io.BytesIO(decompressed.read())) as tar:
-                    for tarinfo in tar.getmembers():
-                        if tarinfo.isfile():
-                            conda_filelist.append(tarinfo.name)
+            with (
+                conda_zip.open(tar_zst_file) as tar_zst_stream,
+                ZstdFile(tar_zst_stream) as zst,
+                tarfile.open(fileobj=zst) as tar,
+            ):
+                for tarinfo in tar.getmembers():
+                    if tarinfo.isfile():
+                        conda_filelist.append(tarinfo.name)
 
     repo_version = conda_path.name.replace("-core", "").split(".conda")[0].split("-py_0")[0]
     re1, re2 = _get_version_re(repo_version)

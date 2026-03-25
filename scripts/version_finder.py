@@ -108,7 +108,7 @@ def pypi_info(package: str, python_version: str = "3.10") -> tuple[str, ...]:
                 parse_wheel_filename if name.endswith(".whl") else parse_sdist_filename
             )
             _, version, *_ = parse_filename(name)
-        except (InvalidWheelFilename, InvalidSdistFilename):
+        except InvalidWheelFilename, InvalidSdistFilename:
             continue
 
         if version.is_prerelease:
