@@ -19,7 +19,7 @@ ALL_PACKAGES=(
 
     # DataFrame
     pandas polars narwhals
-    pyarrow python-duckdb # ibis-sqlite
+    pyarrow python-duckdb ibis-sqlite
     dask-core distributed
 
     # Data loading
