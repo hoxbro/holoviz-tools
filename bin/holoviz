@@ -7,9 +7,10 @@ cli-py() {
 
 ccd() {
     if [[ $PWD != $HOLOVIZ_DEV* && $PWD != $HOLOVIZ_REP* ]]; then
-        cd "$HOLOVIZ_DEV" || return 1
+        cd "$HOLOVIZ_DEV" || exit 1
     fi
     if [[ $CONDA_DEFAULT_ENV != "holoviz" ]]; then
+        source "$CONDA_HOME/etc/profile.d/mamba.sh"
         mamba activate holoviz
     fi
 }
@@ -62,7 +63,7 @@ elif [[ $1 == "bokeh" ]]; then
         bash "$TOOLS/bokeh/$1.sh" "$@"
     else
         printf "\033[0;31m'holoviz bokeh %s' is an invalid command\033[0m\n" "$1"
-        return 1
+        exit 1
     fi
 elif [[ $1 == "version-bisect" ]]; then
     shift
@@ -72,7 +73,7 @@ elif [[ $1 == "action-update" ]]; then
     cli-py action_update.py "$@"
 elif [[ $1 ]]; then
     printf "\033[0;31m'holoviz %s' is an invalid command\033[0m\n" "$1"
-    return 1
+    exit 1
 else
     ccd
 fi

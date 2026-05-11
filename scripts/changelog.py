@@ -20,6 +20,7 @@ HEADERS = {
 REPOS = ["holoviews", "panel", "hvplot", "datashader", "geoviews", "lumen", "spatialpandas"]
 console = Console()
 ME = "hoxbro"
+IGNORE_CONTRIBUTORS = {"renovate", "dependabot", "pre-commit-ci"}
 
 
 def get_releases(owner, repo):
@@ -114,6 +115,7 @@ def get_prs_between_tags(repo, from_commit_date, to_commit_date):
             break
         cursor = page_info["endCursor"]
 
+    contributors -= IGNORE_CONTRIBUTORS
     return commit_lines, contributors
 
 
