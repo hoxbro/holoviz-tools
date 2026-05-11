@@ -10,7 +10,7 @@ repos:
       - id: check-json
       - id: detect-private-key
   - repo: https://github.com/crate-ci/typos
-    rev: 631208b7aac2daa8b707f55e7331f9112b0e062d # frozen: v1.44.0
+    rev: 5374cbf686e897b15713110e233094e2874de7ef # frozen: v1.46.1
     hooks:
       - id: typos
   - repo: https://github.com/shellcheck-py/shellcheck-py
@@ -20,7 +20,7 @@ repos:
         args: ["--exclude=SC1091,SC2181"]
         exclude: (zshrc|zsh)$
   - repo: https://github.com/hoxbro/prettier-pre-commit
-    rev: 86ff8f664c20f581d71c90a6ea0073c1bcafe1e5 # frozen: v3.8.1
+    rev: fb4fd26ea947350ec231580772317ec7261c8e21 # frozen: v3.8.3
     hooks:
       - id: prettier
         types_or:
@@ -40,11 +40,11 @@ repos:
             "indent_string=    ",
           ]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 4924b0e01e032fea073ad04a1c5cfa7e4add0afb # frozen: v0.15.6
+    rev: 6fec9b7edb08fd9989088709d864a7826dc74e80 # frozen: v0.15.12
     hooks:
       - id: ruff-check
       - id: ruff-format
   - repo: https://github.com/hoxbro/ty-pre-commit
-    rev: 8f5a4e805f93b5e590cf15f756f22f8653094ebe # frozen: v0.0.23
+    rev: a046103e209b87a7628489f78f88e8848ef00010 # frozen: v0.0.35
     hooks:
       - id: ty-check
