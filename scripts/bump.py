@@ -118,7 +118,7 @@ def validate_version(package: str, version: str):
 def main():
     try:
         directory = git("rev-parse", "--show-toplevel")
-        current_version = git("describe", "--tags", "--abbrev=0")
+        current_version = git("describe", "--tags", "--abbrev=0", "--match=v*.*.*")
     except CalledProcessError:
         print(f"{RED}Not a git repository{RESET}")
         sys.exit(1)
