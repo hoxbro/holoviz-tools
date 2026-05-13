@@ -67,17 +67,24 @@ def resolve_sha(repo: str, ref: str) -> str | None:
     return None
 
 
+def _parse_version(s: str) -> tuple[int, ...]:
+    return tuple(int(x) for x in s.split("."))
+
+
 def find_latest_tag(repo: str, ref: str) -> str | None:
     """Return the latest tag/branch name for a versioned ref, or None if already current."""
     if ref in SKIP_REFS:
         return None
 
-    m = re.match(r"^(.*?)(\d+)$", ref)
+    m = re.match(r"^([^0-9]*)(\d+(?:\.\d+)*)$", ref)
     if not m:
         return None
 
-    prefix, current_num = m.group(1), int(m.group(2))
+    prefix = m.group(1)
+    version_str = m.group(2)
+    current_version = _parse_version(version_str)
     escaped = re.escape(prefix)
+    version_pattern = escaped + (r"(\d+(?:\.\d+)*)" if "." in version_str else r"(\d+)")
 
     for endpoint in (f"repos/{repo}/tags", f"repos/{repo}/branches"):
         names = get_names(endpoint)
@@ -85,13 +92,13 @@ def find_latest_tag(repo: str, ref: str) -> str | None:
             continue
 
         candidates = [
-            (int(cm.group(1)), name)
+            (_parse_version(cm.group(1)), name)
             for name in names
-            if (cm := re.fullmatch(escaped + r"(\d+)", name))
+            if (cm := re.fullmatch(version_pattern, name))
         ]
         if candidates:
-            best_num, best_name = max(candidates, key=lambda x: x[0])
-            return best_name if best_num > current_num else None
+            best_version, best_name = max(candidates, key=lambda x: x[0])
+            return best_name if best_version > current_version else None
 
     return None
 
