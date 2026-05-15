@@ -132,7 +132,7 @@ def latest_for_ref(
 
 
 def collect_refs(
-    workflow_files: list[Path], pin: bool = False, holoviz_tasks_v1: bool = False
+    workflow_files: list[Path], pin: bool = False
 ) -> list[tuple[str, str, str | None, bool]]:
     seen: dict[tuple[str, str], str | None] = {}
     for path in workflow_files:
@@ -140,8 +140,6 @@ def collect_refs(
             parts = m.group(2).split("/")
             repo = "/".join(parts[:2])
             ref = m.group(3)
-            if not holoviz_tasks_v1 and repo == HOLOVIZ_TASKS_REPO:
-                continue
             comment = m.group(4) or ""
             current_tag: str | None = None
             if SHA_PATTERN.match(ref):
@@ -158,9 +156,8 @@ def update_files(
     workflow_files: list[Path],
     dry_run: bool = False,
     pin: bool = False,
-    holoviz_tasks_v1: bool = False,
 ) -> None:
-    refs = collect_refs(workflow_files, pin=pin, holoviz_tasks_v1=holoviz_tasks_v1)
+    refs = collect_refs(workflow_files, pin=pin)
 
     for repo, ref, current_tag, _ in refs:
         if SHA_PATTERN.match(ref) and current_tag is None:
@@ -185,19 +182,10 @@ def update_files(
             ref = m.group(3)
             repo = "/".join(action_path.split("/")[:2])
 
-            if not holoviz_tasks_v1 and repo == HOLOVIZ_TASKS_REPO:
-                return m.group(0)
-
             update = updates.get((repo, ref))
 
-            target_ref = ref
-            if update:
-                latest_tag, _ = update
-                if latest_tag:
-                    target_ref = latest_tag
-
             new_action_path = action_path
-            if holoviz_tasks_v1 and target_ref == "v1" and action_path in HOLOVIZ_TASKS_RENAMES:
+            if action_path in HOLOVIZ_TASKS_RENAMES:
                 new_action_path = HOLOVIZ_TASKS_RENAMES[action_path]
 
             if update:
@@ -246,11 +234,6 @@ def main() -> None:
     parser.add_argument(
         "--pin", action="store_true", help="Convert tag/branch refs to SHA-pinned versions"
     )
-    parser.add_argument(
-        "--holoviz-tasks-v1",
-        action="store_true",
-        help="Process holoviz-dev/holoviz_tasks/...@v1 refs (renames pixi_install/pixi_lock to dashed form)",
-    )
     args = parser.parse_args()
 
     workflows_dir = Path(args.workflows_dir)
@@ -270,7 +253,6 @@ def main() -> None:
         workflow_files,
         dry_run=args.dry_run,
         pin=args.pin,
-        holoviz_tasks_v1=args.holoviz_tasks_v1,
     )
 
 
