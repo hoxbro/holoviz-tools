@@ -71,7 +71,7 @@ def _parse_version(s: str) -> tuple[int, ...]:
     return tuple(int(x) for x in s.split("."))
 
 
-def find_latest_tag(repo: str, ref: str) -> str | None:
+def find_latest_tag(repo: str, ref: str, expand: bool = False) -> str | None:
     """Return the latest tag/branch name for a versioned ref, or None if already current."""
     if ref in SKIP_REFS:
         return None
@@ -84,7 +84,9 @@ def find_latest_tag(repo: str, ref: str) -> str | None:
     version_str = m.group(2)
     current_version = _parse_version(version_str)
     escaped = re.escape(prefix)
-    version_pattern = escaped + (r"(\d+(?:\.\d+)*)" if "." in version_str else r"(\d+)")
+    has_dot = "." in version_str
+    expanding = expand and not has_dot
+    version_pattern = escaped + (r"(\d+(?:\.\d+)*)" if (has_dot or expanding) else r"(\d+)")
 
     for endpoint in (f"repos/{repo}/tags", f"repos/{repo}/branches"):
         names = get_names(endpoint)
@@ -95,6 +97,13 @@ def find_latest_tag(repo: str, ref: str) -> str | None:
             (_parse_version(cm.group(1)), name)
             for name in names
             if (cm := re.fullmatch(version_pattern, name))
+            and (
+                not expanding
+                or (
+                    _parse_version(cm.group(1))[: len(current_version)] == current_version
+                    and len(_parse_version(cm.group(1))) > len(current_version)
+                )
+            )
         ]
         if candidates:
             best_version, best_name = max(candidates, key=lambda x: x[0])
@@ -104,26 +113,27 @@ def find_latest_tag(repo: str, ref: str) -> str | None:
 
 
 def latest_for_ref(
-    repo_ref: tuple[str, str, str | None, bool],
+    repo_ref: tuple[str, str, str | None, bool, bool],
 ) -> tuple[str, str, str | None, str | None]:
     """
     Returns (repo, ref, latest_tag, latest_sha).
     For SHA-pinned refs: latest_sha holds the new commit hash to write.
     For tag/branch refs: latest_tag holds the new ref to write, latest_sha is None.
     With pin=True: tag/branch refs are also resolved to a SHA.
+    With expand=True: short refs like v1 are expanded to the latest v1.X.Y tag.
     """
-    repo, ref, current_tag, pin = repo_ref
+    repo, ref, current_tag, pin, expand = repo_ref
 
     if SHA_PATTERN.match(ref):
         if current_tag is None:
             return repo, ref, None, None
-        latest_tag = find_latest_tag(repo, current_tag)
+        latest_tag = find_latest_tag(repo, current_tag, expand=expand)
         if latest_tag is None:
             return repo, ref, None, None
         new_sha = resolve_sha(repo, latest_tag)
         return repo, ref, latest_tag, new_sha
 
-    latest_tag = find_latest_tag(repo, ref)
+    latest_tag = find_latest_tag(repo, ref, expand=expand)
     if pin:
         effective_tag = latest_tag or ref
         new_sha = resolve_sha(repo, effective_tag)
@@ -132,8 +142,8 @@ def latest_for_ref(
 
 
 def collect_refs(
-    workflow_files: list[Path], pin: bool = False
-) -> list[tuple[str, str, str | None, bool]]:
+    workflow_files: list[Path], pin: bool = False, expand: bool = False
+) -> list[tuple[str, str, str | None, bool, bool]]:
     seen: dict[tuple[str, str], str | None] = {}
     for path in workflow_files:
         for m in USES_PATTERN.finditer(path.read_text()):
@@ -149,17 +159,18 @@ def collect_refs(
             key = (repo, ref)
             if key not in seen:
                 seen[key] = current_tag
-    return [(repo, ref, tag, pin) for (repo, ref), tag in seen.items()]
+    return [(repo, ref, tag, pin, expand) for (repo, ref), tag in seen.items()]
 
 
 def update_files(
     workflow_files: list[Path],
     dry_run: bool = False,
     pin: bool = False,
+    expand: bool = False,
 ) -> None:
-    refs = collect_refs(workflow_files, pin=pin)
+    refs = collect_refs(workflow_files, pin=pin, expand=expand)
 
-    for repo, ref, current_tag, _ in refs:
+    for repo, ref, current_tag, *_ in refs:
         if SHA_PATTERN.match(ref) and current_tag is None:
             console.print(
                 f"[yellow]Warning: cannot update {repo}@{ref} (SHA-pinned with no version comment)[/yellow]"
@@ -234,6 +245,11 @@ def main() -> None:
     parser.add_argument(
         "--pin", action="store_true", help="Convert tag/branch refs to SHA-pinned versions"
     )
+    parser.add_argument(
+        "--expand",
+        action="store_true",
+        help="Expand short version refs (e.g. v1) to the latest full version (e.g. v1.2.3)",
+    )
     args = parser.parse_args()
 
     workflows_dir = Path(args.workflows_dir)
@@ -253,6 +269,7 @@ def main() -> None:
         workflow_files,
         dry_run=args.dry_run,
         pin=args.pin,
+        expand=args.expand,
     )
 
 
