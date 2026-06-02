@@ -6,7 +6,6 @@ set -euo pipefail
 CONDA_ENV=holoviz
 PACKAGES=(panel holoviews hvplot param datashader geoviews)
 CUDA_PACKAGES=(cupy)
-# UNIX_PACKAGES=(memray tsdownsample)
 UNIX_PACKAGES=(memray)
 ALL_PACKAGES=(
     python=3.14 nomkl python-gil
@@ -15,7 +14,7 @@ ALL_PACKAGES=(
     bokeh plotly matplotlib-base seaborn-base altair
 
     # Data processing
-    numpy xarray numba scipy scikit-image networkx
+    numpy xarray numba scipy scikit-image networkx tsdownsample
 
     # DataFrame
     pandas polars narwhals
@@ -44,14 +43,14 @@ ALL_PACKAGES=(
 
     # Typing
     ty typing-extensions pandas-stubs
-    types-bleach types-croniter types-Markdown types-psutil
+    types-croniter types-Markdown types-psutil
     types-requests types-tqdm
 
     # Tooling
     rich-click httpx platformdirs lxml
 
     # Misc
-    tqdm colorcet retrying multipledispatch
+    tqdm colorcet retrying multipledispatch nh3
     markdown markdown-it-py mdit-py-plugins linkify-it-py
 )
 

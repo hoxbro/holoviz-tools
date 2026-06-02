@@ -15,6 +15,7 @@ conda env config vars set BOKEH_RESOURCES=server-dev -n bkdev
 conda env config vars set BOKEH_CHROME=~/.local/bin/chrome-dev -n bkdev
 conda activate bkdev
 
+conda install python-playwright -y
 conda uninstall --force --offline -y pre-commit || true
 python -m pip uninstall ruff -y || true
 
