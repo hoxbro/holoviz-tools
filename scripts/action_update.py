@@ -113,7 +113,7 @@ def find_latest_tag(repo: str, ref: str, expand: bool = False) -> str | None:
 
 
 def latest_for_ref(
-    repo_ref: tuple[str, str, str | None, bool, bool],
+    repo_ref: tuple[str, str, str | None, bool, bool, bool],
 ) -> tuple[str, str, str | None, str | None]:
     """
     Returns (repo, ref, latest_tag, latest_sha).
@@ -121,16 +121,22 @@ def latest_for_ref(
     For tag/branch refs: latest_tag holds the new ref to write, latest_sha is None.
     With pin=True: tag/branch refs are also resolved to a SHA.
     With expand=True: short refs like v1 are expanded to the latest v1.X.Y tag.
+    With mutable=True: check for updates in mutable tags (e.g. v1).
     """
-    repo, ref, current_tag, pin, expand = repo_ref
+    repo, ref, current_tag, pin, expand, mutable = repo_ref
 
     if SHA_PATTERN.match(ref):
         if current_tag is None:
             return repo, ref, None, None
         latest_tag = find_latest_tag(repo, current_tag, expand=expand)
         if latest_tag is None:
-            return repo, ref, None, None
+            if mutable and "." not in current_tag:
+                latest_tag = current_tag
+            else:
+                return repo, ref, None, None
         new_sha = resolve_sha(repo, latest_tag)
+        if new_sha == ref:
+            return repo, ref, None, None
         return repo, ref, latest_tag, new_sha
 
     latest_tag = find_latest_tag(repo, ref, expand=expand)
@@ -142,12 +148,19 @@ def latest_for_ref(
 
 
 def collect_refs(
-    workflow_files: list[Path], pin: bool = False, expand: bool = False
-) -> list[tuple[str, str, str | None, bool, bool]]:
+    workflow_files: list[Path],
+    pin: bool = False,
+    expand: bool = False,
+    mutable: bool = False,
+    include: str | None = None,
+) -> list[tuple[str, str, str | None, bool, bool, bool]]:
     seen: dict[tuple[str, str], str | None] = {}
     for path in workflow_files:
         for m in USES_PATTERN.finditer(path.read_text()):
-            parts = m.group(2).split("/")
+            action_path = m.group(2)
+            if include and include not in action_path:
+                continue
+            parts = action_path.split("/")
             repo = "/".join(parts[:2])
             ref = m.group(3)
             comment = m.group(4) or ""
@@ -159,7 +172,7 @@ def collect_refs(
             key = (repo, ref)
             if key not in seen:
                 seen[key] = current_tag
-    return [(repo, ref, tag, pin, expand) for (repo, ref), tag in seen.items()]
+    return [(repo, ref, tag, pin, expand, mutable) for (repo, ref), tag in seen.items()]
 
 
 def update_files(
@@ -167,8 +180,10 @@ def update_files(
     dry_run: bool = False,
     pin: bool = False,
     expand: bool = False,
+    mutable: bool = False,
+    include: str | None = None,
 ) -> None:
-    refs = collect_refs(workflow_files, pin=pin, expand=expand)
+    refs = collect_refs(workflow_files, pin=pin, expand=expand, mutable=mutable, include=include)
 
     for repo, ref, current_tag, *_ in refs:
         if SHA_PATTERN.match(ref) and current_tag is None:
@@ -250,6 +265,15 @@ def main() -> None:
         action="store_true",
         help="Expand short version refs (e.g. v1) to the latest full version (e.g. v1.2.3)",
     )
+    parser.add_argument(
+        "--mutable",
+        action="store_true",
+        help="Check for updates in mutable tags (e.g. v1) even if the tag name hasn't changed",
+    )
+    parser.add_argument(
+        "--include",
+        help="Only update actions whose name contains this string",
+    )
     args = parser.parse_args()
 
     workflows_dir = Path(args.workflows_dir)
@@ -270,6 +294,8 @@ def main() -> None:
         dry_run=args.dry_run,
         pin=args.pin,
         expand=args.expand,
+        mutable=args.mutable,
+        include=args.include,
     )
 
 
