@@ -42,6 +42,8 @@ def github_api(path: str) -> list | dict:
             .raise_for_status()
             .json()
         )
+    with suppress(httpx.HTTPError):
+        return httpx.get(url, params={"per_page": 100, "page": 1}).raise_for_status().json()
 
 
 def get_names(path: str) -> list[str] | None:
@@ -135,7 +137,7 @@ def latest_for_ref(
             else:
                 return repo, ref, None, None
         new_sha = resolve_sha(repo, latest_tag)
-        if new_sha == ref:
+        if new_sha is None or (new_sha == ref and latest_tag == current_tag):
             return repo, ref, None, None
         return repo, ref, latest_tag, new_sha
 
