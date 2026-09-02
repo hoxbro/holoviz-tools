@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 cd bokehjs  # Assumes we are in Bokeh root directory

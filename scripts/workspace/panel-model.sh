@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 PORT_USED=$(lsof -t -c panel -i :5006) || true
