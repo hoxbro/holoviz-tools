@@ -18,6 +18,7 @@ subcmds=(
     'bump:Bump current directory version'
     'bokeh:Bokeh scripts'
     'version-bisect:Find version which caused error'
+    'forge:See conda-forge migration for Python 3.15'
 )
 
 workspace_opts=(
