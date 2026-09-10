@@ -19,6 +19,7 @@ subcmds=(
     'bokeh:Bokeh scripts'
     'version-bisect:Find version which caused error'
     'forge:See conda-forge migration for Python 3.15'
+    'issuestore:AI helper for holoviz issues'
 )
 
 workspace_opts=(

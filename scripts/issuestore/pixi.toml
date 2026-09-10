@@ -1,0 +1,26 @@
+[workspace]
+channels = ["conda-forge"]
+name = "issuestore"
+platforms = [{ name = "linux-64-cuda", platform = "linux-64", cuda = "12" }]
+version = "0.1.0"
+
+[tasks]
+issuestore = "python -m issuestore"
+
+[dependencies]
+python = ">=3.14"
+chromadb = "*"
+sentence-transformers = "*"
+pytorch = "*"
+mcp = "*"
+httpx2 = "*"
+platformdirs = "*"
+numpy = "*"
+pandas = "*"
+scikit-learn = "*"
+holoviews = "*"
+panel = "*"
+panel-material-ui = "*"
+
+[pypi-dependencies]
+issuestore = { path = ".", editable = true }

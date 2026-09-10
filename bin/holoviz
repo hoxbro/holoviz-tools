@@ -73,6 +73,8 @@ elif [[ $1 == "action-update" ]]; then
     cli-py action_update.py "$@"
 elif [[ $1 == "forge" ]]; then
     cli-py python_cf_315.py
+elif [[ $1 == "issuestore" ]]; then
+    pixi run --manifest-path "$TOOLS/issuestore/pixi.toml" "$@"
 elif [[ $1 ]]; then
     printf "\033[0;31m'holoviz %s' is an invalid command\033[0m\n" "$1"
     exit 1
