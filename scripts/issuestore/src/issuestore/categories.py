@@ -1,21 +1,34 @@
 """Per-repo zero-shot classification categories.
 
-Categories are hardcoded per repository: each is a ``name -> descriptive
-phrase`` mapping, where the phrase is embedded and compared (cosine) against
-each issue's stored embedding to pick the nearest bucket (see
-``issuestore.analysis.classify``). Add a new repo by defining its mapping and
-registering it in ``CATEGORIES_BY_REPO``.
+Two orthogonal dimensions, classified independently (see
+``issuestore.analysis.classify``):
+
+- topic: the area of the codebase an issue concerns. Repo-specific, since each
+  repo has its own backends/subsystems.
+- type: what kind of issue it is (docs, perf, compatibility, ...). Shared
+  across repos, since these apply the same way everywhere.
+
+Each is a ``name -> descriptive phrase`` mapping, where the phrase is embedded
+and compared (cosine) against each issue's stored embedding to pick the
+nearest bucket. Add a new repo by defining its topic mapping and registering
+it in ``TOPIC_CATEGORIES_BY_REPO``.
 """
 
 from __future__ import annotations
 
-# Shared across repos: same name and phrase everywhere, so factored out
-# instead of repeated in each per-repo mapping.
-COMMON_CATEGORIES = {
+# bug/feature/enhancement have zero-shot phrases here like everything else, but
+# classify_type_dimension (issuestore.analysis.classify) swaps in a few-shot
+# centroid - built from issues carrying the matching GitHub `type:` label -
+# wherever one is available, since that beats a phrase for this distinction.
+TYPE_CATEGORIES = {
     "documentation": "documentation, examples, tutorials, and website content",
     "performance": "slow performance, memory usage, and speed regressions",
     "installation / packaging": "installation, dependencies, conda, pip, and packaging issues",
-    "feature request": "request for a new feature or enhancement",
+    "testing": "test failures, flaky tests, and test coverage",
+    "ci": "continuous integration, github actions, and build pipeline issues",
+    "bug": "a bug report describing incorrect behavior, an error, or a crash",
+    "feature": "request for a new feature that doesn't exist yet",
+    "enhancement": "request to improve or extend existing functionality",
 }
 
 # name -> descriptive phrase used for the embedding comparison.
@@ -51,14 +64,20 @@ HVPLOT_CATEGORIES = {
     "streaming / dynamic data": "streaming data, live updating plots, and dynamic maps",
 }
 
-# Registry of repo slug ("owner/name") -> category mapping.
-CATEGORIES_BY_REPO = {
-    "holoviz/holoviews": {**HOLOVIEWS_CATEGORIES, **COMMON_CATEGORIES},
-    "holoviz/panel": {**PANEL_CATEGORIES, **COMMON_CATEGORIES},
-    "holoviz/hvplot": {**HVPLOT_CATEGORIES, **COMMON_CATEGORIES},
+# Registry of repo slug ("owner/name") -> topic mapping.
+TOPIC_CATEGORIES_BY_REPO = {
+    "holoviz/holoviews": HOLOVIEWS_CATEGORIES,
+    "holoviz/panel": PANEL_CATEGORIES,
+    "holoviz/hvplot": HVPLOT_CATEGORIES,
 }
 
 
-def categories_for(repo: str) -> dict[str, str]:
-    """Return the category mapping for ``repo``, or a sensible fallback."""
-    return CATEGORIES_BY_REPO.get(repo, COMMON_CATEGORIES)
+def topic_categories_for(repo: str) -> dict[str, str]:
+    """Return the topic-area mapping for ``repo``, or empty if unregistered."""
+    return TOPIC_CATEGORIES_BY_REPO.get(repo, {})
+
+
+def type_categories_for(repo: str) -> dict[str, str]:
+    """Return the issue-type mapping. Same for every repo; ``repo`` is unused
+    but kept so callers can treat both dimensions symmetrically."""
+    return TYPE_CATEGORIES

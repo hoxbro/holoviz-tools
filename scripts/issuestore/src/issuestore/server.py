@@ -5,7 +5,9 @@ kept resident for the life of the process, so repeated tool calls are fast.
 
 Tools:
     - find_duplicates: issues similar to an existing issue (number/URL) or free text
-    - classify_issue:  zero-shot category ranking for issue text
+    - classify_issue:  zero-shot topic (codebase area) ranking for issue text
+    - classify_kind:   zero-shot kind (docs, performance, packaging, ...) ranking
+    - classify_type:   Bug / Feature / Enhancement, from labeled centroids
     - cluster_themes:  cluster the whole collection into themes
     - get_issue:       raw title/body/labels/comments straight from the local cache
 
@@ -22,7 +24,11 @@ import os
 import numpy as np
 from mcp.server.mcpserver import MCPServer
 
-from issuestore.analysis.classify import DEFAULT_CATEGORIES, type_centroids
+from issuestore.analysis.classify import (
+    DEFAULT_TOPIC_CATEGORIES,
+    DEFAULT_TYPE_CATEGORIES,
+    type_centroids,
+)
 from issuestore.analysis.cluster import cluster as run_cluster, load_vectors, top_keywords
 from issuestore.analysis.query import resolve_seed
 from issuestore.analysis.show import _comment_list, issue_path, load_issue
@@ -125,18 +131,9 @@ def get_issue(number: int, include_comments: bool = True) -> dict:
     return result
 
 
-@mcp.tool()
-def classify_issue(text: str, top_k: int = 3) -> list[dict]:
-    """Zero-shot classify issue text into holoviews categories.
-
-    Args:
-        text: the issue title/body (or any description) to categorize.
-        top_k: how many top-scoring categories to return.
-
-    Returns a list of {category, score} sorted by descending cosine score.
-    """
-    names = list(DEFAULT_CATEGORIES)
-    descriptions = list(DEFAULT_CATEGORIES.values())
+def _rank_categories(text: str, categories: dict[str, str], top_k: int) -> list[dict]:
+    names = list(categories)
+    descriptions = list(categories.values())
     embedder = get_embedder()
 
     # The new text is a "passage" (no prefix); categories are "queries" (prefixed),
@@ -147,6 +144,38 @@ def classify_issue(text: str, top_k: int = 3) -> list[dict]:
     sims = cat_embs @ issue_emb  # both L2-normalized -> cosine
     order = sims.argsort()[::-1][:top_k]
     return [{"category": names[i], "score": round(float(sims[i]), 4)} for i in order]
+
+
+@mcp.tool()
+def classify_issue(text: str, top_k: int = 3) -> list[dict]:
+    """Zero-shot classify issue text by TOPIC (codebase area, e.g. backend/subsystem).
+
+    This is orthogonal to ``classify_kind`` (what kind of issue it is) and
+    ``classify_type`` (Bug / Feature / Enhancement).
+
+    Args:
+        text: the issue title/body (or any description) to categorize.
+        top_k: how many top-scoring topics to return.
+
+    Returns a list of {category, score} sorted by descending cosine score.
+    """
+    return _rank_categories(text, DEFAULT_TOPIC_CATEGORIES, top_k)
+
+
+@mcp.tool()
+def classify_kind(text: str, top_k: int = 3) -> list[dict]:
+    """Zero-shot classify issue text by KIND (docs, performance, packaging, ...).
+
+    This is orthogonal to ``classify_issue`` (topic area) and ``classify_type``
+    (Bug / Feature / Enhancement, which uses labeled centroids instead).
+
+    Args:
+        text: the issue title/body (or any description) to categorize.
+        top_k: how many top-scoring kinds to return.
+
+    Returns a list of {category, score} sorted by descending cosine score.
+    """
+    return _rank_categories(text, DEFAULT_TYPE_CATEGORIES, top_k)
 
 
 @functools.lru_cache(maxsize=1)
@@ -226,6 +255,9 @@ def _selftest() -> None:
         print("  ", m)
     print("\nclassify_issue('bokeh hover tooltip is empty'):")
     for c in classify_issue("bokeh hover tooltip is empty"):
+        print("  ", c)
+    print("\nclassify_kind('docs are missing an example for streams'):")
+    for c in classify_kind("docs are missing an example for streams"):
         print("  ", c)
 
     print("\nclassify_type('crash with traceback when saving plot'):")
