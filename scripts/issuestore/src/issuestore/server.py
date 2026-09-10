@@ -4,7 +4,7 @@ The embedding model and Chroma client are loaded once (lazily on first use) and
 kept resident for the life of the process, so repeated tool calls are fast.
 
 Tools:
-    - find_duplicates: issues similar to an existing issue (number/URL) or free text
+    - find_similar_issues: issues similar to an existing issue (number/URL) or free text
     - classify_issue:  zero-shot topic (codebase area) ranking for issue text
     - classify_kind:   zero-shot kind (docs, performance, packaging, ...) ranking
     - classify_type:   Bug / Feature / Enhancement, from labeled centroids
@@ -51,7 +51,7 @@ def _where(state: str):
 
 
 @mcp.tool()
-def find_duplicates(
+def find_similar_issues(
     query: str, n: int = 10, state: str = "all", threshold: float = 0.85
 ) -> list[dict]:
     """Find issues similar to a query, for duplicate / 'already fixed?' detection.
@@ -250,8 +250,8 @@ def cluster_themes(
 
 
 def _selftest() -> None:
-    print("find_duplicates('legend not showing', n=3):")
-    for m in find_duplicates("legend not showing", n=3):
+    print("find_similar_issues('legend not showing', n=3):")
+    for m in find_similar_issues("legend not showing", n=3):
         print("  ", m)
     print("\nclassify_issue('bokeh hover tooltip is empty'):")
     for c in classify_issue("bokeh hover tooltip is empty"):
