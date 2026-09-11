@@ -3,9 +3,13 @@
 The embedding model and Chroma client are loaded once (lazily on first use) and
 kept resident for the life of the process, so repeated tool calls are fast.
 
+All record-scoped tools default to issues only (``kind="issue"``); pass
+``kind="pr"`` or ``kind="all"`` to include pull requests.
+
 Tools:
     - find_similar_issues: issues similar to an existing issue (number/URL) or free text
     - search_issues:   full-text keyword search (every issue mentioning a term)
+    - find_open_issues_fixed_by_prs: open issues a merged PR likely already fixed
     - classify_issue:  zero-shot topic (codebase area) ranking for issue text
     - classify_kind:   zero-shot kind (docs, performance, packaging, ...) ranking
     - classify_type:   Bug / Feature / Enhancement, from labeled centroids
@@ -31,6 +35,7 @@ from issuestore.analysis.classify import (
     type_centroids,
 )
 from issuestore.analysis.cluster import cluster as run_cluster, load_vectors, top_keywords
+from issuestore.analysis.fixed import find_fixed
 from issuestore.analysis.query import resolve_seed
 from issuestore.analysis.show import _comment_list, issue_path, load_issue
 from issuestore.config import REPO, get_collection, get_embedder
@@ -43,17 +48,28 @@ def _collection():
     return get_collection()
 
 
-def _where(state: str):
+def _where(state: str, kind: str = "issue"):
+    """Build a Chroma ``where`` filter for state ("all"/"open"/"closed") and
+    kind ("issue"/"pr"/"all"). Defaults to issues only so existing tool behavior
+    is unchanged now that PRs share the collection.
+    """
+    clauses: list[dict] = []
     if state == "open":
-        return {"is_open": True}
-    if state == "closed":
-        return {"is_open": False}
-    return None
+        clauses.append({"is_open": True})
+    elif state == "closed":
+        clauses.append({"is_open": False})
+    if kind in ("issue", "pr"):
+        clauses.append({"kind": kind})
+    if not clauses:
+        return None
+    if len(clauses) == 1:
+        return clauses[0]
+    return {"$and": clauses}
 
 
 @mcp.tool()
 def find_similar_issues(
-    query: str, n: int = 10, state: str = "all", threshold: float = 0.85
+    query: str, n: int = 10, state: str = "all", threshold: float = 0.85, kind: str = "issue"
 ) -> list[dict]:
     """Find issues similar to a query, for duplicate / 'already fixed?' detection.
 
@@ -62,13 +78,14 @@ def find_similar_issues(
         n: number of results to return.
         state: filter by issue state - "all", "open", or "closed".
         threshold: cosine similarity at/above which a match is flagged as a likely duplicate.
+        kind: which records to search - "issue" (default), "pr", or "all".
 
     Returns a list of matches with number, title, state, url, similarity, and
     likely_duplicate flag, sorted by similarity (most similar first).
     """
     coll = _collection()
     emb, seed = resolve_seed(coll, get_embedder(), query)
-    res = coll.query(query_embeddings=[emb], n_results=n + 1, where=_where(state))
+    res = coll.query(query_embeddings=[emb], n_results=n + 1, where=_where(state, kind))
 
     out: list[dict] = []
     for meta, dist in zip(res["metadatas"][0], res["distances"][0], strict=False):
@@ -112,6 +129,7 @@ def search_issues(
     state: str = "all",
     limit: int = 0,
     case_insensitive: bool = True,
+    kind: str = "issue",
 ) -> list[dict]:
     """Full-text keyword search: list every issue that mentions `keyword`.
 
@@ -125,12 +143,13 @@ def search_issues(
         state: filter by issue state - "all", "open", or "closed".
         limit: maximum number of issues to return; 0 (default) returns all.
         case_insensitive: match common case variants of the keyword (default True).
+        kind: which records to search - "issue" (default), "pr", or "all".
 
     Returns a list of matches with number, title, state, url, and labels,
     sorted by issue number (newest first).
     """
     coll = _collection()
-    where = _where(state)
+    where = _where(state, kind)
     got = coll.get(
         where=where,
         where_document=_contains_where_document(keyword, case_insensitive),
@@ -194,6 +213,36 @@ def get_issue(number: int, include_comments: bool = True) -> dict:
             if (c.get("body") or "").strip()
         ]
     return result
+
+
+@mcp.tool()
+def find_open_issues_fixed_by_prs(
+    issue_number: int = 0, threshold: float = 0.8, limit: int = 25, top_k: int = 5
+) -> list[dict]:
+    """Flag open issues that a merged PR appears to have already resolved.
+
+    Combines two signals over merged PRs: reference links parsed from PR text
+    (``reason`` "closes" for ``Fixes/Closes/Resolves #N``, "mentions" for a bare
+    ``#N``) and semantic similarity of the PR to the open issue
+    (``reason`` "semantic"). Use it to triage the backlog for issues that can
+    likely just be closed.
+
+    Args:
+        issue_number: check a single open issue; 0 (default) scans all open issues.
+        threshold: minimum cosine similarity for a semantic candidate.
+        limit: max issues to return (0 = no cap).
+        top_k: max semantic candidates considered per issue.
+
+    Returns a list of {number, title, url, candidates}, strongest links first;
+    each candidate has {pr, title, url, merged_at, reason, similarity}.
+    """
+    return find_fixed(
+        _collection(),
+        threshold=threshold,
+        issue_number=issue_number or None,
+        limit=limit,
+        top_k=top_k,
+    )
 
 
 def _rank_categories(text: str, categories: dict[str, str], top_k: int) -> list[dict]:
@@ -337,6 +386,11 @@ def _selftest() -> None:
     print("\ncluster_themes(k=5, reps=1):")
     for c in cluster_themes(k=5, reps=1):
         print(f"   [{c['cluster']}] size={c['size']} {c['keywords']}")
+
+    print("\nfind_open_issues_fixed_by_prs(limit=3):")
+    for item in find_open_issues_fixed_by_prs(limit=3):
+        best = item["candidates"][0]
+        print(f"   #{item['number']} <- PR #{best['pr']} ({best['reason']}) {item['title']}")
 
 
 if __name__ == "__main__":

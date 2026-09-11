@@ -6,9 +6,11 @@ version = "0.1.0"
 
 [tasks]
 issuestore = "python -m issuestore"
+test = "pytest"
 
 [dependencies]
 python = ">=3.14"
+pytest = "*"
 chromadb = "*"
 sentence-transformers = "*"
 pytorch = "*"

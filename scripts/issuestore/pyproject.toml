@@ -26,3 +26,6 @@ issuestore = "issuestore.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/issuestore"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

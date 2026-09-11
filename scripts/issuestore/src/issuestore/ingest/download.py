@@ -1,15 +1,19 @@
-"""Download all issues (and their comments) for a repo via the GitHub REST API.
+"""Download all issues and PRs (and their comments) for a repo via the GitHub REST API.
 
-Uses httpx and writes one ``issue-<n>.json`` per issue into the
-per-repo cache (``config.DATA_DIR``), matching the shape ``build_db`` expects:
-the full issue object plus a ``comments`` list. Pull requests are skipped.
-Re-running only fetches new issues plus any whose GitHub ``updated_at`` is
-newer than the local copy (i.e. issues that changed since the last pull);
-unchanged issues are left untouched. ``--force`` re-downloads everything.
+Uses httpx and writes one ``issue-<n>.json`` per issue and one ``pr-<n>.json``
+per pull request into the per-repo cache (``config.DATA_DIR``), matching the
+shape ``build_db`` expects: the full object plus a ``comments`` list. For PRs
+the listing's ``pull_request`` block (which carries ``merged_at``) is preserved
+so merge state is known without an extra call.
+Re-running only fetches new records plus any whose GitHub ``updated_at`` is
+newer than the local copy (i.e. records that changed since the last pull);
+unchanged records are left untouched. ``--force`` re-downloads everything and
+``--no-prs`` restricts the pull to issues only.
 
 Examples::
 
     python -m issuestore.ingest.download
+    python -m issuestore.ingest.download --no-prs
     ISSUE_REPO=pandas-dev/pandas python -m issuestore.ingest.download
     python -m issuestore.ingest.download --repo bokeh/bokeh --force
 """
@@ -112,11 +116,18 @@ async def _fetch_issue(
             )
         issue["comments"] = comments
 
+    # Preserve the listing's pull_request block (carries merged_at) so build_db
+    # can tell merged PRs apart without a second round-trip.
+    if "pull_request" in listed and not issue.get("pull_request"):
+        issue["pull_request"] = listed["pull_request"]
+
     with open(out, "w", encoding="utf-8") as f:
         json.dump(issue, f)
 
 
-async def _download(repo: str, out_dir: str, force: bool = False) -> None:
+async def _download(
+    repo: str, out_dir: str, force: bool = False, include_prs: bool = True
+) -> None:
     token = os.environ["GITHUB_TOKEN"]
     headers = {
         "Accept": "application/vnd.github+json",
@@ -129,19 +140,30 @@ async def _download(repo: str, out_dir: str, force: bool = False) -> None:
 
     async with httpx2.AsyncClient(http2=True, headers=headers, timeout=30.0) as client:
         print(f"Listing issues for {repo}...", file=sys.stderr)
-        issues = await _paginate(client, f"{API_ROOT}/repos/{repo}/issues", {"state": "all"})
-        # The issues endpoint also returns PRs; drop them.
-        issues = [it for it in issues if "pull_request" not in it]
-        total = len(issues)
-        print(f"Found {total} issues. Downloading full content...", file=sys.stderr)
+        listing = await _paginate(client, f"{API_ROOT}/repos/{repo}/issues", {"state": "all"})
+        # The issues endpoint returns both issues and PRs; PR entries carry a
+        # `pull_request` key. Tag each with its filename prefix.
+        records: list[tuple[dict, str]] = []
+        for it in listing:
+            if "pull_request" in it:
+                if include_prs:
+                    records.append((it, "pr"))
+            else:
+                records.append((it, "issue"))
+        n_issues = sum(1 for _, kind in records if kind == "issue")
+        n_prs = sum(1 for _, kind in records if kind == "pr")
+        print(
+            f"Found {n_issues} issues and {n_prs} PRs. Downloading full content...",
+            file=sys.stderr,
+        )
 
-        # Decide which issues need (re)fetching before firing off requests.
+        # Decide which records need (re)fetching before firing off requests.
         pending: list[tuple[dict, str]] = []
         new_count = 0
         refreshed_count = 0
-        for listed in issues:
+        for listed, kind in records:
             number = listed["number"]
-            out = os.path.join(out_dir, f"issue-{number}.json")
+            out = os.path.join(out_dir, f"{kind}-{number}.json")
             if not force and os.path.exists(out):
                 stored = _stored_updated_at(out)
                 # Skip only when the local copy is at least as recent as the
@@ -162,18 +184,18 @@ async def _download(repo: str, out_dir: str, force: bool = False) -> None:
             nonlocal done
             await _fetch_issue(client, sem, repo, listed, out)
             done += 1
-            print(f"\r[{done}/{todo}] issue #{listed['number']:<8}", end="", file=sys.stderr)
+            print(f"\r[{done}/{todo}] #{listed['number']:<8}", end="", file=sys.stderr)
 
         await asyncio.gather(*(_run(listed, out) for listed, out in pending))
 
     print(
-        f"\nDone. {new_count} new, {refreshed_count} refreshed. Issue JSON files are in {out_dir}",
+        f"\nDone. {new_count} new, {refreshed_count} refreshed. JSON files are in {out_dir}",
         file=sys.stderr,
     )
 
 
-def download(repo: str, out_dir: str, force: bool = False) -> None:
-    asyncio.run(_download(repo, out_dir, force=force))
+def download(repo: str, out_dir: str, force: bool = False, include_prs: bool = True) -> None:
+    asyncio.run(_download(repo, out_dir, force=force, include_prs=include_prs))
 
 
 def main() -> None:
@@ -182,7 +204,8 @@ def main() -> None:
     )
     parser.add_argument("--repo", default=REPO, help=f"owner/name (default: {REPO})")
     parser.add_argument("--out", default=None, help="output dir (default: per-repo cache)")
-    parser.add_argument("--force", action="store_true", help="re-download existing issues")
+    parser.add_argument("--force", action="store_true", help="re-download existing records")
+    parser.add_argument("--no-prs", action="store_true", help="download issues only, skip PRs")
     args = parser.parse_args()
 
     # DATA_DIR is derived from ISSUE_REPO; if --repo differs, honor it explicitly.
@@ -193,7 +216,7 @@ def main() -> None:
             os.path.dirname(os.path.dirname(DATA_DIR)), args.repo.replace("/", "__"), "data"
         )
     )
-    download(args.repo, out_dir, force=args.force)
+    download(args.repo, out_dir, force=args.force, include_prs=not args.no_prs)
 
 
 if __name__ == "__main__":

@@ -12,6 +12,7 @@ Examples::
     issuestore build
     issuestore show 5361                        # raw cached issue data, no GitHub call
     issuestore query "duplicate legend entries"
+    issuestore fixed                            # open issues a merged PR likely fixed
     issuestore serve
 """
 
@@ -26,6 +27,7 @@ COMMANDS: dict[str, str] = {
     "build": "issuestore.ingest.build_db",
     "show": "issuestore.analysis.show",
     "query": "issuestore.analysis.query",
+    "fixed": "issuestore.analysis.fixed",
     "cluster": "issuestore.analysis.cluster",
     "classify": "issuestore.analysis.classify",
     "visualize": "issuestore.analysis.visualize",

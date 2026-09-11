@@ -50,6 +50,9 @@ extend-unsafe-fixes = [
     "F841", # Unused variables
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["PLR2004"] # Magic values are fine in test assertions
+
 [tool.ruff.lint.isort]
 known-first-party = ["utilities", "rich_menu", "_artifact"]
 required-imports = ["from __future__ import annotations"]
