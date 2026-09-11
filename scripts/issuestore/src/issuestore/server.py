@@ -5,6 +5,7 @@ kept resident for the life of the process, so repeated tool calls are fast.
 
 Tools:
     - find_similar_issues: issues similar to an existing issue (number/URL) or free text
+    - search_issues:   full-text keyword search (every issue mentioning a term)
     - classify_issue:  zero-shot topic (codebase area) ranking for issue text
     - classify_kind:   zero-shot kind (docs, performance, packaging, ...) ranking
     - classify_type:   Bug / Feature / Enhancement, from labeled centroids
@@ -86,6 +87,70 @@ def find_similar_issues(
         )
         if len(out) >= n:
             break
+    return out
+
+
+def _contains_where_document(keyword: str, case_insensitive: bool):
+    """Build a Chroma `where_document` clause matching `keyword` as a substring.
+
+    Chroma's `$contains` is case-sensitive, so when `case_insensitive` we OR a
+    few common case variants (as-is, lower, upper, title) to catch e.g. "polars"
+    written as "Polars" or "POLARS".
+    """
+    if not case_insensitive:
+        return {"$contains": keyword}
+    variants = {keyword, keyword.lower(), keyword.upper(), keyword.title()}
+    clauses = [{"$contains": v} for v in variants]
+    if len(clauses) == 1:
+        return clauses[0]
+    return {"$or": clauses}
+
+
+@mcp.tool()
+def search_issues(
+    keyword: str,
+    state: str = "all",
+    limit: int = 0,
+    case_insensitive: bool = True,
+) -> list[dict]:
+    """Full-text keyword search: list every issue that mentions `keyword`.
+
+    Matches `keyword` as a substring anywhere in the issue's indexed text
+    (title, body, and comments), unlike ``find_similar_issues`` which ranks by
+    semantic similarity. Use it for concrete terms, e.g. "polars" to get all
+    issues that reference Polars.
+
+    Args:
+        keyword: the substring to look for (e.g. "polars").
+        state: filter by issue state - "all", "open", or "closed".
+        limit: maximum number of issues to return; 0 (default) returns all.
+        case_insensitive: match common case variants of the keyword (default True).
+
+    Returns a list of matches with number, title, state, url, and labels,
+    sorted by issue number (newest first).
+    """
+    coll = _collection()
+    where = _where(state)
+    got = coll.get(
+        where=where,
+        where_document=_contains_where_document(keyword, case_insensitive),
+        include=["metadatas"],
+    )
+
+    out: list[dict] = []
+    for meta in got["metadatas"]:
+        out.append(
+            {
+                "number": meta["number"],
+                "title": meta["title"],
+                "state": meta["state"],
+                "url": meta["html_url"],
+                "labels": meta.get("labels", ""),
+            }
+        )
+    out.sort(key=lambda m: m["number"], reverse=True)
+    if limit > 0:
+        out = out[:limit]
     return out
 
 
@@ -252,6 +317,9 @@ def cluster_themes(
 def _selftest() -> None:
     print("find_similar_issues('legend not showing', n=3):")
     for m in find_similar_issues("legend not showing", n=3):
+        print("  ", m)
+    print("\nsearch_issues('polars', limit=5):")
+    for m in search_issues("polars", limit=5):
         print("  ", m)
     print("\nclassify_issue('bokeh hover tooltip is empty'):")
     for c in classify_issue("bokeh hover tooltip is empty"):
