@@ -9,14 +9,16 @@ GREEN, RED, RESET = "\033[0;32m", "\033[0;31m", "\033[0m"
 deps = [
     "fastparquet",
     "h5py",
+    "matplotlib",
     "numba",
     "numpy",
     "pandas",
-    "pyarrow",
     "polars",
+    "pyarrow",
     "python-duckdb",
     "pywin32",  # jupyter ecosystem
     "scikit-image",
+    "scipy",
     "vtk",
 ]
 

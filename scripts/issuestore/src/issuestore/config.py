@@ -72,7 +72,14 @@ def repo_from_git_remote() -> str | None:
 # collection name) is derived from it. Prefer an explicit ISSUE_REPO override,
 # then infer from the current git checkout's origin remote, then fall back.
 REPO = os.environ.get("ISSUE_REPO") or repo_from_git_remote()
-assert REPO in ("holoviz/holoviews", "holoviz/panel", "holoviz/hvplot")
+assert REPO in (
+    "holoviz/holoviews",
+    "holoviz/panel",
+    "holoviz/hvplot",
+    "holoviz/param",
+    "holoviz/geoviews",
+    "holoviz/datashader",
+), "Use `gh` cli to get information instead"
 
 
 def _repo_slug(repo: str) -> str:
