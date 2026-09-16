@@ -10,6 +10,7 @@ Examples::
 
     issuestore download --force
     issuestore build
+    issuestore refresh                          # download, then build
     issuestore show 5361                        # raw cached issue data, no GitHub call
     issuestore query "duplicate legend entries"
     issuestore fixed                            # open issues a merged PR likely fixed
@@ -25,6 +26,7 @@ import sys
 COMMANDS: dict[str, str] = {
     "download": "issuestore.ingest.download",
     "build": "issuestore.ingest.build_db",
+    "refresh": "issuestore.ingest.refresh",
     "show": "issuestore.analysis.show",
     "query": "issuestore.analysis.query",
     "fixed": "issuestore.analysis.fixed",
