@@ -45,6 +45,8 @@ API_ROOT = "https://api.github.com"
 GRAPHQL_URL = f"{API_ROOT}/graphql"
 PER_PAGE = 100
 
+_announced_reset = 0
+
 # Newest ``updatedAt`` covered by the last complete run, per record kind. Lives
 # beside the cached records; `build_db` only globs `issue-*`/`pr-*` so it is
 # ignored there.
@@ -87,6 +89,15 @@ def _scan_query(kinds: tuple[str, ...]) -> str:
     return f"query({params}) {{\n  repository(owner: $owner, name: $name) {{{body}\n  }}\n}}\n"
 
 
+def _announce_rate_limit(reset: int) -> None:
+    global _announced_reset  # noqa: PLW0603
+    if reset == _announced_reset:
+        return
+    _announced_reset = reset
+    until = time.strftime("%H:%M:%S", time.localtime(reset))
+    print(f"Rate limited; sleeping until {until}...", file=sys.stderr)
+
+
 async def _get(
     client: httpx2.AsyncClient, url: str, params: dict | None = None
 ) -> httpx2.Response:
@@ -98,8 +109,8 @@ async def _get(
             and resp.headers.get("x-ratelimit-remaining") == "0"
         ):
             reset = int(resp.headers.get("x-ratelimit-reset", "0"))
-            delay = max(reset - int(time.time()), 1)
-            print(f"\n  rate limited; sleeping {delay}s...", file=sys.stderr)
+            delay = max(reset - int(time.time()), 0) + 1
+            _announce_rate_limit(reset)
             await asyncio.sleep(delay)
             continue
         if resp.status_code in (429, 502, 503):
@@ -144,7 +155,7 @@ async def _graphql(client: httpx2.AsyncClient, query: str, variables: dict) -> d
         if any(e.get("type") == "RATE_LIMITED" for e in errors):
             reset = int(resp.headers.get("x-ratelimit-reset", "0"))
             delay = max(reset - int(time.time()), 1)
-            print(f"\n  rate limited; sleeping {delay}s...", file=sys.stderr)
+            _announce_rate_limit(reset)
             await asyncio.sleep(delay)
             continue
         if errors:

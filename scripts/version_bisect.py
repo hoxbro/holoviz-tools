@@ -10,6 +10,7 @@ from hashlib import sha256
 from pathlib import Path
 
 import rich_click as click
+from packaging.version import Version
 from rich.console import Console
 
 console = Console()
@@ -85,7 +86,7 @@ def get_all_package_versions(package):
     search_json = json.loads(search.stdout)
     all_versions = sorted(
         {pkg["version"] for pkg in search_json["result"]["pkgs"]},
-        key=lambda s: list(map(int, s.split("."))),
+        key=Version,
     )
     return all_versions
 

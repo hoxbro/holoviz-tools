@@ -79,6 +79,7 @@ assert REPO in (
     "holoviz/param",
     "holoviz/geoviews",
     "holoviz/datashader",
+    "bokeh/bokeh",
 ), "Use `gh` cli to get information instead"
 
 
