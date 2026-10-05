@@ -15,10 +15,16 @@ deps = [
     "pandas",
     "polars",
     "pyarrow",
+    "pydantic",
     "python-duckdb",
     "pywin32",  # jupyter ecosystem
+    "rasterio",
+    "rioxarray",
+    "scikit-learn",
     "scikit-image",
     "scipy",
+    "shapely",
+    "tsdownsample",
     "vtk",
 ]
 
