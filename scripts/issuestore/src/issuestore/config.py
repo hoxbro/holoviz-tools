@@ -30,6 +30,8 @@ import chromadb
 import platformdirs
 from chromadb.api.types import Documents, EmbeddingFunction, Embeddings
 
+from issuestore.repos import REPOS
+
 APP_NAME = "issuestore"
 
 _GITHUB_REMOTE_RE = re.compile(r"github\.com[:/](?P<slug>[^/]+/[^/]+?)(?:\.git)?/?$")
@@ -72,15 +74,7 @@ def repo_from_git_remote() -> str | None:
 # collection name) is derived from it. Prefer an explicit ISSUE_REPO override,
 # then infer from the current git checkout's origin remote, then fall back.
 REPO = os.environ.get("ISSUE_REPO") or repo_from_git_remote()
-assert REPO in (
-    "holoviz/holoviews",
-    "holoviz/panel",
-    "holoviz/hvplot",
-    "holoviz/param",
-    "holoviz/geoviews",
-    "holoviz/datashader",
-    "bokeh/bokeh",
-), "Use `gh` cli to get information instead"
+assert REPO in REPOS, "Use `gh` cli to get information instead"
 
 
 def _repo_slug(repo: str) -> str:

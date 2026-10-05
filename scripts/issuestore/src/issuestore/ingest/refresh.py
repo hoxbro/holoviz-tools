@@ -8,7 +8,8 @@ work.
 
 Unlike ``download``, this takes no ``--repo``/``--out``: the build stage reads
 ``config.DATA_DIR``, so both stages must agree on the target. Use ``ISSUE_REPO``
-to point the whole process at another repository.
+to point the whole process at another repository, or ``--all`` to refresh
+every supported repository in turn (each in its own subprocess).
 
 Examples::
 
@@ -16,16 +17,17 @@ Examples::
     issuestore refresh --no-prs
     issuestore refresh --force          # re-download and re-embed everything
     ISSUE_REPO=holoviz/panel issuestore refresh
+    issuestore refresh --all
 """
 
 from __future__ import annotations
 
 import argparse
+import os
+import subprocess
 import sys
 
-from issuestore.config import DATA_DIR, REPO, get_collection, get_embedder
-from issuestore.ingest.build_db import build, run_tests
-from issuestore.ingest.download import download
+from issuestore.repos import REPOS
 
 
 def refresh(
@@ -34,6 +36,12 @@ def refresh(
     full_scan: bool = False,
     test: bool = False,
 ) -> None:
+    # Imported lazily: `config` resolves the target repo at import, which must
+    # not happen in the `--all` parent process.
+    from issuestore.config import DATA_DIR, REPO, get_collection, get_embedder  # noqa: PLC0415
+    from issuestore.ingest.build_db import build, run_tests  # noqa: PLC0415
+    from issuestore.ingest.download import download  # noqa: PLC0415
+
     download(REPO, DATA_DIR, force=force, include_prs=include_prs, full_scan=full_scan)
 
     # `get_embedder` loads the model onto the GPU, so it is called only after
@@ -46,7 +54,25 @@ def refresh(
         run_tests(collection, embedder)
 
 
-def main() -> None:
+def refresh_all(argv: list[str]) -> int:
+    """Refresh every supported repo, continuing past failures; return an exit code."""
+    failed = []
+    for repo in REPOS:
+        print(f"\n=== {repo} ===", file=sys.stderr, flush=True)
+        result = subprocess.run(
+            [sys.executable, "-m", "issuestore", "refresh", *argv],
+            env={**os.environ, "ISSUE_REPO": repo},
+            check=False,
+        )
+        if result.returncode != 0:
+            failed.append(repo)
+    if failed:
+        print(f"\nRefresh failed for: {', '.join(failed)}", file=sys.stderr)
+        return 1
+    return 0
+
+
+def main() -> int | None:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
@@ -58,7 +84,13 @@ def main() -> None:
         "--full-scan", action="store_true", help="scan every record, ignoring the watermark"
     )
     parser.add_argument("--test", action="store_true", help="run sanity queries after the build")
+    parser.add_argument(
+        "--all", action="store_true", help="refresh every supported repository in turn"
+    )
     args = parser.parse_args()
+
+    if args.all:
+        return refresh_all([a for a in sys.argv[1:] if a != "--all"])
 
     refresh(
         force=args.force,
