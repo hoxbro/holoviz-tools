@@ -23,6 +23,7 @@ scikit-learn = "*"
 holoviews = "*"
 panel = "*"
 panel-material-ui = "*"
+bm25s = "*"
 
 [pypi-dependencies]
 issuestore = { path = ".", editable = true }

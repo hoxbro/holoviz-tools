@@ -192,6 +192,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/backoff-2.2.1-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/backports.zstd-1.7.0-py314h680f03e_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/blinker-1.9.0-pyhff2d567_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/bm25s-0.3.12-pyh5ded981_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/bokeh-3.9.2-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ca-certificates-2026.7.22-hbd8a1cb_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/certifi-2026.7.22-pyhd8ed1ab_0.conda
@@ -579,7 +580,7 @@ packages:
   license: Apache-2.0 AND BSD-3-Clause AND PSF-2.0 AND MIT
   license_family: BSD
   purls:
-  - pkg:pypi/cryptography?source=compressed-mapping
+  - pkg:pypi/cryptography?source=hash-mapping
   run_exports: {}
   size: 1914602
   timestamp: 1788356189788
@@ -734,7 +735,7 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/fastar?source=compressed-mapping
+  - pkg:pypi/fastar?source=hash-mapping
   run_exports: {}
   size: 353088
   timestamp: 1787239222626
@@ -864,7 +865,7 @@ packages:
   license: Apache-2.0
   license_family: APACHE
   purls:
-  - pkg:pypi/grpcio?source=compressed-mapping
+  - pkg:pypi/grpcio?source=hash-mapping
   run_exports: {}
   size: 1076750
   timestamp: 1788789452186
@@ -943,7 +944,7 @@ packages:
   license: BSD-3-Clause
   license_family: BSD
   purls:
-  - pkg:pypi/kiwisolver?source=compressed-mapping
+  - pkg:pypi/kiwisolver?source=hash-mapping
   run_exports: {}
   size: 75620
   timestamp: 1788505651547
@@ -2226,7 +2227,7 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/nh3?source=compressed-mapping
+  - pkg:pypi/nh3?source=hash-mapping
   run_exports: {}
   size: 690746
   timestamp: 1787526819319
@@ -2343,7 +2344,7 @@ packages:
   license: Apache-2.0
   license_family: Apache
   purls:
-  - pkg:pypi/optree?source=compressed-mapping
+  - pkg:pypi/optree?source=hash-mapping
   run_exports: {}
   size: 596676
   timestamp: 1788504545165
@@ -3361,6 +3362,20 @@ packages:
   run_exports: {}
   size: 13934
   timestamp: 1731096548765
+- conda: https://conda.anaconda.org/conda-forge/noarch/bm25s-0.3.12-pyh5ded981_0.conda
+  sha256: 85ac6d90d72f6378e67bf0333e6e50764349d9271389cb50d72317c1c7ef7bd7
+  md5: ec5b9b224553aa2d7dc4b2e4ce3553b3
+  depends:
+  - python >=3.11
+  - numpy
+  - python
+  license: MIT
+  license_family: MIT
+  purls:
+  - pkg:pypi/bm25s?source=compressed-mapping
+  run_exports: {}
+  size: 73179
+  timestamp: 1791040016889
 - conda: https://conda.anaconda.org/conda-forge/noarch/bokeh-3.9.2-pyhd8ed1ab_0.conda
   sha256: 577c2614f3a59512697c1ffe2021c5194818b55f734006fcdeb6c6921b514c44
   md5: b2781afb860ae9ed84cb92bdebbc83ea
@@ -3974,7 +3989,7 @@ packages:
   license: Apache-2.0
   license_family: APACHE
   purls:
-  - pkg:pypi/huggingface-hub?source=compressed-mapping
+  - pkg:pypi/huggingface-hub?source=hash-mapping
   run_exports: {}
   size: 544027
   timestamp: 1788442719873
@@ -5261,7 +5276,7 @@ packages:
   license: Apache-2.0
   license_family: APACHE
   purls:
-  - pkg:pypi/transformers?source=compressed-mapping
+  - pkg:pypi/transformers?source=hash-mapping
   run_exports: {}
   size: 4566829
   timestamp: 1787769666541
@@ -5393,7 +5408,7 @@ packages:
   license: BSD-3-Clause
   license_family: BSD
   purls:
-  - pkg:pypi/uvicorn?source=compressed-mapping
+  - pkg:pypi/uvicorn?source=hash-mapping
   run_exports: {}
   size: 60189
   timestamp: 1787133003107
@@ -5484,4 +5499,5 @@ packages:
   - holoviews
   - panel
   - panel-material-ui
+  - bm25s
   requires_python: '>=3.14'

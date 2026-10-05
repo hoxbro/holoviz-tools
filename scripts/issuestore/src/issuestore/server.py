@@ -36,7 +36,7 @@ from issuestore.analysis.classify import (
 )
 from issuestore.analysis.cluster import cluster as run_cluster, load_vectors, top_keywords
 from issuestore.analysis.fixed import find_fixed
-from issuestore.analysis.query import resolve_seed
+from issuestore.analysis.query import find_similar, load_index
 from issuestore.analysis.show import _comment_list, issue_path, load_issue
 from issuestore.config import REPO, get_collection, get_embedder
 
@@ -46,6 +46,11 @@ mcp = MCPServer(f"issuestore ({REPO})")
 @functools.lru_cache(maxsize=1)
 def _collection():
     return get_collection()
+
+
+@functools.lru_cache(maxsize=1)
+def _search_index():
+    return load_index(_collection())
 
 
 def _where(state: str, kind: str = "issue"):
@@ -80,31 +85,23 @@ def find_similar_issues(
         threshold: cosine similarity at/above which a match is flagged as a likely duplicate.
         kind: which records to search - "issue" (default), "pr", or "all".
 
-    Returns a list of matches with number, title, state, url, similarity, and
-    likely_duplicate flag, sorted by similarity (most similar first).
+    Ranking fuses semantic similarity with BM25 keyword matching, so exact
+    terms like error messages or API names also pull matches up. Returns a list
+    of matches with number, title, state, url, cosine similarity, and
+    likely_duplicate flag, best match first.
     """
-    coll = _collection()
-    emb, seed = resolve_seed(coll, get_embedder(), query)
-    res = coll.query(query_embeddings=[emb], n_results=n + 1, where=_where(state, kind))
-
-    out: list[dict] = []
-    for meta, dist in zip(res["metadatas"][0], res["distances"][0], strict=False):
-        if seed and str(meta["number"]) == seed:
-            continue  # drop the seed matching itself
-        sim = 1.0 - dist
-        out.append(
-            {
-                "number": meta["number"],
-                "title": meta["title"],
-                "state": meta["state"],
-                "url": meta["html_url"],
-                "similarity": round(sim, 4),
-                "likely_duplicate": sim >= threshold,
-            }
-        )
-        if len(out) >= n:
-            break
-    return out
+    _, matches = find_similar(_search_index(), get_embedder(), query, n=n, state=state, kind=kind)
+    return [
+        {
+            "number": meta["number"],
+            "title": meta["title"],
+            "state": meta["state"],
+            "url": meta["html_url"],
+            "similarity": round(sim, 4),
+            "likely_duplicate": sim >= threshold,
+        }
+        for meta, sim in matches
+    ]
 
 
 def _contains_where_document(keyword: str, case_insensitive: bool):

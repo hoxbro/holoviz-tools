@@ -19,6 +19,7 @@ dependencies = [
     "holoviews",
     "panel",
     "panel-material-ui",
+    "bm25s",
 ]
 
 [project.scripts]
