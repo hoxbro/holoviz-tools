@@ -45,11 +45,12 @@ from utilities import exit_print, trackpool
 py_releases = {
     # "3.8": datetime(2019, 10, 14),
     # "3.9": datetime(2020, 10, 5),
-    "3.10": datetime(2021, 10, 4),
+    # "3.10": datetime(2021, 10, 4),
     "3.11": datetime(2022, 10, 24),
     "3.12": datetime(2023, 10, 2),
     "3.13": datetime(2024, 10, 7),
     "3.14": datetime(2025, 10, 7),
+    "3.15": datetime(2026, 10, 9),
 }
 conda_mapping = {
     "conda-build": None,
